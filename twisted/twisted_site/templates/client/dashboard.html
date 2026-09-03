@@ -182,11 +182,18 @@
     <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
 </audio>
 
+<template id="taskbutton-template">
+    <button onclick="focusWindow(this.dataset.winId)" class="flex items-center gap-1 !bg-twisted-600 !text-absolute-white text-sm !px-2 !py-1 !border-2 !border-t-twisted-200 !border-l-twisted-200 !border-r-dark-black !border-b-dark-black max-w-40">
+        <img src="{% static 'images/round-square.jpg' %}" class="size-4 object-cover shrink-0">
+        <span class="truncate taskbtn-title"></span>
+    </button>
+</template>
+
 <script>
     let windowCounter = 0;
     let currentMaximisedWindow = null;
 
-    window.addEventListener(
+    window.addEventListener( // newWindow from iframe events 
         "message",
         (event) => {
             const data = event.data;
@@ -227,18 +234,11 @@
         const realWin = container.querySelector('[data-win-id="' + id + '"]');
 
         // Taskbar button with round png icon
-        const taskBtn = document.createElement("button");
+        const taskbutton_template = document.getElementById("taskbutton-template");
+        const template_clone = taskbutton_template.content.cloneNode(true);
+        const taskBtn = template_clone.querySelector('button')
         taskBtn.dataset.winId = id;
-        taskBtn.className =
-            "flex items-center gap-1 !bg-twisted-600 !text-absolute-white text-sm !px-2 !py-1 !border-2 !border-t-twisted-200 !border-l-twisted-200 !border-r-dark-black !border-b-dark-black max-w-40";
-        const taskIcon = document.createElement("img");
-        taskIcon.src = '{% static "images/round-square.jpg" %}';
-        taskIcon.className = "w-4 h-4 object-cover shrink-0";
-        const taskTitle = document.createElement("span");
-        taskTitle.className = "truncate";
-        taskTitle.textContent = title;
-        taskBtn.append(taskIcon, taskTitle);
-        taskBtn.onclick = () => focusWindow(id);
+        taskBtn.querySelector(".taskbtn-title").textContent = title;
         document.getElementById("taskbar-windows").appendChild(taskBtn);
 
         realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
@@ -256,7 +256,6 @@
             frame.src = frame.src;
         });
         realWin.querySelector(".close-button").addEventListener("mouseup", () => {
-            console.log("close!");
             realWin.remove();
             taskBtn.remove();
         });
