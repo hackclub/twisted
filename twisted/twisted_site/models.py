@@ -83,6 +83,7 @@ class Project(models.Model):
 
     hackatime_project_name = models.CharField(max_length=200, blank=True, default="")
     repo_url = models.CharField(max_length=200, blank=True, default="")
+    playable_url = models.CharField(max_length=200, blank=True, default="")
 
     def __str__(self):
         return self.project_name
@@ -135,9 +136,7 @@ class Project(models.Model):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        if latest_ship.latest_status() not in ['requested_changes']:
-            return True
-        return False
+        return latest_ship.latest_status() != 'requested_changes'
 
 
 class Journal(models.Model):
@@ -196,8 +195,18 @@ class ProjectShip(models.Model):
             return self.fraud_status
         if self.t2_status != 'pending':
             return self.t2_status
-        if self.t1_status != 'pending':
-            return self.t1_status
+        return self.t1_status
+    
+    def get_latest_status_display(self):
+        if self.final_status != 'pending':
+            string = "Final"
+        elif self.fraud_status != 'pending':
+            string = "Fraud"
+        elif self.t2_status != 'pending':
+            string = "T2"
+        else:
+            string = "T1"
+        return string +": "+PROJECT_SHIP_STATUSES[self.latest_status()]
     
     
     def save(self, *args, **kwargs):

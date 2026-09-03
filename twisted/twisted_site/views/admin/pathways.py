@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from .admin import AdminView
 from django.shortcuts import render, redirect
-from ...models import Pathway
+from ...models import Pathway, User
 from django.utils import timezone
 from django.contrib import messages
 
@@ -108,5 +108,26 @@ class PathwayCreateView(AdminView):
 class PathwayDetailView(AdminView):
     def get(self, request, id):
         context = self.get_context_data(page="pathways", subpage="detail")
-        context['pathway'] = Pathway.objects.get(id=id)
+        pathway = Pathway.objects.get(id=id)
+        context['pathway'] = pathway
+
+        self.audit_log.additional_context['pathway_name'] = pathway.name
+        
+        mins_per_participant = pathway.mins_spent_per_participant()
+        users = User.objects.filter(id__in=mins_per_participant.keys()).select_related("profile")
+
+        participants = [
+            {
+                "user": user,
+                "mins": mins_per_participant[user.id],
+                "percent": min(100, round(mins_per_participant[user.id] / pathway.min_mins * 100)) if pathway.min_mins else 0,
+                "qualified": mins_per_participant[user.id] >= pathway.min_mins,
+            }
+            for user in users
+        ]
+        participants.sort(key=lambda p: p["mins"], reverse=True)
+
+        context["participants"] = participants
+        context["qualified_count"] = sum(1 for p in participants if p["qualified"])
+
         return render(request, "admin/pathways/detail.html", context=context)

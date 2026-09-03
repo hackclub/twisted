@@ -1,10 +1,87 @@
+{% load time_filters %}
 <c-base>
-    <div>Work in progress!</div>
     <div>
-        Pathway name:
-        {{ pathway.name }}
-    </div>
-    <div>
-        TODO: Work on this!
+        <c-ui.breadcrumbs>
+            <c-ui.breadcrumbs.item href="{% url 'admin.dash' %}">Admin</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item href="{% url 'admin.pathways' %}">Pathways</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item :current="True">{{ pathway.name }}</c-ui.breadcrumbs.item>
+        </c-ui.breadcrumbs>
+
+        <c-ui.card class="mt-2 bg-ink-900">
+            <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-bold">{{ pathway.name }}</h1>
+                {% if pathway.in_progress %}
+                <c-ui.badge color="orange">In progress</c-ui.badge>
+                {% elif pathway.didnt_start %}
+                <c-ui.badge color="green">Not started</c-ui.badge>
+                {% elif pathway.ended %}
+                <c-ui.badge color="ink">Ended</c-ui.badge>
+                {% endif %}
+            </div>
+            <div class="mt-2 grid gap-4 grid-cols-2 lg:grid-cols-4">
+                <div>
+                    <p class="text-ink-400 text-sm">Start</p>
+                    <p title="local time">{{ pathway.start }}</p>
+                </div>
+                <div>
+                    <p class="text-ink-400 text-sm">End</p>
+                    <p title="local time">{{ pathway.end }}</p>
+                </div>
+                <div>
+                    <p class="text-ink-400 text-sm">Minimum time required</p>
+                    <p>{{ pathway.min_mins|minutes_to_hours_minutes }}</p>
+                </div>
+                <div>
+                    <p class="text-ink-400 text-sm">Qualified participants</p>
+                    <p>{{ qualified_count }} / {{ participants|length }}</p>
+                </div>
+            </div>
+        </c-ui.card>
+
+        <div class="mt-4">
+            <h2 class="text-lg font-semibold mb-2">Participants</h2>
+            {% if participants %}
+            <c-ui.card class="bg-ink-900 p-0">
+                <c-ui.table>
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>Time logged</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for participant in participants %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'admin.users.detail' participant.user.id %}" class="flex items-center gap-2">
+                                    <c-ui.avatar size="sm" src="{{ participant.user.profile.slack_pfp_url }}" />
+                                    @{{ participant.user.profile.slack_username }}
+                                </a>
+                            </td>
+                            <td>{{ participant.mins|minutes_to_hours_minutes }}</td>
+                            <td class="min-w-32">
+                                <c-ui.progress value="{{ participant.percent }}" color="{% if participant.qualified %}green{% else %}accent{% endif %}" show_value="True" />
+                            </td>
+                            <td>
+                                {% if participant.qualified %}
+                                <c-ui.badge color="green">Qualified</c-ui.badge>
+                                {% else %}
+                                <c-ui.badge color="ink">In progress</c-ui.badge>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </c-ui.table>
+            </c-ui.card>
+            {% else %}
+            <c-ui.card class="bg-ink-900">
+                <h1 class="text-lg font-bold">No participants yet</h1>
+                <p>Nobody has logged time towards this pathway.</p>
+            </c-ui.card>
+            {% endif %}
+        </div>
     </div>
 </c-base>

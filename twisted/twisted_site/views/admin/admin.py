@@ -42,6 +42,7 @@ class AdminView(View):
             user=request.user,
             path=self.request.get_full_path(),
             post=(request.method.lower() == 'post'),
+            additional_context={}
         )
         response = super().dispatch(request, *args, **kwargs)
         self.audit_log.save()

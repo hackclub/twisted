@@ -28,7 +28,7 @@
             
             <div class="flex shrink-0 flex-wrap gap-1">
                 {% if project.user == request.user %}
-                {% if project.repo_url and project.time_logged > 60 %} {% if not project.is_shipped %}
+                {% if project.repo_url and project.playable_url and project.time_logged > 60 %} {% if not project.is_shipped %}
                 <a href="{% url 'fr.projects.ship' project.id %}">
                     <button
                         class="border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px"
@@ -99,6 +99,19 @@
             <div class="font-bold text-warning">VRO repository not linked</div>
 
             <div class="mt-1 text-sm text-muted-foreground">Link a repository before shipping your project.</div>
+
+            <a
+                href="{% url 'fr.projects.settings' project.pk %}"
+                class="mt-2 inline-block text-sm text-primary underline hover:text-accent"
+            >
+                Open project settings
+            </a>
+        </div>
+        {% elif not project.playable_url %}
+        <div class="mb-3 border border-warning bg-warning/10 p-3">
+            <div class="font-bold text-warning">Playable URL not set</div>
+
+            <div class="mt-1 text-sm text-muted-foreground">Add a playable URL before shipping your project.</div>
 
             <a
                 href="{% url 'fr.projects.settings' project.pk %}"

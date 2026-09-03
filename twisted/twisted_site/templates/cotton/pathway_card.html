@@ -19,8 +19,10 @@
             </div>
             {% if not pathway.didnt_start %}
             <div>
+                <p class="text-ink-400">Participated</p>
+                <p>{{ pathway.mins_spent_per_participant|length }} participant{{ pathway.mins_spent_per_participant|pluralize }}</p>
                 <p class="text-ink-400">Qualified</p>
-                <p title="local time">{{ pathway.qualified_participants|length }} participant{{ pathway.qualified_participants|pluralize }}</p>
+                <p title="local time">{{ pathway.qualified_participants|length }} qualified</p>
                 {% if pathway.qualified_participants %}
                 <p class="mt-2">
                     <c-ui.avatar.group>

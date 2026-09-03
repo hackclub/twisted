@@ -88,6 +88,7 @@ class ProjectSettings(View):
         project.project_type = request.POST["type"]
         project.hackatime_project_name = request.POST.get("hackatime", "")
         project.repo_url = request.POST["repo"]
+        project.playable_url = request.POST.get("playable_url", "")
         project.save()
         return redirect("fr.projects.detail", project.id)
 
@@ -100,6 +101,9 @@ class SubmitProject(View):
         project = Project.objects.get(id=id)
         if project.user != request.user:
             return redirect("dashboard")
+
+        if not project.playable_url:
+            return redirect("fr.projects.detail", id)
 
         if not project.user.profile.ysws_eligible:
             context["info"] = (
@@ -121,6 +125,9 @@ class SubmitProject(View):
             return self.get(
                 request, id, context={"info": "silly! you have already shipped."}
             )
+
+        if not project.playable_url:
+            return redirect("fr.projects.detail", id)
 
         if not project.user.profile.ysws_eligible:
             return self.get(request, id)
