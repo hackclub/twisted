@@ -137,6 +137,12 @@ class Project(models.Model):
         if latest_ship is None:
             return False
         return latest_ship.latest_status() != 'requested_changes'
+    
+    def is_approved(self):
+        latest_ship = self.latest_ship()
+        if latest_ship is None:
+            return False
+        return latest_ship.final_status == 'approved'
 
 
 class Journal(models.Model):

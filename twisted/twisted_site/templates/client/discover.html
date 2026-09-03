@@ -1,0 +1,96 @@
+{% extends "client/osbase.html" %}
+{% load static time_filters %}
+
+{% block body %}
+<div class="flex h-full w-full flex-col bg-surface text-foreground font-vintage">
+
+    <div class="flex shrink-0 items-center gap-4 border-b border-border bg-card px-3 py-2">
+        <span class="text-sm text-muted-foreground">discover projects from the community</span>
+    </div>
+
+    <div class="sunken-panel min-h-0 flex-1 overflow-y-auto bg-background p-3">
+
+        {% if projects %}
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+
+            {% for project in projects %}
+            <input type="hidden" value="{{ project.project_name }}" id="discover-project-{{ project.id }}">
+
+            <div class="group flex cursor-pointer flex-col gap-2 border border-border bg-card p-3 select-none hover:bg-secondary"
+                data-project-id="{{ project.id }}" data-project-url="{% url 'fr.projects.detail' project.id %}">
+
+                <div class="flex items-start justify-between gap-2">
+                    <h3 class="wrap-break-word text-sm font-bold text-card-foreground group-hover:text-secondary-foreground">
+                        {{ project.project_name }}
+                    </h3>
+                    <div class="flex shrink-0 flex-wrap justify-end gap-1">
+                        {% if project.is_approved %}
+                        <span class="border border-success bg-success/20 px-2 py-0.5 text-xs text-success">shipped</span>
+                        {% endif %}
+                        <span class="border border-border group-hover:bg-muted bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+                            {{ project.time_logged|minutes_to_hours_minutes }}
+                        </span>
+                        <span class="border border-border group-hover:bg-muted bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+                            {{ project.get_project_type_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <p class="line-clamp-3 text-xs text-muted-foreground group-hover:text-secondary-foreground/80">
+                    {{ project.project_description }}
+                </p>
+
+                <div class="mt-auto flex items-center gap-2 border-t border-border pt-2">
+                    <img src="{{ project.user.profile.slack_pfp_url }}" alt=""
+                        class="h-5 w-5 shrink-0 rounded-sm border border-border object-cover">
+                    <span class="truncate text-xs text-muted-foreground group-hover:text-secondary-foreground/80">
+                        {{ project.user.profile.slack_username|default:project.user.username }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="flex h-full min-h-48 items-center justify-center">
+            <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                <div class="mx-auto mb-3 text-5xl">🧭</div>
+
+                <div class="text-lg font-bold">
+                    No projects yet
+                </div>
+
+                <div class="mt-1 text-sm text-muted-foreground">
+                    Projects from everyone will show up here.
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <div class="status-field-border p-1 border-t border-border flex shrink-0 items-center bg-card px-1 text-sm">
+        {{ projects|length }} project{{ projects|length|pluralize }}
+    </div>
+
+</div>
+
+<script>
+    document.querySelectorAll("[data-project-id]").forEach((project) => {
+        project.addEventListener("click", () => {
+            const title = document.getElementById(
+                `discover-project-${project.dataset.projectId}`
+            ).value;
+
+            createWindow(
+                title,
+                project.dataset.projectUrl
+            );
+        });
+    });
+</script>
+
+{% endblock body %}

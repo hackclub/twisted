@@ -30,6 +30,11 @@
                 <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">👥</div>
                 <span class="block text-center text-sm">Referrals</span>
             </div>
+            <div class="font-vintage w-fit cursor-pointer select-none" data-url="{% url 'fr.discover' %}"
+                onclick="newWindow('Discover', this.dataset.url)">
+                <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🧭</div>
+                <span class="block text-center text-sm">Discover</span>
+            </div>
         </div>
 
         <div id="windows-container"></div>
