@@ -109,7 +109,7 @@ class Project(models.Model):
 
     def time_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # type: ignore  # Django generates this attribute at runtime
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
                 minutes += journal.minutes_worked
@@ -119,7 +119,7 @@ class Project(models.Model):
 
     def hackatime_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # type: ignore  # Django generates this attribute at runtime
             if journal.type != "hackatime":
                 continue
             if include_all_minutes:
