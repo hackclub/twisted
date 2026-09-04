@@ -1,5 +1,6 @@
 import math
 import re
+from typing import Any
 
 from django.shortcuts import redirect, render
 from django.views import View
@@ -175,7 +176,9 @@ class NewProjectUntrackedJournal(View):
 
 
 class DeleteJournal(View):
-    def get(self, request, id, context=None):
+    def get(
+        self, request, id, context: dict[str, Any] | None = None
+    ):
         if context is None:
             context = {"success": False}
 
