@@ -33,6 +33,17 @@ dependencies = [
 # Django migrations use the standard `dependencies`/`operations` list-class-attrs pattern, which trips RUF012 (mutable class default). Don't lint generated migration files.
 extend-exclude = ["twisted/twisted_site/migrations"]
 
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["twisted"]
+exclude = ["**/node_modules", "**/__pycache__", "twisted/twisted_site/migrations"]
+
+[tool.ty.rules]
+# `# type: ignore` comments are shared with pyright; ty often resolves the same
+# Django dynamic attribute fine and would otherwise flag the ignore as unused.
+unused-type-ignore-comment = "ignore"
+
 [dependency-groups]
 dev = [
     "django-stubs>=6.1.0",
