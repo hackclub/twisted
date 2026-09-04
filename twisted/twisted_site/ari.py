@@ -1,16 +1,15 @@
-from urllib.error import HTTPError
 import hashlib
 import hmac
 import json
 from collections.abc import Iterable
+from io import StringIO
 from typing import Literal
+from urllib.error import HTTPError
 
 import requests
 from django.conf import settings
 
 from .models import Journal, Project, ProjectShip
-
-from io import StringIO
 
 ARI_INGEST_ENDPOINT = settings.ARI_INGEST_ENDPOINT
 ARI_SIGNING_SECRET = settings.ARI_SIGNING_SECRET

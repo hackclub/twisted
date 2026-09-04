@@ -1,14 +1,15 @@
-import requests
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model, login, logout
-from django.shortcuts import redirect
 import os
-from authlib.integrations.django_client import OAuth
-from django.views import View
 import random
 
-from ...models import Profile
+import requests
+from authlib.integrations.django_client import OAuth
+from django.contrib.auth import get_user_model, login, logout
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.views import View
+
 from ... import hackatime
+from ...models import Profile
 from ...slack import slack_bot
 
 oauth = OAuth()

@@ -1,6 +1,7 @@
+from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
+
 from .admin import AdminView
-from django.shortcuts import render, redirect
 
 
 # Create your views here.

@@ -1,5 +1,6 @@
+from django.shortcuts import redirect, render, resolve_url
 from django.views import View
-from django.shortcuts import render, redirect, resolve_url
+
 from ...models import Project
 
 

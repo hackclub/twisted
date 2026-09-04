@@ -1,14 +1,14 @@
+from django.urls import path
+
+from .views import admin, client
+from .views.ari import AriView
 from .views.client.auth import (
-    LoginView,
     AuthCallbackView,
     HackatimeCallbackView,
+    LoginView,
     LogoutView,
 )
-from django.urls import path
-from .views import client
-from .views import admin
 from .views.image_upload import upload_file
-from .views.ari import AriView
 
 urlpatterns = [
     path("", view=client.HomepageView.as_view(), name="homepage"),

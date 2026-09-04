@@ -1,11 +1,13 @@
-from markdown_it.rules_inline import image
-from django.http import JsonResponse
-from django.views import View
-from django.shortcuts import render, redirect
-from ...models import Profile, Project, Journal
-from ... import hackatime
-import re
 import math
+import re
+
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.views import View
+from markdown_it.rules_inline import image
+
+from ... import hackatime
+from ...models import Journal, Profile, Project
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"

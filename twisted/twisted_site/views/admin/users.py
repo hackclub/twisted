@@ -1,12 +1,14 @@
-from django.contrib.sessions.models import Session
-from django.template.response import TemplateResponse
-from django.http import HttpResponse
-from .admin import AdminView
-from django.shortcuts import render, redirect
-from ...models import User, Profile
-from django.db.models import Q
-import os
 import json
+import os
+
+from django.contrib.sessions.models import Session
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
+
+from ...models import Profile, User
+from .admin import AdminView
 
 
 # Create your views here.

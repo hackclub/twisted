@@ -1,10 +1,12 @@
-from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
-from django.views import View
-from django.shortcuts import render, redirect
-from ...models import Profile
 import random
 import string
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.views import View
+
+from ...models import Profile
 
 
 # Create your views here.

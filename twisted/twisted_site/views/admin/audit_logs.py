@@ -1,9 +1,10 @@
-from django.db.models.query_utils import Q
-from django.template.response import TemplateResponse
-from .admin import AdminView
-from django.shortcuts import render, redirect
-from ...models import AuditLog
 from django.core.paginator import Paginator
+from django.db.models.query_utils import Q
+from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
+
+from ...models import AuditLog
+from .admin import AdminView
 
 
 # Create your views here.
