@@ -93,7 +93,7 @@ def file_uploader(request, image):
     except (ClientError, BotoCoreError) as e:
         return {"status": "error", "error": str(e)}
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - deliberate catch-all so uploads return JSON errors instead of 500s
         return {
             "status": "error",
             "error": f"Unknown Error Occurred: {e!s}",

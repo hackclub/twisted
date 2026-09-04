@@ -15,7 +15,7 @@ class TimezoneMiddleware:
                 timezone.activate(zoneinfo.ZoneInfo(tzname))
             else:
                 timezone.deactivate()
-        except Exception:
+        except Exception:  # noqa: BLE001 - malformed cookie must never break the request; just deactivate
             timezone.deactivate()
 
         return self.get_response(request)

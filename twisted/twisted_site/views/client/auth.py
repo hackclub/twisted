@@ -82,7 +82,7 @@ class AuthCallbackView(View):
                 )
                 avatar_url = slack_profile.get("image_512")
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 - any Slack failure should fall back to the default name/pfp
                 print("Slack profile fetch failed", e)
 
         profile, created = Profile.objects.get_or_create(user=user)  # ty:ignore[unresolved-attribute]
