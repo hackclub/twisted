@@ -68,6 +68,9 @@ class AuthCallbackView(View):
             },
         )
 
+        display_name = name
+        avatar_url = os.environ.get("DEFAULT_PFP", "")
+
         if slack_id:
             try:
                 slack_user = slack_bot.users_info(user=slack_id)["user"]
@@ -80,8 +83,6 @@ class AuthCallbackView(View):
 
             except Exception as e:
                 print("Slack profile fetch failed", e)
-                display_name = name
-                avatar_url = os.environ["DEFAULT_PFP"]
 
         profile, created = Profile.objects.get_or_create(user=user)  # ty:ignore[unresolved-attribute]
         profile.verification_status = verification_status
