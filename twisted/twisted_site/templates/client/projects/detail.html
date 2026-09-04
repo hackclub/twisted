@@ -47,22 +47,47 @@
                 </a>
                 {% endif %}
                 {% endif %}
-                <div class="group relative">
+                <div class="group relative pb-1">
                     <button
-                        class="border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
+                        class="inline-flex items-center justify-center border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
                         data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
-                        onclick="navigator.clipboard.writeText(this.dataset.url).catch(() => alert('Failed to copy link'))"
+                        onclick="copyShareLink(this, true)"
                     >
                         Copy share link
                     </button>
                     <div
-                        class="absolute right-0 top-full z-10 mt-1 hidden max-w-xs cursor-pointer break-all border border-border bg-card px-2 py-1 text-xs text-muted-foreground group-hover:block"
+                        class="absolute right-0 top-full z-10 hidden w-max max-w-sm cursor-pointer break-all border border-border bg-card px-2 py-1 text-xs text-muted-foreground group-hover:block"
                         data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
-                        onclick="navigator.clipboard.writeText(this.dataset.url).catch(() => alert('Failed to copy link'))"
+                        onclick="copyShareLink(this)"
                     >
                         {{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}
                     </div>
                 </div>
+                <script>
+                    function copyShareLink(el, styled) {
+                        if (el.dataset.originalText === undefined) {
+                            el.dataset.originalText = el.textContent
+                        }
+                        if (styled && !el.style.width) {
+                            el.style.width = el.offsetWidth + "px"
+                        }
+                        navigator.clipboard.writeText(el.dataset.url).then(() => {
+                            clearTimeout(el._copyRevertTimeout)
+                            el.textContent = "Copied!"
+                            if (styled) {
+                                el.classList.remove("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
+                                el.classList.add("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
+                            }
+                            el._copyRevertTimeout = setTimeout(() => {
+                                el.textContent = el.dataset.originalText
+                                if (styled) {
+                                    el.classList.remove("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
+                                    el.classList.add("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
+                                }
+                            }, 1500)
+                        }).catch(() => alert("Failed to copy link"))
+                    }
+                </script>
 
             </div>
         </div>
