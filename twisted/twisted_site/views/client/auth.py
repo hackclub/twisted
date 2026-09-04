@@ -74,7 +74,8 @@ class AuthCallbackView(View):
 
         if slack_id:
             try:
-                slack_user = slack_bot.users_info(user=slack_id)["user"]
+                slack_response = slack_bot.users_info(user=slack_id) or {}
+                slack_user = slack_response["user"] or {}
                 slack_profile = slack_user["profile"]
 
                 display_name = slack_profile.get("display_name") or slack_profile.get(

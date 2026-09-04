@@ -103,7 +103,8 @@ class SlackBot:
     def get_user_profile(self, user: str) -> dict[str, Any]:
         response = self.client.users_info(user=user)
 
-        user_data = response["user"]
+        user_data = response["user"] or {}
+
         profile = user_data.get("profile", {})
 
         return {
