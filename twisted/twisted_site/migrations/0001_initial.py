@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,14 +14,38 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('verification_status', models.CharField(blank=True, default='', max_length=64)),
-                ('slack_id', models.CharField(blank=True, default='', max_length=64)),
-                ('slack_username', models.CharField(blank=True, default='', max_length=64)),
-                ('slack_pfp_url', models.CharField(blank=True, default='', max_length=200)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='hackclub_profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "verification_status",
+                    models.CharField(blank=True, default="", max_length=64),
+                ),
+                ("slack_id", models.CharField(blank=True, default="", max_length=64)),
+                (
+                    "slack_username",
+                    models.CharField(blank=True, default="", max_length=64),
+                ),
+                (
+                    "slack_pfp_url",
+                    models.CharField(blank=True, default="", max_length=200),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="hackclub_profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

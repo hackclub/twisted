@@ -5,40 +5,41 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from ...models import ProjectShip
 
+
 # Create your views here.
 class ReviewView(AdminView):
     def get(self, request):
         if settings.DEBUG_REVIEW:
             return self.debug_get(request)
-        
-        context = self.get_context_data(page='review')
+
+        context = self.get_context_data(page="review")
         return render(request, "admin/review.html", context=context)
-    
+
     def post(self, request):
         if settings.DEBUG_REVIEW:
             return self.debug_post(request)
-        
-        context = self.get_context_data(page='review')
+
+        context = self.get_context_data(page="review")
         return redirect(self.request.path_info)
-    
+
     def debug_get(self, request):
-        context = self.get_context_data(page='review')
-        context['ships'] = ProjectShip.objects.all().order_by('-created_at')
+        context = self.get_context_data(page="review")
+        context["ships"] = ProjectShip.objects.all().order_by("-created_at")
         return render(request, "admin/debug/review.html", context=context)
-    
+
     def debug_post(self, request):
-        id = request.POST['id']
-        
-        t1_status = request.POST['t1_status']
-        t2_status = request.POST['t2_status']
-        fraud_status = request.POST['fraud_status']
-        final_status = request.POST['final_status']
-        
-        t1_message = request.POST['t1_message']
-        t2_message = request.POST['t2_message']
-        fraud_message = request.POST['fraud_message']
-        final_message = request.POST['final_message']
-        
+        id = request.POST["id"]
+
+        t1_status = request.POST["t1_status"]
+        t2_status = request.POST["t2_status"]
+        fraud_status = request.POST["fraud_status"]
+        final_status = request.POST["final_status"]
+
+        t1_message = request.POST["t1_message"]
+        t2_message = request.POST["t2_message"]
+        fraud_message = request.POST["fraud_message"]
+        final_message = request.POST["final_message"]
+
         ship = ProjectShip.objects.get(id=id)
 
         ship.t1_status = t1_status

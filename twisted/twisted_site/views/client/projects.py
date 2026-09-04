@@ -8,8 +8,8 @@ from ...models import Project, PROJECT_TYPE_CHOICES
 class ListProjects(View):
     def get(self, request):
         if self.request.user.is_anonymous:
-            return redirect('homepage')
-        
+            return redirect("homepage")
+
         profile = request.user.profile
 
         projects = request.user.projects.all()
@@ -24,8 +24,8 @@ class ListProjects(View):
 class CreateProject(View):
     def get(self, request):
         if self.request.user.is_anonymous:
-            return redirect('homepage')
-        
+            return redirect("homepage")
+
         return render(
             request,
             "client/projects/create.html",
@@ -34,8 +34,8 @@ class CreateProject(View):
 
     def post(self, request):
         if self.request.user.is_anonymous:
-            return redirect('homepage')
-        
+            return redirect("homepage")
+
         project_name = request.POST["name"]
         project_description = request.POST["description"]
         project_type = request.POST["type"]
@@ -50,4 +50,4 @@ class CreateProject(View):
             project_type=project_type,
         )
 
-        return redirect('fr.projects')
+        return redirect("fr.projects")

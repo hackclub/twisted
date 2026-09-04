@@ -6,22 +6,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0008_journal_reduced_minutes_alter_journal_content'),
+        ("twisted_site", "0008_journal_reduced_minutes_alter_journal_content"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UploadedImage',
+            name="UploadedImage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('link', models.CharField(max_length=500)),
-                ('cdn_response', models.JSONField()),
-                ('uploaded_thru', models.CharField(max_length=500)),
-                ('filesize', models.IntegerField()),
-                ('uploaded_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("link", models.CharField(max_length=500)),
+                ("cdn_response", models.JSONField()),
+                ("uploaded_thru", models.CharField(max_length=500)),
+                ("filesize", models.IntegerField()),
+                (
+                    "uploaded_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

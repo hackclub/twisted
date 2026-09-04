@@ -10,22 +10,22 @@ class HomepageView(View):
             login_enabled = False
         else:
             login_enabled = True
-        
+
         referral_code = request.GET.get("ref")
-        
+
         response = render(
             request,
             "client/homepage.html",
             {"login_enabled": login_enabled},
         )
-        
+
         if referral_code:
             response.set_cookie(
-                'referral',
+                "referral",
                 referral_code,
-                max_age=60*60, # 1 hour
+                max_age=60 * 60,  # 1 hour
                 httponly=True,
-                samesite='Lax'
+                samesite="Lax",
             )
 
         return response

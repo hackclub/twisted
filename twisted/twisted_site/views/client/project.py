@@ -9,6 +9,7 @@ from ...models import Profile, Project, Journal, ProjectShip
 from ... import hackatime
 from ... import ari
 
+
 # Create your views here.
 class ProjectDetail(View):
     def get(self, request, id):
@@ -124,7 +125,7 @@ class SubmitProject(View):
 
         project = Project.objects.get(id=id)
         if project.user != request.user:
-            return redirect('fr.project.detail', project.id)
+            return redirect("fr.project.detail", project.id)
 
         if project.is_shipped():
             return self.get(
@@ -147,4 +148,4 @@ class SubmitProject(View):
         except Exception as e:
             ship.delete()
             raise e
-        return redirect('fr.projects.detail', project.id)
+        return redirect("fr.projects.detail", project.id)

@@ -5,20 +5,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0020_profile_twists'),
+        ("twisted_site", "0020_profile_twists"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='my_referral_code',
-            field=models.CharField(blank=True, default='', max_length=200),
+            model_name="profile",
+            name="my_referral_code",
+            field=models.CharField(blank=True, default="", max_length=200),
         ),
         migrations.AddField(
-            model_name='profile',
-            name='referred_by',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='twisted_site.profile'),
+            model_name="profile",
+            name="referred_by",
+            field=models.ForeignKey(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="twisted_site.profile",
+            ),
         ),
     ]

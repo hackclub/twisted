@@ -20,6 +20,7 @@ s3 = boto3.client(
     region_name="auto",
 )
 
+
 @login_required
 def upload_file(request):
     if request.method == "POST":
@@ -38,23 +39,25 @@ def upload_file(request):
             # Handle upload errors
             if response_data.get("status") == "error":
                 return JsonResponse(response_data)
-            
+
             url = response_data["link"]
             filename = response_data["name"]
             UploadedFile.objects.create(
                 uploaded_by=request.user,
                 link=url,
                 cdn_response=response_data,
-                uploaded_thru=request.POST.get('ref', 'unknown'),
-                filesize=file.size
+                uploaded_thru=request.POST.get("ref", "unknown"),
+                filesize=file.size,
             )
-            
-            return JsonResponse({
-                "status": "ok",
-                "link": url,
-                "name": filename,
-                "response": response_data,
-            })
+
+            return JsonResponse(
+                {
+                    "status": "ok",
+                    "link": url,
+                    "name": filename,
+                    "response": response_data,
+                }
+            )
         return JsonResponse(
             {"status": "error", "reason": "Invalid request: No file found"}
         )
@@ -69,7 +72,9 @@ def file_uploader(request, image):
     """
     try:
         ext = Path(image.name).suffix.lower()
-        filename = f"{str(uuid4())}-{str(image.size)}/{slugify(Path(image.name).stem)}{ext}"
+        filename = (
+            f"{str(uuid4())}-{str(image.size)}/{slugify(Path(image.name).stem)}{ext}"
+        )
         original_filename = Path(image.name).stem
         s3.upload_fileobj(
             image,
@@ -88,13 +93,10 @@ def file_uploader(request, image):
         }
 
     except (ClientError, BotoCoreError) as e:
-        return {
-                "status": "error", 
-                "error": str(e)
-            }
+        return {"status": "error", "error": str(e)}
 
     except Exception as e:
         return {
-            "status": "error", 
+            "status": "error",
             "error": f"Unknown Error Occurred: {str(e)}",
         }

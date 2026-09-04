@@ -4,16 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0010_rename_uploadedimage_uploadedfile'),
+        ("twisted_site", "0010_rename_uploadedimage_uploadedfile"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='journal',
-            name='type',
-            field=models.CharField(choices=[('hackatime', 'Hackatime'), ('lookout', 'Lookout'), ('untracked', 'Untracked')], default='hackatime', max_length=100),
+            model_name="journal",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("hackatime", "Hackatime"),
+                    ("lookout", "Lookout"),
+                    ("untracked", "Untracked"),
+                ],
+                default="hackatime",
+                max_length=100,
+            ),
             preserve_default=False,
         ),
     ]

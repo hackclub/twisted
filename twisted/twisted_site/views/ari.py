@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class AriView(View):
     def get(self, request):
         return ...

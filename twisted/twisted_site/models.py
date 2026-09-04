@@ -37,13 +37,19 @@ class Profile(models.Model):
     hackatime_state = models.CharField(max_length=100, blank=True, default="")
 
     hca_access_token = models.CharField(max_length=2000, blank=True, default="")
-    
+
     is_staff = models.BooleanField(default=False)
     is_allowed = models.BooleanField(default=False)
-    
+
     twists = models.IntegerField(default=0)
-    
-    referred_by = models.ForeignKey('twisted_site.Profile', on_delete=models.PROTECT, null=True, default=None, related_name="referrals")
+
+    referred_by = models.ForeignKey(
+        "twisted_site.Profile",
+        on_delete=models.PROTECT,
+        null=True,
+        default=None,
+        related_name="referrals",
+    )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
     def shipped_projects(self):
@@ -132,20 +138,20 @@ class Project(models.Model):
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
     def latest_ship(self):
-        ship = self.ships.order_by('-created_at').first()
+        ship = self.ships.order_by("-created_at").first()
         return ship
-    
+
     def is_shipped(self):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.latest_status() != 'requested_changes'
-    
+        return latest_ship.latest_status() != "requested_changes"
+
     def is_approved(self):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.final_status == 'approved'
+        return latest_ship.final_status == "approved"
 
 
 class Journal(models.Model):
@@ -170,7 +176,7 @@ PROJECT_SHIP_STATUSES = {
     "pending": "Awaiting review",
     "requested_changes": "Changes Requested",
     "rejected": "Rejected",
-    "approved": "Approved"
+    "approved": "Approved",
 }
 
 
@@ -179,67 +185,83 @@ class ProjectShip(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
-    t1_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
+
+    t1_status = models.CharField(
+        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
+    )
     t1_updated_at = models.DateTimeField(default=None, null=True)
     t1_message = models.TextField(blank=True, default="")
 
-    t2_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
+    t2_status = models.CharField(
+        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
+    )
     t2_updated_at = models.DateTimeField(default=None, null=True)
     t2_message = models.TextField(blank=True, default="")
 
-    fraud_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
+    fraud_status = models.CharField(
+        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
+    )
     fraud_updated_at = models.DateTimeField(default=None, null=True)
     fraud_message = models.TextField(blank=True, default="")
 
-    final_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
+    final_status = models.CharField(
+        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
+    )
     final_updated_at = models.DateTimeField(default=None, null=True)
     final_message = models.TextField(blank=True, default="")
 
-
     def latest_status(self):
-        if self.final_status != 'pending':
+        if self.final_status != "pending":
             return self.final_status
-        if self.fraud_status != 'pending':
+        if self.fraud_status != "pending":
             return self.fraud_status
-        if self.t2_status != 'pending':
+        if self.t2_status != "pending":
             return self.t2_status
         return self.t1_status
-    
+
     def get_latest_status_display(self):
-        if self.final_status != 'pending':
+        if self.final_status != "pending":
             string = "Final"
-        elif self.fraud_status != 'pending':
+        elif self.fraud_status != "pending":
             string = "Fraud"
-        elif self.t2_status != 'pending':
+        elif self.t2_status != "pending":
             string = "T2"
         else:
             string = "T1"
-        return string +": "+PROJECT_SHIP_STATUSES[self.latest_status()]
-    
-    
+        return string + ": " + PROJECT_SHIP_STATUSES[self.latest_status()]
+
     def save(self, *args, **kwargs):
         if not self.pk:  # Check if object already exists in the database
             return super().save(*args, **kwargs)
-        
+
         original = ProjectShip.objects.get(pk=self.pk)
 
-        if original.t1_status != self.t1_status or original.t1_message != self.t1_message:
+        if (
+            original.t1_status != self.t1_status
+            or original.t1_message != self.t1_message
+        ):
             self.t1_updated_at = timezone.now()
-        
-        if original.t2_status != self.t2_status or original.t2_message != self.t2_message:
+
+        if (
+            original.t2_status != self.t2_status
+            or original.t2_message != self.t2_message
+        ):
             self.t2_updated_at = timezone.now()
-        
-        if original.fraud_status != self.fraud_status or original.fraud_message != self.fraud_message:
+
+        if (
+            original.fraud_status != self.fraud_status
+            or original.fraud_message != self.fraud_message
+        ):
             self.fraud_updated_at = timezone.now()
-        
-        if original.final_status != self.final_status or original.final_message != self.final_message:
+
+        if (
+            original.final_status != self.final_status
+            or original.final_message != self.final_message
+        ):
             self.final_updated_at = timezone.now()
-        
+
         return super().save(*args, **kwargs)
 
-
-    
     def __str__(self):
         return f"Ship created at {self.created_at} ({PROJECT_SHIP_STATUSES.get(str(self.latest_status()), self.latest_status())})"
 
@@ -265,36 +287,40 @@ class Pathway(models.Model):
 
     def status(self):
         if self.ended():
-            return 'ended'
+            return "ended"
         if self.didnt_start():
-            return 'awaiting'
+            return "awaiting"
         if self.in_progress():
-            return 'in progress'
-    
+            return "in progress"
+
     def mins_spent(self, user: User):
-        pathways = Pathway.objects.order_by('start').values('id', 'start', 'end', 'min_mins')
+        pathways = Pathway.objects.order_by("start").values(
+            "id", "start", "end", "min_mins"
+        )
         if not pathways:
             return 0
-        
-        pathway_totals = {p['id']: 0 for p in pathways}
 
-        journals = Journal.objects.filter(
-            project__user=user
-        ).order_by('created_at').values_list('created_at', 'reduced_minutes')
+        pathway_totals = {p["id"]: 0 for p in pathways}
+
+        journals = (
+            Journal.objects.filter(project__user=user)
+            .order_by("created_at")
+            .values_list("created_at", "reduced_minutes")
+        )
 
         for j_created, j_mins in journals:
             mins_remaining = j_mins
             for pathway in pathways:
                 if mins_remaining <= 0:
                     break
-                
+
                 # Check if journal falls within the pathway window
-                if pathway['start'] > j_created or pathway['end'] < j_created:
+                if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
-                
-                p_id = pathway['id']
+
+                p_id = pathway["id"]
                 mins_completed = pathway_totals.get(p_id, 0)
-                mins_required = pathway['min_mins']
+                mins_required = pathway["min_mins"]
 
                 if mins_completed >= mins_required:
                     continue
@@ -306,7 +332,7 @@ class Pathway(models.Model):
                 pathway_totals[p_id] = mins_completed + mins_donated
 
         return pathway_totals[self.id]
-    
+
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
         Calculates the minutes spent on this specific pathway for all participants.
@@ -315,24 +341,28 @@ class Pathway(models.Model):
             dict: {user_id: mins_spent}
         """
         # Fetch all pathways to accurately model the sequential time donation
-        pathways = list(Pathway.objects.order_by('start').values('id', 'start', 'end', 'min_mins'))
+        pathways = list(
+            Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
+        )
         if not pathways:
             return {}
 
         # Fetch journals from all users that fit within this pathway's active time frame
-        journals = Journal.objects.filter(
-            created_at__gte=self.start,
-            created_at__lte=self.end,
-            reduced_minutes__gt=0
-        ).order_by('project__user_id', 'created_at').values_list(
-            'project__user_id', 'created_at', 'reduced_minutes'
+        journals = (
+            Journal.objects.filter(
+                created_at__gte=self.start,
+                created_at__lte=self.end,
+                reduced_minutes__gt=0,
+            )
+            .order_by("project__user_id", "created_at")
+            .values_list("project__user_id", "created_at", "reduced_minutes")
         )
 
         user_pathway_totals = {}
 
         for user_id, j_created, j_mins in journals:
             if user_id not in user_pathway_totals:
-                user_pathway_totals[user_id] = {p['id']: 0 for p in pathways}
+                user_pathway_totals[user_id] = {p["id"]: 0 for p in pathways}
 
             pathway_totals = user_pathway_totals[user_id]
             mins_remaining = j_mins
@@ -341,12 +371,12 @@ class Pathway(models.Model):
                 if mins_remaining <= 0:
                     break
 
-                if pathway['start'] > j_created or pathway['end'] < j_created:
+                if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = pathway['id']
+                p_id = pathway["id"]
                 mins_completed = pathway_totals[p_id]
-                mins_required = pathway['min_mins']
+                mins_required = pathway["min_mins"]
 
                 if mins_completed >= mins_required:
                     continue
@@ -362,7 +392,7 @@ class Pathway(models.Model):
             user_id: totals.get(self.id, 0)
             for user_id, totals in user_pathway_totals.items()
         }
-    
+
     def qualified_participants(self):
         per_part = self.mins_spent_per_participant()
         qualified = []
@@ -370,18 +400,19 @@ class Pathway(models.Model):
             if mins >= self.min_mins:
                 qualified.append(User.objects.get(id=userid))
         return qualified
-    
+
     def __str__(self):
         return self.name
 
+
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='audit_logs')
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="audit_logs")
     path = models.CharField(max_length=400)
     post = models.BooleanField()
     pii = models.BooleanField(default=False)
 
     additional_context = models.JSONField(null=True, default=None)
-    
+
     def __str__(self):
         return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"

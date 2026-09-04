@@ -113,14 +113,8 @@ class SlackBot:
         return {
             "id": user_data["id"],
             "name": user_data.get("name"),
-            "real_name": (
-                user_data.get("real_name")
-                or profile.get("real_name")
-            ),
-            "display_name": (
-                profile.get("display_name")
-                or user_data.get("name")
-            ),
+            "real_name": (user_data.get("real_name") or profile.get("real_name")),
+            "display_name": (profile.get("display_name") or user_data.get("name")),
             "image_24": profile.get("image_24"),
             "image_32": profile.get("image_32"),
             "image_48": profile.get("image_48"),

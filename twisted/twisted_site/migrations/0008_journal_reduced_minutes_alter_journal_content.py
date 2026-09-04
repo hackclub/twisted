@@ -4,21 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0007_project_hackatime_project_name'),
+        ("twisted_site", "0007_project_hackatime_project_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='journal',
-            name='reduced_minutes',
+            model_name="journal",
+            name="reduced_minutes",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='journal',
-            name='content',
+            model_name="journal",
+            name="content",
             field=models.TextField(),
         ),
     ]

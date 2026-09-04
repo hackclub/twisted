@@ -5,6 +5,7 @@ from ...models import Pathway, User
 from django.utils import timezone
 from django.contrib import messages
 
+
 # Create your views here.
 class PathwayListView(AdminView):
     def get(self, request):
@@ -30,7 +31,6 @@ class PathwayListView(AdminView):
         context["past_pathways"] = past_pathways
         context["future_pathways"] = future_pathways
 
-        
         return render(request, "admin/pathways/list.html", context=context)
 
 
@@ -38,10 +38,10 @@ class PathwayCreateView(AdminView):
     def get(self, request, error=None, extracontext={}):
         context = self.get_context_data(page="pathways", subpage="create")
         context.update(extracontext)
-        
+
         if error:
             messages.error(request, error)
-        
+
         return render(request, "admin/pathways/create.html", context=context)
 
     def post(self, request):
@@ -52,75 +52,82 @@ class PathwayCreateView(AdminView):
 
         end_date = request.POST.get("endDate")
         end_time = request.POST.get("endTime")
-        
+
         min_mins = int(request.POST.get("mins", "0"))
 
         errcontext = {
-            'pathway_name': pathway_name,
-            'start_date': start_date,
-            'start_time': start_time,
-            'end_date': end_date,
-            'end_time': end_time,
-            'min_mins': min_mins,
+            "pathway_name": pathway_name,
+            "start_date": start_date,
+            "start_time": start_time,
+            "end_date": end_date,
+            "end_time": end_time,
+            "min_mins": min_mins,
         }
-        
+
         if "form validation":
             if not pathway_name:
                 return self.get(request, "No pathway name typed!", errcontext)
-            
+
             if not start_date:
                 return self.get(request, "No start date selected!", errcontext)
-            
+
             if not start_time:
                 return self.get(request, "No start time selected!", errcontext)
-            
+
             if not end_date:
                 return self.get(request, "No end date selected!", errcontext)
-            
+
             if not end_time:
                 return self.get(request, "No end time selected!", errcontext)
-            
+
             if not min_mins:
-                return self.get(request, "Minimum minutes must be greater than zero!", errcontext)
-        
-        current_tz_offset = timezone.datetime.now(timezone.get_current_timezone()).strftime('%z')
-        
+                return self.get(
+                    request, "Minimum minutes must be greater than zero!", errcontext
+                )
+
+        current_tz_offset = timezone.datetime.now(
+            timezone.get_current_timezone()
+        ).strftime("%z")
+
         start = timezone.datetime.strptime(
             f"{start_date} {start_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
-        
+
         end = timezone.datetime.strptime(
             f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
-        
-        Pathway.objects.create(
-            start=start,
-            end=end,
-            name=pathway_name,
-            min_mins=min_mins
-        )
-        
-        messages.success(request, f"Successfully created Pathway for \"{pathway_name}\"!")
 
-        return redirect('admin.pathways')
+        Pathway.objects.create(
+            start=start, end=end, name=pathway_name, min_mins=min_mins
+        )
+
+        messages.success(request, f'Successfully created Pathway for "{pathway_name}"!')
+
+        return redirect("admin.pathways")
 
 
 class PathwayDetailView(AdminView):
     def get(self, request, id):
         context = self.get_context_data(page="pathways", subpage="detail")
         pathway = Pathway.objects.get(id=id)
-        context['pathway'] = pathway
+        context["pathway"] = pathway
 
-        self.audit_log.additional_context['pathway_name'] = pathway.name
-        
+        self.audit_log.additional_context["pathway_name"] = pathway.name
+
         mins_per_participant = pathway.mins_spent_per_participant()
-        users = User.objects.filter(id__in=mins_per_participant.keys()).select_related("profile")
+        users = User.objects.filter(id__in=mins_per_participant.keys()).select_related(
+            "profile"
+        )
 
         participants = [
             {
                 "user": user,
                 "mins": mins_per_participant[user.id],
-                "percent": min(100, round(mins_per_participant[user.id] / pathway.min_mins * 100)) if pathway.min_mins else 0,
+                "percent": min(
+                    100, round(mins_per_participant[user.id] / pathway.min_mins * 100)
+                )
+                if pathway.min_mins
+                else 0,
                 "qualified": mins_per_participant[user.id] >= pathway.min_mins,
             }
             for user in users

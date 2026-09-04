@@ -20,7 +20,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
     if jsonify or data is None:
         data = json.dumps(data)
 
-    if method == 'POST':
+    if method == "POST":
         key_bytes = ARI_SIGNING_SECRET.encode("utf-8")
         message_bytes = data.encode("utf-8")
 
@@ -32,9 +32,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
         }
     else:
         message_bytes = None
-        headers = {
-            "Authorization": f"Bearer {ARI_SIGNING_SECRET}"
-        }
+        headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
     req = requests.request(
         method,
         ARI_INGEST_ENDPOINT + endpoint,
@@ -42,6 +40,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
         headers=headers,
     )
     return req
+
 
 # external_id = "twisted-{project.id}"
 def send_ship(ship: ProjectShip):
@@ -58,7 +57,7 @@ def send_ship(ship: ProjectShip):
         "email": ship.project.user.email,
         "name": ship.project.user.profile.slack_username,
         "slack_id": ship.project.user.profile.slack_id,
-        "program_hours": untracked_time/60
+        "program_hours": untracked_time / 60,
     }
 
     title = ship.project.project_name
@@ -105,15 +104,16 @@ def send_ship(ship: ProjectShip):
             "shipped_at": shipped_at,
             "thumbnail_url": thumbnail_url,
             "hackatime_projects": hackatime_projects,
-            "evidence": ['commits', 'elapsed', 'devlog'],
-            "meta": meta
+            "evidence": ["commits", "elapsed", "devlog"],
+            "meta": meta,
         },
     )
     resp = r.content
     r.raise_for_status()
 
+
 def get_project_status(project: Project):
-    r = send_request('GET', endpoint=f"/status?external_id=twisted-{project.id}")
+    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")
     _resp = r.content
     r.raise_for_status()
     return r.json()

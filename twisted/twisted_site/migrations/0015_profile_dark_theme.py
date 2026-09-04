@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0014_profile_is_staff'),
+        ("twisted_site", "0014_profile_is_staff"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='dark_theme',
+            model_name="profile",
+            name="dark_theme",
             field=models.BooleanField(default=True),
         ),
     ]

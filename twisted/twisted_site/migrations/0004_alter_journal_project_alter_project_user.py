@@ -6,21 +6,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0003_profile_hackatime_access_token_and_more'),
+        ("twisted_site", "0003_profile_hackatime_access_token_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='journal',
-            name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='journals', to='twisted_site.project'),
+            model_name="journal",
+            name="project",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="journals",
+                to="twisted_site.project",
+            ),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='projects', to=settings.AUTH_USER_MODEL),
+            model_name="project",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="projects",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

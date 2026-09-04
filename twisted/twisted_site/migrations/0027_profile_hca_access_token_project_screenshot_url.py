@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0026_project_playable_url'),
+        ("twisted_site", "0026_project_playable_url"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='hca_access_token',
-            field=models.CharField(blank=True, default='', max_length=2000),
+            model_name="profile",
+            name="hca_access_token",
+            field=models.CharField(blank=True, default="", max_length=2000),
         ),
         migrations.AddField(
-            model_name='project',
-            name='screenshot_url',
-            field=models.CharField(blank=True, default='', max_length=500),
+            model_name="project",
+            name="screenshot_url",
+            field=models.CharField(blank=True, default="", max_length=500),
         ),
     ]

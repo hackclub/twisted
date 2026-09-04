@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0019_remove_projectship_status_projectship_final_message_and_more'),
+        (
+            "twisted_site",
+            "0019_remove_projectship_status_projectship_final_message_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='twists',
+            model_name="profile",
+            name="twists",
             field=models.IntegerField(default=0),
         ),
     ]

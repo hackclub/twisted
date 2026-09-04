@@ -90,15 +90,15 @@ class AuthCallbackView(View):
         profile.slack_username = display_name
         profile.slack_pfp_url = avatar_url
         profile.ysws_eligible = ysws_eligible
-        profile.hca_access_token = token['access_token']
-        
-        referral_code = self.request.COOKIES.get('referral')
+        profile.hca_access_token = token["access_token"]
+
+        referral_code = self.request.COOKIES.get("referral")
         if created and referral_code:
             referral_profiles = Profile.objects.filter(my_referral_code=referral_code)
             if referral_profiles:
                 referral_profile = referral_profiles.get()
                 profile.referred_by = referral_profile
-        
+
         profile.save()
 
         if os.environ.get("LOGIN_ENABLED") == "maybe":

@@ -4,54 +4,89 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0018_pathway'),
+        ("twisted_site", "0018_pathway"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='projectship',
-            name='status',
+            model_name="projectship",
+            name="status",
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='final_message',
-            field=models.TextField(blank=True, default=''),
+            model_name="projectship",
+            name="final_message",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='final_status',
-            field=models.CharField(choices=[('pending', 'Awaiting review'), ('requested_changes', 'Changes Requested'), ('rejected', 'Rejected'), ('approved', 'Approved')], default='pending', max_length=200),
+            model_name="projectship",
+            name="final_status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Awaiting review"),
+                    ("requested_changes", "Changes Requested"),
+                    ("rejected", "Rejected"),
+                    ("approved", "Approved"),
+                ],
+                default="pending",
+                max_length=200,
+            ),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='final_updated_at',
+            model_name="projectship",
+            name="final_updated_at",
             field=models.DateTimeField(default=None, null=True),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='fraud_message',
-            field=models.TextField(blank=True, default=''),
+            model_name="projectship",
+            name="fraud_message",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='fraud_status',
-            field=models.CharField(choices=[('pending', 'Awaiting review'), ('requested_changes', 'Changes Requested'), ('rejected', 'Rejected'), ('approved', 'Approved')], default='pending', max_length=200),
+            model_name="projectship",
+            name="fraud_status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Awaiting review"),
+                    ("requested_changes", "Changes Requested"),
+                    ("rejected", "Rejected"),
+                    ("approved", "Approved"),
+                ],
+                default="pending",
+                max_length=200,
+            ),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='fraud_updated_at',
+            model_name="projectship",
+            name="fraud_updated_at",
             field=models.DateTimeField(default=None, null=True),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='t1_status',
-            field=models.CharField(choices=[('pending', 'Awaiting review'), ('requested_changes', 'Changes Requested'), ('rejected', 'Rejected'), ('approved', 'Approved')], default='pending', max_length=200),
+            model_name="projectship",
+            name="t1_status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Awaiting review"),
+                    ("requested_changes", "Changes Requested"),
+                    ("rejected", "Rejected"),
+                    ("approved", "Approved"),
+                ],
+                default="pending",
+                max_length=200,
+            ),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='t2_status',
-            field=models.CharField(choices=[('pending', 'Awaiting review'), ('requested_changes', 'Changes Requested'), ('rejected', 'Rejected'), ('approved', 'Approved')], default='pending', max_length=200),
+            model_name="projectship",
+            name="t2_status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Awaiting review"),
+                    ("requested_changes", "Changes Requested"),
+                    ("rejected", "Rejected"),
+                    ("approved", "Approved"),
+                ],
+                default="pending",
+                max_length=200,
+            ),
         ),
     ]
