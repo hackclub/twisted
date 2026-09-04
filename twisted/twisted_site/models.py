@@ -294,7 +294,7 @@ class Pathway(models.Model):
         if self.in_progress():
             return "in progress"
 
-    def mins_spent(self, user: User):
+    def mins_spent(self, user: AbstractBaseUser):
         pathways = Pathway.objects.order_by("start").values(
             "id", "start", "end", "min_mins"
         )

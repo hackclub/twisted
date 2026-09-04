@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -122,7 +124,7 @@ class PathwayDetailView(AdminView):
             "profile"
         )
 
-        participants = [
+        participants: list[dict[str, Any]] = [
             {
                 "user": user,
                 "mins": mins_per_participant[user.id],
