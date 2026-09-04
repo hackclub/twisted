@@ -2,9 +2,7 @@ import hashlib
 import hmac
 import json
 from collections.abc import Iterable
-from io import StringIO
 from typing import Literal
-from urllib.error import HTTPError
 
 import requests
 from django.conf import settings

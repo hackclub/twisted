@@ -3,11 +3,10 @@ import os
 
 from django.contrib.sessions.models import Session
 from django.db.models import Q
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ...models import Profile, User
+from ...models import User
 from .admin import AdminView
 
 

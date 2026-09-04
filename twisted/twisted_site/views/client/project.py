@@ -1,13 +1,11 @@
 from itertools import chain
 
-from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
-from markdown_it.rules_inline import image
 from requests import HTTPError
 
 from ... import ari, hackatime
-from ...models import Journal, Profile, Project, ProjectShip
+from ...models import Profile, Project, ProjectShip
 
 
 # Create your views here.

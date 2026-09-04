@@ -1,10 +1,7 @@
-import json
 from dataclasses import dataclass
-from typing import Literal
 
-from django.shortcuts import redirect, render, resolve_url
+from django.shortcuts import redirect, resolve_url
 from django.views import View
-from django_htmx.http import trigger_client_event
 
 from ...models import AuditLog
 

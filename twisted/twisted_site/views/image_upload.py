@@ -1,18 +1,14 @@
-import json
 import os
 from pathlib import Path
 from uuid import uuid4
 
 import boto3
-import requests
 from botocore.exceptions import BotoCoreError, ClientError
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.http import JsonResponse
 from django.utils.text import slugify
-from django.views import View
 
-from ..models import Project, UploadedFile
+from ..models import UploadedFile
 
 s3 = boto3.client(
     "s3",
