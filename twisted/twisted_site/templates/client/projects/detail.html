@@ -47,13 +47,22 @@
                 </a>
                 {% endif %}
                 {% endif %}
-                <button
-                    class="border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
-                    data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
-                    onclick="setTimeout(() => {alert(`copying ${this.dataset.url}`)}); navigator.clipboard.writeText(this.dataset.url)"
-                >
-                    Copy share link
-                </button>
+                <div class="group relative">
+                    <button
+                        class="border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
+                        data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
+                        onclick="navigator.clipboard.writeText(this.dataset.url).catch(() => alert('Failed to copy link'))"
+                    >
+                        Copy share link
+                    </button>
+                    <div
+                        class="absolute right-0 top-full z-10 mt-1 hidden max-w-xs cursor-pointer break-all border border-border bg-card px-2 py-1 text-xs text-muted-foreground group-hover:block"
+                        data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
+                        onclick="navigator.clipboard.writeText(this.dataset.url).catch(() => alert('Failed to copy link'))"
+                    >
+                        {{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}
+                    </div>
+                </div>
 
             </div>
         </div>

@@ -4,9 +4,10 @@ from markdown_it.rules_inline import image
 from django.http import JsonResponse
 from django.views import View
 from django.shortcuts import render, redirect
+
 from ...models import Profile, Project, Journal, ProjectShip
 from ... import hackatime
-
+from ... import ari
 
 # Create your views here.
 class ProjectDetail(View):
@@ -141,4 +142,9 @@ class SubmitProject(View):
 
         ship = ProjectShip(project=project)
         ship.save()
-        return redirect('fr.project.detail', project.id)
+        try:
+            ari.send_ship(ship)
+        except Exception as e:
+            ship.delete()
+            raise e
+        return redirect('fr.projects.detail', project.id)
