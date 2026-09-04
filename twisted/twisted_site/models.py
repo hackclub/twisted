@@ -73,7 +73,7 @@ class Profile(models.Model):
         return time_shipped
 
     def __str__(self):
-        return self.user.username  # ty:ignore[unresolved-attribute]
+        return self.user.username
 
 
 PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}

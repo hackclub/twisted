@@ -85,7 +85,7 @@ class AuthCallbackView(View):
             except Exception as e:  # noqa: BLE001 - any Slack failure should fall back to the default name/pfp
                 print("Slack profile fetch failed", e)
 
-        profile, created = Profile.objects.get_or_create(user=user)  # ty:ignore[unresolved-attribute]
+        profile, created = Profile.objects.get_or_create(user=user)
         profile.verification_status = verification_status
         profile.slack_id = slack_id
         profile.slack_username = display_name
