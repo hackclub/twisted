@@ -11,7 +11,10 @@ IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
 
 
 class NewProjectHackatimeJournal(View):
-    def get(self, request, id, info=None, context={}):
+    def get(self, request, id, info=None, context=None):
+        if context is None:
+            context = {}
+
         context["info"] = info
         if self.request.user.is_anonymous:
             return redirect("homepage")
@@ -87,7 +90,10 @@ UNTRACKED_MAX_LOGGABLE_MINUTES = 60
 
 
 class NewProjectUntrackedJournal(View):
-    def get(self, request, id, info=None, context={}):
+    def get(self, request, id, info=None, context=None):
+        if context is None:
+            context = {}
+
         context["info"] = info
         if self.request.user.is_anonymous:
             return redirect("homepage")
@@ -169,7 +175,10 @@ class NewProjectUntrackedJournal(View):
 
 
 class DeleteJournal(View):
-    def get(self, request, id, context={"success": False}):
+    def get(self, request, id, context=None):
+        if context is None:
+            context = {"success": False}
+
         if request.user.is_anonymous:
             return redirect("homepage")
 

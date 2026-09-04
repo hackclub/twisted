@@ -35,7 +35,10 @@ class PathwayListView(AdminView):
 
 
 class PathwayCreateView(AdminView):
-    def get(self, request, error=None, extracontext={}):
+    def get(self, request, error=None, extracontext=None):
+        if extracontext is None:
+            extracontext = {}
+
         context = self.get_context_data(page="pathways", subpage="create")
         context.update(extracontext)
 

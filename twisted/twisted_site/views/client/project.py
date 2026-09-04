@@ -95,7 +95,10 @@ class ProjectSettings(View):
 
 
 class SubmitProject(View):
-    def get(self, request, id, context={}):
+    def get(self, request, id, context=None):
+        if context is None:
+            context = {}
+
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -117,7 +120,10 @@ class SubmitProject(View):
         context["project"] = project
         return render(request, "client/projects/ship.html", context)
 
-    def post(self, request, id, context={}):
+    def post(self, request, id, context=None):
+        if context is None:
+            context = {}
+
         if self.request.user.is_anonymous:
             return redirect("homepage")
 

@@ -24,7 +24,10 @@ class HackatimeProject:
     languages: list[str]
 
 
-def authhelper(access_token, headers={}):
+def authhelper(access_token, headers=None):
+    if headers is None:
+        headers = {}
+
     return {"Authorization": f"Bearer {access_token}", **headers}
 
 
