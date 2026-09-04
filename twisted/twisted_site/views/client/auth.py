@@ -49,7 +49,7 @@ class AuthCallbackView(View):
 
         userinfo = token.get("userinfo")
         if not userinfo:
-            userinfo = oauth.hackclub.userinfo(token=token)
+            userinfo = oauth.hca.userinfo(token=token)
 
         email = userinfo.get("email", "hackclubber@example.com")
         name = userinfo.get("name", "")
