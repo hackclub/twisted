@@ -32,3 +32,8 @@ dependencies = [
 [tool.ruff]
 # Django migrations use the standard `dependencies`/`operations` list-class-attrs pattern, which trips RUF012 (mutable class default). Don't lint generated migration files.
 extend-exclude = ["twisted/twisted_site/migrations"]
+
+[dependency-groups]
+dev = [
+    "django-stubs>=6.1.0",
+]
