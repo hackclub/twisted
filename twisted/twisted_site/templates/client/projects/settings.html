@@ -117,6 +117,28 @@
                 class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" />
         </div>
 
+        <div class="flex flex-col gap-1">
+            <label for="screenshot" class="font-bold">
+                Screenshot
+            </label>
+
+            {% if project.screenshot_url %}
+            <img id="screenshot_preview" src="{{ project.screenshot_url }}" alt="Project screenshot"
+                class="max-h-48 w-auto border border-border object-contain bg-card" />
+            {% else %}
+            <img id="screenshot_preview" src="" alt="" class="hidden max-h-48 w-auto border border-border object-contain bg-card" />
+            {% endif %}
+
+            <input id="screenshot" type="file" accept="image/*"
+                class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" />
+
+            <span class="text-xs text-muted-foreground">or paste an image anywhere on this page</span>
+
+            <span id="screenshot_status" class="text-xs text-muted-foreground"></span>
+
+            <input id="screenshot_url" name="screenshot_url" type="hidden" value="{{ project.screenshot_url }}" />
+        </div>
+
         <div class="pt-2">
             <button type="submit"
                 class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">
@@ -126,4 +148,65 @@
 
     </form>
 </div>
+
+<script>
+    const screenshotInput = document.getElementById("screenshot");
+    const screenshotUrlField = document.getElementById("screenshot_url");
+    const screenshotPreview = document.getElementById("screenshot_preview");
+    const screenshotStatus = document.getElementById("screenshot_status");
+
+    function uploadScreenshot(file) {
+        screenshotStatus.textContent = "Uploading...";
+
+        const formData = new FormData();
+        formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+        formData.append("file", file);
+        formData.append("ref", "project_screenshot");
+
+        fetch("{% url 'misc.upload_file' %}", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === "ok") {
+                    screenshotUrlField.value = result.link;
+                    screenshotPreview.src = result.link;
+                    screenshotPreview.classList.remove("hidden");
+                    screenshotStatus.textContent = "";
+                } else {
+                    screenshotStatus.textContent = `Error: ${result.reason || result.error}`;
+                }
+            })
+            .catch(() => {
+                screenshotStatus.textContent = "Error: upload failed";
+            });
+    }
+
+    screenshotInput.addEventListener("change", () => {
+        const file = screenshotInput.files[0];
+        if (!file) {
+            return;
+        }
+
+        uploadScreenshot(file);
+    });
+
+    document.addEventListener("paste", (event) => {
+        const items = (event.clipboardData || window.clipboardData).items;
+
+        for (let i = 0; i < items.length; i++) {
+            if (!items[i].type.startsWith("image/")) {
+                continue;
+            }
+
+            const blob = items[i].getAsFile();
+            if (blob) {
+                uploadScreenshot(blob);
+            }
+
+            break;
+        }
+    });
+</script>
 {% endblock body %}

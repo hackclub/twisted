@@ -25,7 +25,11 @@
                 data-project-id="{{ project.id }}" data-project-url="{% url 'fr.projects.detail' project.id %}">
                 <div
                     class="flex h-16 w-16 items-center justify-center border border-transparent p-1">
+                    {% if project.screenshot_url %}
+                    <img src="{{ project.screenshot_url }}" alt="" class="h-full w-full object-cover">
+                    {% else %}
                     <img src="{% static 'images/directory.png' %}" alt="" class="h-full w-full object-contain">
+                    {% endif %}
                 </div>
 
                 <div

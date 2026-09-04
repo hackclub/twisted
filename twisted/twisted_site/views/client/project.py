@@ -89,6 +89,7 @@ class ProjectSettings(View):
         project.hackatime_project_name = request.POST.get("hackatime", "")
         project.repo_url = request.POST["repo"]
         project.playable_url = request.POST.get("playable_url", "")
+        project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
         return redirect("fr.projects.detail", project.id)
 
@@ -103,6 +104,9 @@ class SubmitProject(View):
             return redirect("dashboard")
 
         if not project.playable_url:
+            return redirect("fr.projects.detail", id)
+
+        if not project.screenshot_url:
             return redirect("fr.projects.detail", id)
 
         if not project.user.profile.ysws_eligible:
@@ -127,6 +131,9 @@ class SubmitProject(View):
             )
 
         if not project.playable_url:
+            return redirect("fr.projects.detail", id)
+
+        if not project.screenshot_url:
             return redirect("fr.projects.detail", id)
 
         if not project.user.profile.ysws_eligible:

@@ -36,6 +36,8 @@ class Profile(models.Model):
     hackatime_access_token = models.CharField(max_length=2000, blank=True, default="")
     hackatime_state = models.CharField(max_length=100, blank=True, default="")
 
+    hca_access_token = models.CharField(max_length=2000, blank=True, default="")
+    
     is_staff = models.BooleanField(default=False)
     is_allowed = models.BooleanField(default=False)
     
@@ -84,6 +86,7 @@ class Project(models.Model):
     hackatime_project_name = models.CharField(max_length=200, blank=True, default="")
     repo_url = models.CharField(max_length=200, blank=True, default="")
     playable_url = models.CharField(max_length=200, blank=True, default="")
+    screenshot_url = models.CharField(max_length=500, blank=True, default="")
 
     def __str__(self):
         return self.project_name

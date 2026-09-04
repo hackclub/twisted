@@ -2,13 +2,15 @@ from .views.client.auth import LoginView, AuthCallbackView, HackatimeCallbackVie
 from django.urls import path
 from .views import client
 from .views import admin
-from .views.misc import upload_file
+from .views.image_upload import upload_file
+from .views.ari import AriView
 
 urlpatterns = [
     path('', view=client.HomepageView.as_view(), name="homepage"),
     path('faqs/', view=client.FaqsView.as_view(), name="faqs"),
 
     path("api/upload_image/", upload_file, name="misc.upload_file"),
+    path("api/ari/", AriView.as_view(), name="ari"),
     
     path("auth/login/", LoginView.as_view(), name="login"),
     path("oauth/callback/", AuthCallbackView.as_view(), name="auth_callback"),

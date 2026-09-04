@@ -69,7 +69,7 @@ def file_uploader(request, image):
     """
     try:
         ext = Path(image.name).suffix.lower()
-        filename = f"{str(uuid4())}-{str(image.size)}-{slugify(Path(image.name).stem)}{ext}"
+        filename = f"{str(uuid4())}-{str(image.size)}/{slugify(Path(image.name).stem)}{ext}"
         original_filename = Path(image.name).stem
         s3.upload_fileobj(
             image,
@@ -82,7 +82,7 @@ def file_uploader(request, image):
 
         return {
             "status": "ok",
-            "link": f"{os.environ['R2_PUBLIC_URL']}/{filename}",
+            "link": f"{os.environ['R2_PUBLIC_URL']}{filename}",
             "name": original_filename,
             "size": image.size,
         }
