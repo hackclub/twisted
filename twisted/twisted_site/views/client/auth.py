@@ -102,11 +102,10 @@ class AuthCallbackView(View):
 
         profile.save()
 
-        if os.environ.get("LOGIN_ENABLED") == "maybe":
-            if not profile.is_allowed:
-                return JsonResponse(
-                    {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
-                )
+        if os.environ.get("LOGIN_ENABLED") == "maybe" and not profile.is_allowed:
+            return JsonResponse(
+                {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
+            )
 
         login(request, user)
 
