@@ -26,16 +26,12 @@ class SlackBot:
         blocks: list[dict[str, Any]] | None = None,
         **kwargs: Any,
     ):
-        payload = {
-            "channel": channel,
-            "text": text,
+        return self.client.chat_postMessage(
+            channel=channel,
+            text=text,
+            blocks=blocks,
             **kwargs,
-        }
-
-        if blocks is not None:
-            payload["blocks"] = blocks
-
-        return self.client.chat_postMessage(**payload)
+        )
 
     def send_message(
         self,
