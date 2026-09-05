@@ -26,11 +26,7 @@ class CreateProject(View):
         if self.request.user.is_anonymous:
             return redirect('homepage')
         
-        return render(
-            request,
-            "client/projects/create.html",
-            {"complete": False},
-        )
+        return render(request, "client/projects/create.html")
 
     def post(self, request):
         if self.request.user.is_anonymous:

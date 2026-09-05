@@ -2,7 +2,7 @@ from django.contrib.sessions.models import Session
 from django.template.response import TemplateResponse
 from django.http import HttpResponse
 from .admin import AdminView
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from ...models import User, Profile
 from django.db.models import Q
 import os
@@ -28,14 +28,17 @@ class UsersView(AdminView):
 
     def post(self, request):
         if request.POST.get('action') == 'logoutall':
+            session_count = Session.objects.count()
             Session.objects.all().delete()
-        
+            self.audit_log.additional_context['action'] = 'logoutall'
+            self.audit_log.additional_context['sessions_deleted'] = session_count
+
         return redirect(self.request.path)
     
 class UserDetailView(AdminView):
     def get(self, request, id):
         context = self.get_context_data(page='users', subpage='detail')
-        user = User.objects.get(id=id)
+        user = get_object_or_404(User, id=id)
 
         self.audit_log.additional_context['user_pfp__img'] = user.profile.slack_pfp_url
         self.audit_log.additional_context['user'] = user.profile.slack_username
@@ -45,7 +48,7 @@ class UserDetailView(AdminView):
         return TemplateResponse(request, "admin/user.html", context)
     
     def post(self, request, id):
-        user = User.objects.get(id=id)
+        user = get_object_or_404(User, id=id)
 
         self.audit_log.additional_context['user_pfp__img'] = user.profile.slack_pfp_url
         self.audit_log.additional_context['user'] = user.profile.slack_username

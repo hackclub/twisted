@@ -1,5 +1,5 @@
 import json
-from django.http import HttpResponseNotAllowed, HttpResponse
+from django.http import HttpResponseNotAllowed, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -166,9 +166,19 @@ class AriView(View):
 
         data = json.loads(body)
 
-        if data['external_id']:
-            project_id = int(data['external_id'].removeprefix('twisted-'))
+        external_id = data.get('external_id')
+        if not external_id:
+            return HttpResponseBadRequest('Missing external_id')
+
+        try:
+            project_id = int(external_id.removeprefix('twisted-'))
             project = Project.objects.get(id=project_id)
+        except (ValueError, Project.DoesNotExist):  # ty:ignore[unresolved-attribute]
+            return HttpResponseBadRequest('Invalid external_id')
+
+        event = data.get('event')
+        if not event:
+            return HttpResponseBadRequest('Missing event')
 
         if data['event'] == 'ship.updated':
             project.project_name = data['ship']['title']
@@ -189,7 +199,7 @@ class AriView(View):
     
         if data['event'] == 'review.changes':
             if data['decision'] != 'changes':
-                return
+                return HttpResponse('Event ignored')
             note_to_maker = data['review']['note_to_maker']
 
             ship:ProjectShip = project.latest_ship()

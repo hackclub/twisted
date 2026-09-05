@@ -155,7 +155,10 @@ class SlackBot:
             **kwargs,
         )
 
-        thread_text = f"```{error}```"
+        # Break up any backticks in the error text so it can't close the code
+        # fence early and have the remainder render as live Slack mrkdwn.
+        safe_error = error.replace("`", "`​")
+        thread_text = f"```{safe_error}```"
 
         if mention:
             thread_text += f"\n\nCC: {mention}"

@@ -13,6 +13,7 @@
                 placeholder="Search Users..."
                 autocomplete="off"
                 value="{{ request.GET.search }}"
+                autofocus
             >
                 <c-slot name="left_addon">
                     <svg
@@ -81,7 +82,7 @@
         </div>
     </div>
     <div class="mt-100">
-        <form method="post">
+        <form method="post" onsubmit="return confirm('This will immediately log out every user on the site. Are you sure?');">
             {% csrf_token %}
             <input type="hidden" name="action" value="logoutall">
             hehe click this funny button to log everyone out:

@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.http import HttpResponse
 from .admin import AdminView
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from ...models import ProjectShip
 
@@ -39,7 +39,7 @@ class ReviewView(AdminView):
         final_note_to_maker = request.POST['final_note_to_maker']
         final_audit_note = request.POST['final_audit_note']
 
-        ship = ProjectShip.objects.get(id=id)
+        ship = get_object_or_404(ProjectShip, id=id)
 
         ship.status = status
         ship.note_to_maker = note_to_maker

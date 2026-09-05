@@ -1,11 +1,10 @@
 from requests import HTTPError, RequestException
 from itertools import chain
 from markdown_it.rules_inline import image
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views import View
-from django.shortcuts import render, redirect
-
-from ...models import Profile, Project, Journal, ProjectShip
+from django.shortcuts import render, redirect, get_object_or_404
+from ...models import Profile, Project, Journal, ProjectShip, PROJECT_TYPE_CHOICES
 from ... import hackatime
 from ... import ari
 
@@ -20,7 +19,7 @@ class ProjectDetail(View):
         profile: Profile = request.user.profile
         context["profile"] = profile
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         context["project"] = project
 
         journals = project.journals.all()
@@ -38,7 +37,8 @@ class ProjectDetail(View):
                     ari.ship_passes_from_status(status)
                 )
             except RequestException:
-                pass
+                context["first_pass_status"] = "unavailable"
+                context["second_pass_status"] = "unavailable"
 
         if project.user == request.user:
             context["owner"] = True
@@ -59,7 +59,7 @@ class ProjectSettings(View):
 
         context = {}
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         context["project"] = project
 
         if project.is_shipped():
@@ -88,16 +88,20 @@ class ProjectSettings(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
 
         if project.is_shipped():
             return redirect("fr.projects.detail", id)
 
+        project_type = request.POST["type"]
+        if project_type not in PROJECT_TYPE_CHOICES:
+            return HttpResponse("naughty! you arent supposed to do this!")
+
         project.project_name = request.POST["name"]
         project.project_description = request.POST["description"]
-        project.project_type = request.POST["type"]
+        project.project_type = project_type
         project.hackatime_project_name = request.POST.get("hackatime", "")
         project.repo_url = request.POST["repo"]
         project.playable_url = request.POST.get("playable_url", "")
@@ -111,7 +115,7 @@ class SubmitProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
 
@@ -133,9 +137,9 @@ class SubmitProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
-            return redirect('fr.project.detail', project.id)
+            return redirect('fr.projects.detail', project.id)
 
         if project.is_shipped():
             return self.get(

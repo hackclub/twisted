@@ -5,7 +5,8 @@ from django.shortcuts import redirect
 import os
 from authlib.integrations.django_client import OAuth
 from django.views import View
-import random
+import secrets
+import hmac
 
 from ...models import Profile
 from ... import hackatime
@@ -56,6 +57,14 @@ class AuthCallbackView(View):
         sub = userinfo.get("sub")
         clean_sub = sub.replace("!", "_")
         slack_id = userinfo.get("slack_id", "")
+        if not slack_id:
+            return JsonResponse(
+                {
+                    "error": "Twisted requires a Slack account linked to Hack Club Identity. "
+                    "Please sign up for Slack and link it at https://auth.hackclub.com, then try logging in again."
+                }
+            )
+
         verification_status = userinfo.get("verification_status", "")
         ysws_eligible = userinfo.get("ysws_eligible", False)
         user_model = get_user_model()
@@ -68,20 +77,19 @@ class AuthCallbackView(View):
             },
         )
 
-        if slack_id:
-            try:
-                slack_user = slack_bot.users_info(user=slack_id)["user"]
-                slack_profile = slack_user["profile"]
+        try:
+            slack_user = slack_bot.users_info(user=slack_id)["user"]
+            slack_profile = slack_user["profile"]
 
-                display_name = slack_profile.get("display_name") or slack_profile.get(
-                    "real_name"
-                )
-                avatar_url = slack_profile.get("image_512")
+            display_name = slack_profile.get("display_name") or slack_profile.get(
+                "real_name"
+            )
+            avatar_url = slack_profile.get("image_512")
 
-            except Exception as e:
-                print("Slack profile fetch failed", e)
-                display_name = name
-                avatar_url = os.environ["DEFAULT_PFP"]
+        except Exception as e:
+            print("Slack profile fetch failed", e)
+            display_name = name
+            avatar_url = os.environ["DEFAULT_PFP"]
 
         profile, created = Profile.objects.get_or_create(user=user)  # ty:ignore[unresolved-attribute]
         profile.verification_status = verification_status
@@ -113,7 +121,7 @@ class AuthCallbackView(View):
             HACKATIME_REDIRECT_URI = os.environ["HACKATIME_REDIRECT_URI"]
             scopes = "profile+read"
 
-            profile.hackatime_state = str(random.randint(0, 10**20))
+            profile.hackatime_state = secrets.token_urlsafe(32)
             profile.save()
 
             return redirect(
@@ -131,7 +139,7 @@ class HackatimeCallbackView(View):
         profile = request.user.profile
 
         state = request.GET["state"]
-        if state != profile.hackatime_state:
+        if not hmac.compare_digest(state, profile.hackatime_state):
             profile.hackatime_state = ""
             profile.save()
             return JsonResponse(

@@ -12,6 +12,8 @@ from pathlib import Path
 from uuid import uuid4
 from botocore.exceptions import ClientError, BotoCoreError
 
+ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif"}
+
 s3 = boto3.client(
     "s3",
     endpoint_url=os.environ["R2_ENDPOINT"],
@@ -25,6 +27,12 @@ def upload_file(request):
     if request.method == "POST":
         if "file" in request.FILES:
             file = request.FILES["file"]
+
+            if file.content_type not in ALLOWED_CONTENT_TYPES:
+                return JsonResponse(
+                    {"status": "error", "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!"}
+                )
+
             # The size limit is a server-side policy; never let the client raise it.
             max_file_mb = 10
 

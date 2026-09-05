@@ -63,7 +63,7 @@
     </div>
     {% if login_maybe %}
     <div class="mt-4">
-        <form method="post">
+        <form method="post" onsubmit="return confirm('Toggle this user\'s allowed state?');">
             {% csrf_token %}
             <input type="hidden" name="action" value="toggle_is_allowed">
             <c-ui.button type="submit">Toggle allowed state</c-ui.button>

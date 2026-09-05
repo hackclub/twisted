@@ -1,6 +1,9 @@
 from django.views import View
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
 from ...models import Project
+
+PROJECTS_PER_PAGE = 120
 
 
 class DiscoverView(View):
@@ -12,8 +15,11 @@ class DiscoverView(View):
             "-created_at"
         )
 
+        paginator = Paginator(projects, PROJECTS_PER_PAGE)
+        page_obj = paginator.get_page(request.GET.get("page"))
+
         return render(
             request,
             "client/discover.html",
-            {"projects": projects},
+            {"projects": page_obj, "paginator": paginator},
         )

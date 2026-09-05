@@ -33,6 +33,15 @@ DEBUG_REVIEW = os.environ.get('DEBUG_REVIEW', str(DEBUG)).lower() in ['true', 'o
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Behind the TLS-terminating proxy above, cookies should never travel over plain
+# HTTP once we're not in local dev.
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 0 if DEBUG else 60 * 60 * 24 * 365
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 allowed_hosts_raw = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost")

@@ -1,7 +1,7 @@
 from markdown_it.rules_inline import image
 from django.http import JsonResponse
 from django.views import View
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from ...models import Profile, Project, Journal
 from ... import hackatime
 import re
@@ -17,7 +17,7 @@ class NewProjectHackatimeJournal(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
 
@@ -38,7 +38,7 @@ class NewProjectHackatimeJournal(View):
         )
 
     def post(self, request, id):
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
 
@@ -93,13 +93,13 @@ class NewProjectUntrackedJournal(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
         
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
+
+        if project.user != request.user:
+            return redirect("dashboard")
 
         if project.project_type == 'software':
             return redirect('fr.projects.journals.new.hackatime')
-        
-        if project.user != request.user:
-            return redirect("dashboard")
 
         context["project"] = project
 
@@ -120,7 +120,7 @@ class NewProjectUntrackedJournal(View):
         )
 
     def post(self, request, id):
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
         
@@ -175,7 +175,7 @@ class DeleteJournal(View):
             return redirect('homepage')
         
         if id is not None:
-            journal = Journal.objects.get(id=id)
+            journal = get_object_or_404(Journal, id=id)
             if journal.project.is_shipped():
                 return redirect('fr.projects.detail', journal.project.id)
 
@@ -196,11 +196,9 @@ class DeleteJournal(View):
     def post(self, request, id):
         if request.user.is_anonymous:
             return redirect('homepage')
-        print('hi', flush=True)
-        
-        journal = Journal.objects.get(id=id)
-        print(journal)
-        
+
+        journal = get_object_or_404(Journal, id=id)
+
         if journal.project.is_shipped():
             return redirect('fr.projects.detail', journal.project.id)
 

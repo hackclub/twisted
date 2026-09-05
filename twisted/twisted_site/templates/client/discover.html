@@ -72,8 +72,38 @@
 
     </div>
 
-    <div class="status-field-border p-1 border-t border-border flex shrink-0 items-center bg-card px-1 text-sm">
-        {{ projects|length }} project{{ projects|length|pluralize }}
+    <div class="status-field-border p-1 border-t border-border flex shrink-0 items-center justify-between gap-2 bg-card px-1 text-sm">
+        <span>{{ paginator.count }} project{{ paginator.count|pluralize }}</span>
+
+        {% if paginator.num_pages > 1 %}
+        <div class="flex items-center gap-1">
+            {% if projects.has_previous %}
+            <a href="?page={{ projects.previous_page_number }}"
+                class="border border-border bg-secondary px-2 py-0.5 text-xs text-secondary-foreground hover:bg-muted">
+                &larr; prev
+            </a>
+            {% else %}
+            <span class="border border-border bg-secondary px-2 py-0.5 text-xs text-muted-foreground opacity-50">
+                &larr; prev
+            </span>
+            {% endif %}
+
+            <span class="px-2 text-xs text-muted-foreground">
+                page {{ projects.number }} of {{ paginator.num_pages }}
+            </span>
+
+            {% if projects.has_next %}
+            <a href="?page={{ projects.next_page_number }}"
+                class="border border-border bg-secondary px-2 py-0.5 text-xs text-secondary-foreground hover:bg-muted">
+                next &rarr;
+            </a>
+            {% else %}
+            <span class="border border-border bg-secondary px-2 py-0.5 text-xs text-muted-foreground opacity-50">
+                next &rarr;
+            </span>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
 </div>

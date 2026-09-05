@@ -52,13 +52,15 @@ def projects(
     projects: list[str] | None = None,
 ) -> list[HackatimeProject]:
     """Returns the user's projects with time totals."""
+    params = {"include_archived": "true" if include_archived else "false"}
+    if start is not None:
+        params["start"] = start.isoformat()
+    if projects is not None:
+        params["projects"] = ",".join(projects)
+
     resp = requests.get(
-        (
-            HACKATIME_ROOT_URL + "/api/v1/authenticated/projects"
-            f"?include_archived={'true' if include_archived else 'false'}"
-            f"&start={str(start.isoformat()) if start is not None else ''}"
-            f"&projects={','.join(projects) if projects is not None else ''}"
-        ),
+        HACKATIME_ROOT_URL + "/api/v1/authenticated/projects",
+        params=params,
         headers=authhelper(access_token),
     )
     resp.raise_for_status()

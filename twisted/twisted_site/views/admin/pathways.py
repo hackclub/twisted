@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from .admin import AdminView
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from ...models import Pathway, User
 from django.utils import timezone
 from django.contrib import messages
@@ -80,7 +80,7 @@ class PathwayCreateView(AdminView):
             if not end_time:
                 return self.get(request, "No end time selected!", errcontext)
             
-            if not min_mins:
+            if min_mins <= 0:
                 return self.get(request, "Minimum minutes must be greater than zero!", errcontext)
         
         current_tz_offset = timezone.datetime.now(timezone.get_current_timezone()).strftime('%z')
@@ -108,7 +108,7 @@ class PathwayCreateView(AdminView):
 class PathwayDetailView(AdminView):
     def get(self, request, id):
         context = self.get_context_data(page="pathways", subpage="detail")
-        pathway = Pathway.objects.get(id=id)
+        pathway = get_object_or_404(Pathway, id=id)
         context['pathway'] = pathway
 
         self.audit_log.additional_context['pathway_name'] = pathway.name

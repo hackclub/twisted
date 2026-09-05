@@ -8,6 +8,8 @@
 <div class="mx-auto border flex border-red-400 size-12 mb-2 rounded-full bg-red-700">
     <c-svg.cross class="size-10 mx-auto my-auto text-red-400" />
 </div>
+{% elif status == 'unavailable' %}
+<div class="mx-auto border flex border-yellow-400 size-12 mb-2 rounded-full bg-yellow-700" title="Status check unavailable, try again later">?</div>
 {% else %}
 <div class="mx-auto border flex border-border size-12 mb-2">No status found!</div>
 {% endif %}

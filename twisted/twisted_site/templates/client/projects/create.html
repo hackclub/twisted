@@ -3,31 +3,6 @@
 {% block body %}
 <div class="flex h-full w-full flex-col bg-surface font-vintage text-foreground">
 
-    {% if complete %}
-
-    <div class="flex min-h-0 flex-1 items-center justify-center p-6">
-        <div class="w-full max-w-md border border-border bg-card p-6 text-center">
-            <div
-                class="mx-auto mb-4 flex h-14 w-14 items-center justify-center border border-border bg-secondary text-2xl">
-                ✓
-            </div>
-
-            <div class="text-xl font-bold text-foreground">
-                Project created!
-            </div>
-
-            <div class="mt-2 text-sm text-muted-foreground">
-                Your project has been successfully created.
-            </div>
-
-            <div class="mt-4 border-t border-border pt-3 text-xs text-subtle-foreground">
-                You can now close this window.
-            </div>
-        </div>
-    </div>
-
-    {% else %}
-
     <form method="post" class="flex min-h-0 flex-1 flex-col">
         {% csrf_token %}
 
@@ -96,8 +71,6 @@
         </div>
 
     </form>
-
-    {% endif %}
 
 </div>
 {% endblock body %}
