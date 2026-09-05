@@ -39,7 +39,7 @@
                 <div>
                     <c-ui.badge>{{ project.get_project_type_display }}</c-ui.badge>
                     {% if project.latest_ship %}
-                    <c-ui.badge>{{ project.latest_ship.get_latest_status_display }}</c-ui.badge>
+                    <c-ui.badge>{{ project.latest_ship.get_status_display }}</c-ui.badge>
                     {% endif %}
                 </div>
                 <div>

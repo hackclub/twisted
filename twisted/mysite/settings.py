@@ -190,3 +190,6 @@ LOGGING = {
 # https://ari.hackclub.com/docs/webhooks
 ARI_INGEST_ENDPOINT = os.environ.get('ARI_INGEST_ENDPOINT')
 ARI_SIGNING_SECRET = os.environ.get('ARI_SIGNING_SECRET')
+# Separate from ARI_SIGNING_SECRET: signs deliveries Ari sends to us (Settings -> Webhooks),
+# not requests we send to Ari.
+ARI_WEBHOOK_SECRET = os.environ.get('ARI_WEBHOOK_SECRET')

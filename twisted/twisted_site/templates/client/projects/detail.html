@@ -13,7 +13,7 @@
                     </span>
 
                     {% if project.is_shipped %}
-                    {% if project.latest_ship.latest_status == 'rejected' %}
+                    {% if project.latest_ship.status == 'rejected' %}
                     <span class="border border-red-600 bg-red-600/20 px-2 py-0.5 text-xs text-red-600"> permanently rejected </span>
                     {% else %}
                     <span class="border border-success bg-success/20 px-2 py-0.5 text-xs text-success"> shipped </span>
@@ -263,21 +263,16 @@
                     </div>
                 </article>
                 {% endwith %}
-                {% elif activity_item.t1_status %} {# bad way to check if activity item is a ship #}
+                {% elif activity_item.status %} {# bad way to check if activity item is a ship #}
                 {% with activity_item as ship %}
+                {% if ship.status != 'pending' %}
+                <c-ship-message title="reviewer note" status="{{ ship.get_status_display }}" :time="ship.updated_at">
+                    {{ ship.note_to_maker|default:"no message!"|linebreaksbr }}
+                </c-ship-message>
+                {% endif %}
                 {% if ship.final_status != 'pending' %}
-                <c-ship-message title="final check complete" status="{{ ship.get_final_status_display }}" :time="ship.final_updated_at">
-                    {{ ship.final_message|default:"no message!"|linebreaksbr }}
-                </c-ship-message>
-                {% endif %}
-                {% if ship.t2_status != 'pending' %}
-                <c-ship-message title="second pass complete" status="{{ ship.get_t2_status_display }}" :time="ship.t2_updated_at">
-                    {{ ship.t2_message|default:"no message!"|linebreaksbr }}
-                </c-ship-message>
-                {% endif %}
-                {% if ship.t1_status != 'pending' %}
-                <c-ship-message title="first pass complete" status="{{ ship.get_t1_status_display }}" :time="ship.t1_updated_at">
-                    {{ ship.t1_message|default:"no message!"|linebreaksbr }}
+                <c-ship-message title="final review complete" status="{{ ship.get_final_status_display }}" :time="ship.updated_at">
+                    {{ ship.final_note_to_maker|default:"no message!"|linebreaksbr }}
                 </c-ship-message>
                 {% endif %}
                 <div class="mb-3 border border-success bg-success/10">
@@ -293,11 +288,11 @@
 
                         <div class="mt-2 flex w-full overflow-auto gap-4 items-center justify-center md:justify-start">
                             <div class="w-24 mb-auto">
-                                <c-project-ship-mark status="{{ ship.t1_status }}" />
+                                <c-project-ship-mark status="{{ first_pass_status }}" />
                                 <p class="text-center w-full text-sm">first pass</p>
                             </div>
                             <div class="w-24 mb-auto">
-                                <c-project-ship-mark status="{{ ship.t2_status }}" />
+                                <c-project-ship-mark status="{{ second_pass_status }}" />
                                 <p class="text-center w-full text-sm">second pass</p>
                             </div>
                             <div class="w-24 mb-auto">

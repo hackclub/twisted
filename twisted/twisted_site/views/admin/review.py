@@ -28,28 +28,28 @@ class ReviewView(AdminView):
     
     def debug_post(self, request):
         id = request.POST['id']
-        
-        t1_status = request.POST['t1_status']
-        t2_status = request.POST['t2_status']
-        fraud_status = request.POST['fraud_status']
+
+        status = request.POST['status']
+        note_to_maker = request.POST['note_to_maker']
+        audit_note = request.POST['audit_note']
+        technical_features = request.POST['technical_features']
+        deflation_reason = request.POST['deflation_reason']
+
         final_status = request.POST['final_status']
-        
-        t1_message = request.POST['t1_message']
-        t2_message = request.POST['t2_message']
-        fraud_message = request.POST['fraud_message']
-        final_message = request.POST['final_message']
-        
+        final_note_to_maker = request.POST['final_note_to_maker']
+        final_audit_note = request.POST['final_audit_note']
+
         ship = ProjectShip.objects.get(id=id)
 
-        ship.t1_status = t1_status
-        ship.t2_status = t2_status
-        ship.fraud_status = fraud_status
-        ship.final_status = final_status
+        ship.status = status
+        ship.note_to_maker = note_to_maker
+        ship.audit_note = audit_note
+        ship.technical_features = technical_features
+        ship.deflation_reason = deflation_reason
 
-        ship.t1_message = t1_message
-        ship.t2_message = t2_message
-        ship.fraud_message = fraud_message
-        ship.final_message = final_message
+        ship.final_status = final_status
+        ship.final_note_to_maker = final_note_to_maker
+        ship.final_audit_note = final_audit_note
 
         ship.save()
         messages.info(request, f"Ship with id {id} updated.")

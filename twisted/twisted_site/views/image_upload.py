@@ -63,38 +63,42 @@ def upload_file(request):
     )
 
 
-def file_uploader(request, image):
-    """
-    Basic imgur uploader return as json data.
-    """
+def _upload_fileobj(fileobj, filename, content_type, size):
     try:
-        ext = Path(image.name).suffix.lower()
-        filename = f"{str(uuid4())}-{str(image.size)}/{slugify(Path(image.name).stem)}{ext}"
-        original_filename = Path(image.name).stem
+        ext = Path(filename).suffix.lower()
+        stored_name = f"{str(uuid4())}-{size}/{slugify(Path(filename).stem)}{ext}"
+        original_filename = Path(filename).stem
         s3.upload_fileobj(
-            image,
+            fileobj,
             os.environ["R2_BUCKET"],
-            filename,
+            stored_name,
             ExtraArgs={
-                "ContentType": image.content_type,
+                "ContentType": content_type,
             },
         )
 
         return {
             "status": "ok",
-            "link": f"{os.environ['R2_PUBLIC_URL']}{filename}",
+            "link": f"{os.environ['R2_PUBLIC_URL']}{stored_name}",
             "name": original_filename,
-            "size": image.size,
+            "size": size,
         }
 
     except (ClientError, BotoCoreError) as e:
         return {
-                "status": "error", 
+                "status": "error",
                 "error": str(e)
             }
 
     except Exception as e:
         return {
-            "status": "error", 
+            "status": "error",
             "error": f"Unknown Error Occurred: {str(e)}",
         }
+
+
+def file_uploader(request, image):
+    """
+    Basic imgur uploader return as json data.
+    """
+    return _upload_fileobj(image, image.name, image.content_type, image.size)

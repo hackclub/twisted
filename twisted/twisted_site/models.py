@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 from . import hackatime
+from .slack import slack_bot
 
 User = get_user_model()
 
@@ -139,13 +140,13 @@ class Project(models.Model):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.latest_status() != 'requested_changes'
-    
+        return latest_ship.status != 'requested_changes'
+
     def is_approved(self):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.final_status == 'approved'
+        return latest_ship.status == 'approved'
 
 
 class Journal(models.Model):
@@ -170,7 +171,7 @@ PROJECT_SHIP_STATUSES = {
     "pending": "Awaiting review",
     "requested_changes": "Changes Requested",
     "rejected": "Rejected",
-    "approved": "Approved"
+    "approved": "Approved",
 }
 
 
@@ -179,69 +180,20 @@ class ProjectShip(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
-    t1_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
-    t1_updated_at = models.DateTimeField(default=None, null=True)
-    t1_message = models.TextField(blank=True, default="")
 
-    t2_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
-    t2_updated_at = models.DateTimeField(default=None, null=True)
-    t2_message = models.TextField(blank=True, default="")
+    status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
 
-    fraud_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
-    fraud_updated_at = models.DateTimeField(default=None, null=True)
-    fraud_message = models.TextField(blank=True, default="")
+    note_to_maker = models.TextField(blank=True, default="")
+    audit_note = models.TextField(blank=True, default="")
+    technical_features = models.CharField(blank=True, default="", max_length=255)
+    deflation_reason = models.CharField(blank=True, default="", max_length=255)
 
     final_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
-    final_updated_at = models.DateTimeField(default=None, null=True)
-    final_message = models.TextField(blank=True, default="")
+    final_note_to_maker = models.TextField(blank=True, default="")
+    final_audit_note = models.TextField(blank=True, default="")
 
-
-    def latest_status(self):
-        if self.final_status != 'pending':
-            return self.final_status
-        if self.fraud_status != 'pending':
-            return self.fraud_status
-        if self.t2_status != 'pending':
-            return self.t2_status
-        return self.t1_status
-    
-    def get_latest_status_display(self):
-        if self.final_status != 'pending':
-            string = "Final"
-        elif self.fraud_status != 'pending':
-            string = "Fraud"
-        elif self.t2_status != 'pending':
-            string = "T2"
-        else:
-            string = "T1"
-        return string +": "+PROJECT_SHIP_STATUSES[self.latest_status()]
-    
-    
-    def save(self, *args, **kwargs):
-        if not self.pk:  # Check if object already exists in the database
-            return super().save(*args, **kwargs)
-        
-        original = ProjectShip.objects.get(pk=self.pk)
-
-        if original.t1_status != self.t1_status or original.t1_message != self.t1_message:
-            self.t1_updated_at = timezone.now()
-        
-        if original.t2_status != self.t2_status or original.t2_message != self.t2_message:
-            self.t2_updated_at = timezone.now()
-        
-        if original.fraud_status != self.fraud_status or original.fraud_message != self.fraud_message:
-            self.fraud_updated_at = timezone.now()
-        
-        if original.final_status != self.final_status or original.final_message != self.final_message:
-            self.final_updated_at = timezone.now()
-        
-        return super().save(*args, **kwargs)
-
-
-    
     def __str__(self):
-        return f"Ship created at {self.created_at} ({PROJECT_SHIP_STATUSES.get(str(self.latest_status()), self.latest_status())})"
+        return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute]
 
 
 class Pathway(models.Model):

@@ -1,4 +1,4 @@
-from requests import HTTPError
+from requests import HTTPError, RequestException
 from itertools import chain
 from markdown_it.rules_inline import image
 from django.http import JsonResponse
@@ -28,6 +28,17 @@ class ProjectDetail(View):
 
         context["journals"] = list(chain(journals, ships))
         context["journals"].sort(key=lambda x: x.created_at, reverse=True)
+
+        context["first_pass_status"] = "pending"
+        context["second_pass_status"] = "pending"
+        if project.latest_ship() is not None:
+            try:
+                status = ari.get_project_status(project)
+                context["first_pass_status"], context["second_pass_status"] = (
+                    ari.ship_passes_from_status(status)
+                )
+            except RequestException:
+                pass
 
         if project.user == request.user:
             context["owner"] = True
