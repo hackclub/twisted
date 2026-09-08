@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 import requests
 from dataclasses import dataclass
 
@@ -48,7 +48,7 @@ def me(access_token) -> MeResponse:
 def projects(
     access_token,
     include_archived=False,
-    start: datetime | None = None,
+    start: datetime | None = datetime(2026, 9, 8, tzinfo=UTC),
     projects: list[str] | None = None,
 ) -> list[HackatimeProject]:
     """Returns the user's projects with time totals."""
