@@ -3,11 +3,9 @@
 {% block body %}
     <div class="bg-surface text-foreground flex flex-col w-full h-full font-vintage overflow-y-auto">
         <div class="flex items-center justify-between p-2 border-b border-border bg-card scrollbar-thin">
-            <a href="{% url 'fr.projects.detail' project.id %}">
-                <button type="button"
-                        class="px-3 py-1 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
-                    ← Go back
-                </button>
+            <a href="{% url 'fr.projects.detail' project.id %}"
+               class="inline-block px-3 py-1 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                ← Go back
             </a>
             <div class="text-lg font-bold">Project settings</div>
         </div>
