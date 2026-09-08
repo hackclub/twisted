@@ -278,7 +278,7 @@ class Pathway(models.Model):
         pathways = Pathway.objects.order_by("start").values(
             "id", "start", "end", "min_mins"
         )
-        if not pathways:
+        if not pathways.exists():
             return 0
 
         pathway_totals: dict[int, int] = {p["id"]: 0 for p in pathways}
@@ -325,7 +325,7 @@ class Pathway(models.Model):
         pathways = list(
             Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
         )
-        if not pathways:
+        if len(pathways) == 0:
             return {}
 
         # Fetch journals from all users that fit within this pathway's active time frame

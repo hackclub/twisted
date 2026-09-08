@@ -167,7 +167,7 @@ _ARI_DECISION_TO_SHIP_STATUS = {
 def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:
     """Maps an ARI /status response into (first_pass_status, second_pass_status),
     using the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes)."""
-    if not status:
+    if status is None or len(status) == 0:
         return "pending", "pending"
 
     phase = status.get("phase")

@@ -137,7 +137,7 @@ class PathwayDetailView(AdminView):
                     100,
                     round(mins_per_participant[user.id] / pathway.min_mins * 100),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 )
-                if pathway.min_mins
+                if pathway.min_mins != 0
                 else 0,
                 "qualified": mins_per_participant[user.id] >= pathway.min_mins,  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             }
