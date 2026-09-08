@@ -35,3 +35,6 @@ dependencies = [
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
+
+[tool.pyrefly]
+infer-with-first-use = false
