@@ -1,8 +1,12 @@
 <a href="{{ href }}">
     <div class="flex gap-2 rounded-xl w-full p-2 hover:text-white **:[.white-img]:hidden hover:**:[.white-img]:block hover:**:[.default-img]:hidden hover:bg-zinc-800 {% if active %} bg-red-950 text-[#e3818f] {% else %} text-gray-400 {% endif %}">
         <div class="size-6">
-            <img class="default-img" src="https://icons.hackclub.com/api/icons/{% if active %}0xe3818f{% else %}0x99A1AF{% endif %}/{{ icon }}" alt="{{ icon }}">
-            <img class="white-img" src="https://icons.hackclub.com/api/icons/white/{{ icon }}" alt="{{ icon }}">
+            <img class="default-img"
+                 src="https://icons.hackclub.com/api/icons/{% if active %}0xe3818f{% else %}0x99A1AF{% endif %}/{{ icon }}"
+                 alt="{{ icon }}">
+            <img class="white-img"
+                 src="https://icons.hackclub.com/api/icons/white/{{ icon }}"
+                 alt="{{ icon }}">
         </div>
         <div class="flex-1">
             {{ slot }}

@@ -1,94 +1,108 @@
 <c-base>
-<div class="text-center bg-red-900 rounded-md mb-4">
+    <div class="text-center bg-red-900 rounded-md mb-4">
     DEBUG_REVIEW is set to true in .env! Please do not use this in production!
     If this is a production environment, please switch DEBUG_REVIEW to false!
-</div>
-<div class="flex flex-col gap-2">
-    {% for ship in ships %}
-    <div>
-        <c-ui.card>
-            <h1 class="text-xl font-bold">
+    </div>
+    <div class="flex flex-col gap-2">
+        {% for ship in ships %}
+            <div>
+                <c-ui.card>
+                    <h1 class="text-xl font-bold">
                 Ship for
                 {{ ship.project.project_name }}
-            </h1>
-            <div>
+                    </h1>
+                    <div>
                 Created {{ ship.created_at }} //
                 Updated {{ ship.updated_at }}
-            </div>
-            <div>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="id" value="{{ ship.id }}">
-                    <c-ui.table>
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Note to maker</th>
-                                <th>Audit note (internal)</th>
-                                <th>Technical features (internal)</th>
-                                <th>Deflation reason (internal)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <c-ui.select name="status" placeholder="Select an option">
-                                        <c-ui.select.option value="pending" selected="{% if ship.status == 'pending' %}True{% endif %}">pending</c-ui.select.option>
-                                        <c-ui.select.option value="requested_changes" selected="{% if ship.status == 'requested_changes' %}True{% endif %}">requested_changes</c-ui.select.option>
-                                        <c-ui.select.option value="rejected" selected="{% if ship.status == 'rejected' %}True{% endif %}">rejected</c-ui.select.option>
-                                        <c-ui.select.option value="approved" selected="{% if ship.status == 'approved' %}True{% endif %}">approved</c-ui.select.option>
-                                    </c-ui.select>
-                                </td>
-                                <td>
-                                    <textarea name="note_to_maker">{{ ship.note_to_maker }}</textarea>
-                                </td>
-                                <td>
-                                    <textarea name="audit_note">{{ ship.audit_note }}</textarea>
-                                </td>
-                                <td>
-                                    <input type="text" name="technical_features" value="{{ ship.technical_features }}">
-                                </td>
-                                <td>
-                                    <input type="text" name="deflation_reason" value="{{ ship.deflation_reason }}">
-                                </td>
-                            </tr>
-                        </tbody>
-                    </c-ui.table>
-                    <h2 class="mt-3 font-bold">Final review (manual sign-off)</h2>
-                    <c-ui.table>
-                        <thead>
-                            <tr>
-                                <th>Final status</th>
-                                <th>Final note to maker</th>
-                                <th>Final audit note (internal)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <c-ui.select name="final_status" placeholder="Select an option">
-                                        <c-ui.select.option value="pending" selected="{% if ship.final_status == 'pending' %}True{% endif %}">pending</c-ui.select.option>
-                                        <c-ui.select.option value="requested_changes" selected="{% if ship.final_status == 'requested_changes' %}True{% endif %}">requested_changes</c-ui.select.option>
-                                        <c-ui.select.option value="rejected" selected="{% if ship.final_status == 'rejected' %}True{% endif %}">rejected</c-ui.select.option>
-                                        <c-ui.select.option value="approved" selected="{% if ship.final_status == 'approved' %}True{% endif %}">approved</c-ui.select.option>
-                                    </c-ui.select>
-                                </td>
-                                <td>
-                                    <textarea name="final_note_to_maker">{{ ship.final_note_to_maker }}</textarea>
-                                </td>
-                                <td>
-                                    <textarea name="final_audit_note">{{ ship.final_audit_note }}</textarea>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </c-ui.table>
-                    <div class="mt-2 text-right">
-                        <c-ui.button type="submit">Update</c-ui.button>
                     </div>
-                </form>
+                    <div>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value="{{ ship.id }}">
+                            <c-ui.table>
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Note to maker</th>
+                                        <th>Audit note (internal)</th>
+                                        <th>Technical features (internal)</th>
+                                        <th>Deflation reason (internal)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <c-ui.select name="status" placeholder="Select an option">
+                                                <c-ui.select.option value="pending"
+                                                                    selected="{% if ship.status == 'pending' %}True{% endif %}">pending</c-ui.select.option>
+                                                <c-ui.select.option value="requested_changes"
+                                                                    selected="{% if ship.status == 'requested_changes' %}True{% endif %}">requested_changes</c-ui.select.option>
+                                                <c-ui.select.option value="rejected"
+                                                                    selected="{% if ship.status == 'rejected' %}True{% endif %}">rejected</c-ui.select.option>
+                                                <c-ui.select.option value="approved"
+                                                                    selected="{% if ship.status == 'approved' %}True{% endif %}">approved</c-ui.select.option>
+                                            </c-ui.select>
+                                        </td>
+                                        <td>
+                                            <textarea name="note_to_maker">{{ ship.note_to_maker }}</textarea>
+                                        </td>
+                                        <td>
+                                            <textarea name="audit_note">{{ ship.audit_note }}</textarea>
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   name="technical_features"
+                                                   value="{{ ship.technical_features }}">
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   name="deflation_reason"
+                                                   value="{{ ship.deflation_reason }}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </c-ui.table>
+                            <h2 class="mt-3 font-bold">Final review (manual sign-off)</h2>
+                            <c-ui.table>
+                                <thead>
+                                    <tr>
+                                        <th>Final status</th>
+                                        <th>Final note to maker</th>
+                                        <th>Final audit note (internal)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <c-ui.select name="final_status" placeholder="Select an option">
+                                                <c-ui.select.option value="pending"
+                                                                    selected="{% if ship.final_status == 'pending' %}True{% endif %}">pending</c-ui.select.option>
+                                                <c-ui.select.option value="requested_changes"
+                                                                    selected="{% if ship.final_status == 'requested_changes' %}True{% endif %}">requested_changes</c-ui.select.option>
+                                                <c-ui.select.option value="rejected"
+                                                                    selected="{% if ship.final_status == 'rejected' %}True{% endif %}">rejected</c-ui.select.option>
+                                                <c-ui.select.option value="approved"
+                                                                    selected="{% if ship.final_status == 'approved' %}True{% endif %}">approved</c-ui.select.option>
+                                            </c-ui.select>
+                                        </td>
+                                        <td>
+                                            <textarea name="final_note_to_maker">{{ ship.final_note_to_maker }}</textarea>
+                                        </td>
+                                        <td>
+                                            <textarea name="final_audit_note">{{ ship.final_audit_note }}</textarea>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </c-ui.table>
+                            <div class="mt-2 text-right">
+                                <c-ui.button type="submit">
+Update
+                                </c-ui.button>
+                            </div>
+                        </form>
+                    </div>
+                </c-ui.card>
             </div>
-        </c-ui.card>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
 </c-base>

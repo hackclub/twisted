@@ -13,15 +13,21 @@
             </div>
         </c-slot>
         <div class="flex">
-            <div class="flex-1"></div>
+            <div class="flex-1">
+            </div>
             <c-ui.button size="xs" variant="ghost" @click="drawerOpen = true">
-                <img src="https://icons.hackclub.com/api/icons/white/align-left" class="size-10" />
+                <img src="https://icons.hackclub.com/api/icons/white/align-left"
+                     class="size-10" />
             </c-ui.button>
         </div>
-        <c-slot name="content">{{ slot }}</c-slot>
+        <c-slot name="content">
+{{ slot }}
+        </c-slot>
         <c-slot name="footer">
             <div class="flex p-2">
-                <img class="size-8 rounded-full" src="{{ request.user.profile.slack_pfp_url }}" alt="" />
+                <img class="size-8 rounded-full"
+                     src="{{ request.user.profile.slack_pfp_url }}"
+                     alt="" />
                 <label class="my-auto ml-2">@{{ request.user.profile.slack_username }}</label>
             </div>
         </c-slot>
@@ -36,16 +42,21 @@
                 <label class="text-xs text-gray-500">ADMIN</label>
             </div>
         </div>
-        <div class="mx-auto w-full border-gray-700 border-t"></div>
+        <div class="mx-auto w-full border-gray-700 border-t">
+        </div>
         <div class="flex-1 my-2">{{ slot }}</div>
         <div>
-            <div class="mx-auto w-full border-gray-700 border-t"></div>
+            <div class="mx-auto w-full border-gray-700 border-t">
+            </div>
             <c-sidebar.item icon="back" href="{% url 'dashboard' %}">Back to Twisted</c-sidebar.item>
             <div class="flex p-2">
-                <img class="size-8 rounded-full" src="{{ request.user.profile.slack_pfp_url }}" alt="" />
+                <img class="size-8 rounded-full"
+                     src="{{ request.user.profile.slack_pfp_url }}"
+                     alt="" />
                 <label class="my-auto ml-2">@{{ request.user.profile.slack_username }}</label>
             </div>
         </div>
     </div>
-    <div></div>
+    <div>
+    </div>
 </div>

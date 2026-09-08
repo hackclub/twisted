@@ -1,19 +1,33 @@
 <c-base>
     <c-slot name="head">
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://www.gstatic.com/charts/loader.js"></script>
     </c-slot>
     <c-ui.card class="bg-zinc-900 mb-4">
         <h3 class="text-lg font-semibold mb-2">Welcome back, {{ user.profile.slack_username }}!</h3>
         <p class="text-ink-400">
-            <c-ui.button onclick="alert('weh, you are looking at them right now >:(')">See statistics</c-ui.button>
+            <c-ui.button onclick="alert('weh, you are looking at them right now >:(')">
+See statistics
+            </c-ui.button>
             <a href="{% url 'admin.users' %}">
-                <c-ui.button>Manage Users</c-ui.button>
+                <c-ui.button>
+Manage Users
+                </c-ui.button>
             </a>
-            <c-ui.button>Edit Pathways</c-ui.button>
-            <c-ui.button>Fulfill orders</c-ui.button>
-            <c-ui.button>Edit shop</c-ui.button>
-            <c-ui.button>Review projects</c-ui.button>
-            <c-ui.button>Announce stuff</c-ui.button>
+            <c-ui.button>
+Edit Pathways
+            </c-ui.button>
+            <c-ui.button>
+Fulfill orders
+            </c-ui.button>
+            <c-ui.button>
+Edit shop
+            </c-ui.button>
+            <c-ui.button>
+Review projects
+            </c-ui.button>
+            <c-ui.button>
+Announce stuff
+            </c-ui.button>
         </p>
     </c-ui.card>
     <c-ui.tabs variant="segmented">
@@ -34,7 +48,7 @@
                                 </div>
                             </div>
                         </div>
-                        <script type="text/javascript">
+                        <script>
                             google.charts.load('current', {'packages':['corechart']});
                             google.charts.setOnLoadCallback(drawChart);
 
@@ -66,7 +80,7 @@
                                 </div>
                             </div>
                         </div>
-                        <script type="text/javascript">
+                        <script>
                             google.charts.load('current', {'packages':['corechart']});
                             google.charts.setOnLoadCallback(drawChart);
 
@@ -105,7 +119,7 @@
                                 Loading chart...
                             </div>
                         </div>
-                        <script type="text/javascript">
+                        <script>
                             google.charts.load('current', {'packages':['corechart']});
                             google.charts.setOnLoadCallback(drawChart);
     
@@ -137,7 +151,7 @@
                                 </div>
                             </div>
                         </div>
-                        <script type="text/javascript">
+                        <script>
                             google.charts.load('current', {'packages':['corechart']});
                             google.charts.setOnLoadCallback(drawChart);
 

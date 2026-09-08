@@ -1,26 +1,25 @@
-{% extends "client/projects/journal/new_journal.base.html" %} {% load static time_filters %}
+{% extends "client/projects/journal/new_journal.base.html" %}
+{% load static time_filters %}
 {% block links %}
-<a href="{% url 'fr.projects.journals.new.hackatime' project.id %}">
-    <button class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">
+    <a href="{% url 'fr.projects.journals.new.hackatime' project.id %}">
+        <button class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">
         Hackatime
-    </button>
-</a>
-<button class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border bg-primary/80">Untracked</button>
+        </button>
+    </a>
+    <button class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border bg-primary/80">Untracked</button>
 {% endblock links %}
 {% block journal_log_message %}
 {% endblock journal_log_message %}
 {% block preform %}
-<div class="mb-3 border border-border bg-background px-3 py-2">
+    <div class="mb-3 border border-border bg-background px-3 py-2">
     Log
-    <input
-        value="1"
-        name="time_logged"
-        type="number"
-        min="0"
-        max="{{ max_mins }}"
-        class="no-spinner! text-right border border-border p-1"
-        oninput="if(Number(this.value) > {{ max_mins }}) this.value = {{ max_mins }};"
-    />
+        <input value="1"
+               name="time_logged"
+               type="number"
+               min="0"
+               max="{{ max_mins }}"
+               class="no-spinner! text-right border border-border p-1"
+               oninput="if(Number(this.value) > {{ max_mins }}) this.value = {{ max_mins }};" />
     minutes
-</div>
+    </div>
 {% endblock preform %}
