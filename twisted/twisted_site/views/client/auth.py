@@ -1,4 +1,5 @@
 import hmac
+import logging
 import os
 import secrets
 
@@ -12,6 +13,8 @@ from django.views import View
 from ... import hackatime
 from ...models import Profile
 from ...slack import log_to_channel, slack_bot
+
+logger = logging.getLogger(__name__)
 
 oauth = OAuth()
 
