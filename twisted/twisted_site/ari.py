@@ -19,7 +19,9 @@ ARI_WEBHOOK_SECRET = settings.ARI_WEBHOOK_SECRET
 WEBHOOK_MAX_AGE_SECONDS = 5 * 60
 
 
-def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, signature: str) -> bool:
+def verify_webhook_signature(
+    body: bytes, timestamp: str, delivery_id: str, signature: str
+) -> bool:
     """Verifies an outbound delivery from Ari (the X-Ari-Signature/-Timestamp/-Delivery-Id
     headers on review.* and ship.updated webhooks). Signed with ARI_WEBHOOK_SECRET, which is
     separate from ARI_SIGNING_SECRET (that one signs requests we send to Ari)."""
@@ -51,11 +53,12 @@ def get_hex_signature(content):
 
     return hex_signature
 
+
 def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify=True):
     if jsonify or data is None:
         data = json.dumps(data)
 
-    if method == 'POST':
+    if method == "POST":
         headers = {
             "X-Ari-Signature": get_hex_signature(data),
             "Content-Type": "application/json",
@@ -63,9 +66,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
         message_bytes = data.encode("utf-8")
     else:
         message_bytes = None
-        headers = {
-            "Authorization": f"Bearer {ARI_SIGNING_SECRET}"
-        }
+        headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
     req = requests.request(
         method,
         ARI_INGEST_ENDPOINT + endpoint,
@@ -73,6 +74,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
         headers=headers,
     )
     return req
+
 
 # external_id = "twisted-{project.id}"
 def send_ship(ship: ProjectShip):
@@ -89,7 +91,7 @@ def send_ship(ship: ProjectShip):
         "email": ship.project.user.email,
         "name": ship.project.user.profile.slack_username,
         "slack_id": ship.project.user.profile.slack_id,
-        "program_hours": untracked_time/60
+        "program_hours": untracked_time / 60,
     }
 
     title = ship.project.project_name
@@ -136,19 +138,21 @@ def send_ship(ship: ProjectShip):
             "shipped_at": shipped_at,
             "thumbnail_url": thumbnail_url,
             "hackatime_projects": hackatime_projects,
-            "evidence": ['commits', 'elapsed', 'devlog'],
+            "evidence": ["commits", "elapsed", "devlog"],
             "journals": journals,
-            "meta": meta
+            "meta": meta,
         },
     )
     resp = r.content
     r.raise_for_status()
 
+
 def get_project_status(project: Project):
-    r = send_request('GET', endpoint=f"/status?external_id=twisted-{project.id}")
+    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")
     _resp = r.content
     r.raise_for_status()
     return r.json()
+
 
 # ARI's phases go: (processing | fraud_review | review | under_review) -- reviewer
 # hasn't decided yet -- then second_pass -- reviewer decided, an organizer still has

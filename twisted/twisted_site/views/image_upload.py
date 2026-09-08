@@ -22,6 +22,7 @@ s3 = boto3.client(
     region_name="auto",
 )
 
+
 @login_required
 def upload_file(request):
     if request.method == "POST":
@@ -30,7 +31,10 @@ def upload_file(request):
 
             if file.content_type not in ALLOWED_CONTENT_TYPES:
                 return JsonResponse(
-                    {"status": "error", "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!"}
+                    {
+                        "status": "error",
+                        "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!",
+                    }
                 )
 
             # The size limit is a server-side policy; never let the client raise it.
@@ -46,23 +50,25 @@ def upload_file(request):
             # Handle upload errors
             if response_data.get("status") == "error":
                 return JsonResponse(response_data)
-            
+
             url = response_data["link"]
             filename = response_data["name"]
             UploadedFile.objects.create(
                 uploaded_by=request.user,
                 link=url,
                 cdn_response=response_data,
-                uploaded_thru=request.POST.get('ref', 'unknown'),
-                filesize=file.size
+                uploaded_thru=request.POST.get("ref", "unknown"),
+                filesize=file.size,
             )
-            
-            return JsonResponse({
-                "status": "ok",
-                "link": url,
-                "name": filename,
-                "response": response_data,
-            })
+
+            return JsonResponse(
+                {
+                    "status": "ok",
+                    "link": url,
+                    "name": filename,
+                    "response": response_data,
+                }
+            )
         return JsonResponse(
             {"status": "error", "reason": "Invalid request: No file found"}
         )
@@ -93,10 +99,7 @@ def _upload_fileobj(fileobj, filename, content_type, size):
         }
 
     except (ClientError, BotoCoreError) as e:
-        return {
-                "status": "error",
-                "error": str(e)
-            }
+        return {"status": "error", "error": str(e)}
 
     except Exception as e:
         return {
