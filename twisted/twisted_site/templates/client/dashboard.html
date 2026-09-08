@@ -334,7 +334,7 @@
         }
 
         function focusWindow(id) {
-            document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
+            document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("bg-twisted-999!"));
             const win = document.querySelector('.window[data-win-id="' + id + '"]');
 
             container = document.getElementById("windows-container");
@@ -347,8 +347,8 @@
             win.style.zIndex = "100";
             win.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "auto"));
 
-            const btn = document.querySelector('#taskbar-windows button[data-win-id="' + id + '"]');
-            if (btn) btn.classList.add("!bg-twisted-999");
+            const btn = document.querySelector(`#taskbar-windows button[data-win-id="${id}"]`);
+            if (btn) btn.classList.add("bg-twisted-999!");
         }
 
         function dragWindow(mywindow) {
