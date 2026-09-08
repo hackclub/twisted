@@ -1,9 +1,11 @@
+import json
+from dataclasses import dataclass
+from typing import Literal
+
 from django.shortcuts import resolve_url
 from django.views import View
-from dataclasses import dataclass
-import json
-from typing import Literal
 from django_htmx.http import trigger_client_event
+
 from ...models import AuditLog, ProfileStaffPermissions
 
 

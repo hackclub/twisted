@@ -1,8 +1,8 @@
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, resolve_url
 from django.views import View
-from django.shortcuts import render, redirect, resolve_url
-from ...models import Project, PROJECT_TYPE_CHOICES
+
+from ...models import PROJECT_TYPE_CHOICES, Project
 from ...slack import log_to_channel
 
 

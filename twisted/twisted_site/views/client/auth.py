@@ -5,18 +5,15 @@ import secrets
 
 import requests
 from authlib.integrations.django_client import OAuth
+from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views import View
-import secrets
-import hmac
-from django.conf import settings
 
 from ... import hackatime
 from ...models import Profile
-from ... import hackatime
-from ...slack import slack_bot, SLACK_LOG_CHANNEL, log_to_channel
+from ...slack import SLACK_LOG_CHANNEL, log_to_channel, slack_bot
 
 oauth = OAuth()
 

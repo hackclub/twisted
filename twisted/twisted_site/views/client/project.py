@@ -1,14 +1,12 @@
 from itertools import chain
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
-from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 
+from ... import ari, hackatime
+from ...models import PROJECT_TYPE_CHOICES, Journal, Profile, Project, ProjectShip
 from ...slack import log_to_channel
-from ...models import Profile, Project, Journal, ProjectShip, PROJECT_TYPE_CHOICES
-from ... import hackatime
-from ... import ari
 
 
 # Create your views here.
