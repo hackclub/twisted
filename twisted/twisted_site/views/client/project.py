@@ -18,7 +18,8 @@ class ProjectDetail(View):
 
         context = {}
 
-        profile: Profile = request.user.profile
+        profile = request.user.profile
+        assert isinstance(profile, Profile)
         context["profile"] = profile
 
         project = get_object_or_404(Project, id=id)
