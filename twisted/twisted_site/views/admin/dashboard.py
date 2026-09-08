@@ -1,8 +1,10 @@
-from django.template.response import TemplateResponse
-from .admin import AdminView
-from django.shortcuts import render, redirect
-from ...models import Journal, Project, ProjectShip
 import json
+
+from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
+
+from ...models import Journal, Project, ProjectShip
+from .admin import AdminView
 
 
 # Create your views here.

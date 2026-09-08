@@ -1,8 +1,9 @@
-from django.db.models import TextField
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import TextField
 from django.utils import timezone
+
 from . import hackatime
 from .slack import slack_bot
 

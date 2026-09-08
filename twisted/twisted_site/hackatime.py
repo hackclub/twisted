@@ -1,6 +1,7 @@
-from datetime import datetime
-import requests
 from dataclasses import dataclass
+from datetime import datetime
+
+import requests
 
 HACKATIME_ROOT_URL = "https://hackatime.hackclub.com"
 

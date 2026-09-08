@@ -10,7 +10,6 @@ from django.conf import settings
 
 from .models import Journal, Project, ProjectShip
 
-
 ARI_INGEST_ENDPOINT = settings.ARI_INGEST_ENDPOINT
 ARI_SIGNING_SECRET = settings.ARI_SIGNING_SECRET
 ARI_WEBHOOK_SECRET = settings.ARI_WEBHOOK_SECRET

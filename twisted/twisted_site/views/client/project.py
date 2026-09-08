@@ -1,12 +1,13 @@
-from requests import HTTPError, RequestException
 from itertools import chain
-from markdown_it.rules_inline import image
-from django.http import JsonResponse, HttpResponse
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.shortcuts import render, redirect, get_object_or_404
-from ...models import Profile, Project, Journal, ProjectShip, PROJECT_TYPE_CHOICES
-from ... import hackatime
-from ... import ari
+from markdown_it.rules_inline import image
+from requests import HTTPError, RequestException
+
+from ... import ari, hackatime
+from ...models import PROJECT_TYPE_CHOICES, Journal, Profile, Project, ProjectShip
 
 
 # Create your views here.

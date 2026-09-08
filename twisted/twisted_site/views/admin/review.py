@@ -1,9 +1,10 @@
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse
-from .admin import AdminView
-from django.shortcuts import render, redirect, get_object_or_404
-from django.conf import settings
+from django.shortcuts import get_object_or_404, redirect, render
+
 from ...models import ProjectShip
+from .admin import AdminView
 
 
 # Create your views here.

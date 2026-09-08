@@ -1,9 +1,10 @@
-from django.http import HttpResponse
-from .admin import AdminView
-from django.shortcuts import render, redirect, get_object_or_404
-from ...models import Pathway, User
-from django.utils import timezone
 from django.contrib import messages
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from ...models import Pathway, User
+from .admin import AdminView
 
 
 # Create your views here.

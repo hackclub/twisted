@@ -1,5 +1,6 @@
+from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
-from django.shortcuts import render, redirect, resolve_url, get_object_or_404
+
 from ...models import Project
 
 

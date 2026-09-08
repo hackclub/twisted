@@ -1,11 +1,13 @@
 import json
-from django.http import HttpResponseNotAllowed, HttpResponse, HttpResponseBadRequest
+
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+
 from ..ari import verify_webhook_signature
-from ..models import ProjectShip, Project
+from ..models import Project, ProjectShip
 from ..slack import slack_bot
 
 
