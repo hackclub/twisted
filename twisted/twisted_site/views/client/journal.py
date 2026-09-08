@@ -2,11 +2,10 @@ import math
 import re
 from typing import Any
 
-from django.shortcuts import get_object_or_404, redirect, render, resolve_url
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from ... import hackatime
-from ...models import Journal, Profile, Project
+from ...models import Journal, Project
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"

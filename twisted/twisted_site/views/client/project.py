@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 
 from ... import ari, hackatime
-from ...models import PROJECT_TYPE_CHOICES, Journal, Profile, Project, ProjectShip
+from ...models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip
 from ...slack import log_to_channel
 
 

@@ -1,11 +1,9 @@
 import hmac
-import logging
 import os
 import secrets
 
 import requests
 from authlib.integrations.django_client import OAuth
-from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -13,7 +11,7 @@ from django.views import View
 
 from ... import hackatime
 from ...models import Profile
-from ...slack import SLACK_LOG_CHANNEL, log_to_channel, slack_bot
+from ...slack import log_to_channel, slack_bot
 
 oauth = OAuth()
 
