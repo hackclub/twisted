@@ -75,7 +75,7 @@ class AdminView(View):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:  # pyright: ignore[reportAttributeAccessIssue]
+        if not request.user.profile.is_staff:  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,
