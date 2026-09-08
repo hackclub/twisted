@@ -9,7 +9,7 @@ from ...models import Profile
 
 # Create your views here.
 class ReferralsView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 

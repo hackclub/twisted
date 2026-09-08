@@ -6,7 +6,7 @@ from ...models import Pathway
 
 # Create your views here.
 class PathwaysView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 

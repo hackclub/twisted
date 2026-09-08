@@ -12,7 +12,7 @@ from ...slack import log_to_channel
 
 # Create your views here.
 class ProjectDetail(View):
-    def get(self, request, id):
+    def get(self, request: HttpRequest, id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -57,7 +57,7 @@ class ProjectDetail(View):
 
 
 class ProjectSettings(View):
-    def get(self, request, id):
+    def get(self, request: HttpRequest, id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -88,7 +88,7 @@ class ProjectSettings(View):
             context,
         )
 
-    def post(self, request, id):
+    def post(self, request: HttpRequest, id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -121,7 +121,9 @@ class ProjectSettings(View):
 
 
 class SubmitProject(View):
-    def get(self, request, id, context=None):
+    def get(
+        self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         if context is None:
             context = {}
 
@@ -146,7 +148,9 @@ class SubmitProject(View):
         context["project"] = project
         return render(request, "client/projects/ship.html", context)
 
-    def post(self, request, id, context=None):
+    def post(
+        self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         if context is None:
             context = {}
 

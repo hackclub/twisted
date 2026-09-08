@@ -39,7 +39,7 @@ class NewProjectHackatimeJournal(View):
             request, "client/projects/journal/new_hackatime.html", context=context
         )
 
-    def post(self, request, id):
+    def post(self, request: HttpRequest, id: int) -> HttpResponse:
         project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
@@ -125,7 +125,7 @@ class NewProjectUntrackedJournal(View):
             request, "client/projects/journal/new_untracked.html", context=context
         )
 
-    def post(self, request, id):
+    def post(self, request: HttpRequest, id: int) -> HttpResponse:
         project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
@@ -176,7 +176,9 @@ class NewProjectUntrackedJournal(View):
 
 
 class DeleteJournal(View):
-    def get(self, request, id, context: dict[str, Any] | None = None):
+    def get(
+        self, request: HttpRequest, id: int | None, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         if context is None:
             context = {"success": False}
 
@@ -198,7 +200,7 @@ class DeleteJournal(View):
 
         return render(request, "client/projects/journal/delete.html", context=context)
 
-    def post(self, request, id):
+    def post(self, request: HttpRequest, id: int) -> HttpResponse:
         if request.user.is_anonymous:
             return redirect("homepage")
 

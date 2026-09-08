@@ -8,7 +8,7 @@ from ...slack import log_to_channel
 
 # Create your views here.
 class ListProjects(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -24,13 +24,13 @@ class ListProjects(View):
 
 
 class CreateProject(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
         return render(request, "client/projects/create.html")
 
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 

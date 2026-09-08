@@ -25,7 +25,7 @@ s3 = boto3.client(
 
 
 @login_required
-def upload_file(request):
+def upload_file(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         if "file" in request.FILES:
             file = request.FILES["file"]
@@ -78,7 +78,9 @@ def upload_file(request):
     )
 
 
-def _upload_fileobj(fileobj, filename, content_type, size):
+def _upload_fileobj(
+    fileobj: object, filename: str, content_type: str | None, size: int | None
+) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     try:
         ext = Path(filename).suffix.lower()
         stored_name = f"{uuid4()!s}-{size}/{slugify(Path(filename).stem)}{ext}"
@@ -110,7 +112,7 @@ def _upload_fileobj(fileobj, filename, content_type, size):
         }
 
 
-def file_uploader(request, image):
+def file_uploader(request: HttpRequest, image: "DjangoUploadedFile[Any]") -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     """
     Basic imgur uploader return as json data.
     """
