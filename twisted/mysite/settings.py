@@ -207,6 +207,7 @@ ARI_SIGNING_SECRET = os.environ.get("ARI_SIGNING_SECRET")
 # not requests we send to Ari.
 ARI_WEBHOOK_SECRET = os.environ.get('ARI_WEBHOOK_SECRET')
 
-# Slack (bot)
+
+# Slack
 SLACK_TOKEN = os.environ.get('SLACK_TOKEN')
 SLACK_LOG_CHANNEL = os.environ.get('SLACK_LOG_CHANNEL')
