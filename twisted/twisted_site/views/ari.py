@@ -6,7 +6,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from ..ari import verify_webhook_signature
-from ..models import Project, ProjectShip
+from ..models import Project
 from ..slack import send_blocks
 
 
@@ -212,7 +212,9 @@ class AriView(View):
                 return HttpResponse("Event ignored")
             note_to_maker = data["review"]["note_to_maker"]
 
-            ship: ProjectShip = project.latest_ship()
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
 
             ship.status = "requested_changes"
             ship.note_to_maker = note_to_maker
@@ -231,7 +233,10 @@ class AriView(View):
             note_to_maker = review.get("note_to_maker", "")
             justification = review.get("justification") or {}
 
-            ship: ProjectShip = project.latest_ship()
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
             ship.status = "approved"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
@@ -252,7 +257,10 @@ class AriView(View):
             note_to_maker = review.get("note_to_maker", "")
             justification = review.get("justification") or {}
 
-            ship: ProjectShip = project.latest_ship()
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
             ship.status = "rejected"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
@@ -269,7 +277,10 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.reverted":
-            ship: ProjectShip = project.latest_ship()
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
             ship.status = "pending"
             ship.save()
 
@@ -282,7 +293,10 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.requeued":
-            ship: ProjectShip = project.latest_ship()
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
             ship.status = "pending"
             ship.save()
 
