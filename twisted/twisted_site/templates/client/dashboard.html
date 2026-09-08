@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="font-vintage space-y-1 text-absolute-white text-sm border-t border-twisted-800 pt-2">
                                     {% if user.is_staff %}
-                                        <a href="/admin/"
+                                        <a href="{% url 'admin.dash' %}"
                                            class="block text-absolute-white px-2 py-1 hover:bg-twisted-800">Admin
                                         Panel</a>
                                     {% endif %}
