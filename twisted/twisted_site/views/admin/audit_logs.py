@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from django.db.models.query_utils import Q
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
 from ...models import AuditLog

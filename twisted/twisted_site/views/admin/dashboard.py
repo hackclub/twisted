@@ -1,9 +1,9 @@
 import json
 
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ...models import Journal, Project, ProjectShip
+from ...models import Journal
 from .admin import AdminView
 
 

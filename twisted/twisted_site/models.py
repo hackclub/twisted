@@ -5,7 +5,6 @@ from django.db.models import TextField
 from django.utils import timezone
 
 from . import hackatime
-from .slack import slack_bot
 
 User = get_user_model()
 
