@@ -23,8 +23,8 @@ class AuditLogsView(AdminView):
             auditlogs = auditlogs.exclude(
                 Q(additional_context__isnull=True) | Q(additional_context={})
             )
-
-        paginator = Paginator(auditlogs, 250, orphans=50)
-        context["logs"] = paginator.get_page(page_number)
-        context["log_count"] = auditlogs.count()
+        
+        paginator = Paginator(auditlogs, 100, orphans=50)
+        context['logs'] = paginator.get_page(page_number)
+        context['log_count'] = auditlogs.count()
         return TemplateResponse(request, "admin/logs.html", context=context)
