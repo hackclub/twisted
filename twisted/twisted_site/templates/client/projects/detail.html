@@ -2,7 +2,7 @@
 {% load static time_filters humanize %}
 {% block body %}
     <div class="flex h-full w-full flex-col bg-surface font-vintage text-foreground">
-        <input type="hidden" value="{{ project.project_name }}" id="project-title" />
+        <input type="hidden" value="{{ project.project_name }}" id="project-title">
         <div class="shrink-0 border-b border-border bg-card p-3">
             <div class="flex flex-wrap items-start gap-3">
                 <div class="min-w-0 flex-1">
@@ -177,7 +177,7 @@
                                                             <img draggable="false"
                                                                  class="image-render-pixelated h-full w-full"
                                                                  src="{% static 'icons/delete.png' %}"
-                                                                 alt="Delete" />
+                                                                 alt="Delete">
                                                         </button>
                                                     {% endif %}
                                                     <button type="button"
@@ -186,7 +186,7 @@
                                                         <img draggable="false"
                                                              class="image-render-pixelated h-full w-full"
                                                              src="{% static 'icons/edit.png' %}"
-                                                             alt="Edit" />
+                                                             alt="Edit">
                                                     </button>
                                                 </div>
                                             {% endif %}

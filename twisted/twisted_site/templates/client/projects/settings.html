@@ -18,7 +18,7 @@
                        required
                        type="text"
                        value="{{ project.project_name }}"
-                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" />
+                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring">
             </div>
             <div class="flex flex-col gap-1">
                 <label for="description" class="font-bold">Project description</label>
@@ -79,7 +79,7 @@
                        type="text"
                        placeholder="https://github.com/username/project"
                        value="{{ project.repo_url }}"
-                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" />
+                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring">
             </div>
             <div class="flex flex-col gap-1">
                 <label for="playable_url" class="font-bold">Playable URL</label>
@@ -88,7 +88,7 @@
                        type="text"
                        placeholder="{% if project.project_type == 'hardware' %}https://youtube.com/watch?v=abcdef{% else %}https://myapp.website.com{% endif %}"
                        value="{{ project.playable_url }}"
-                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" />
+                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring">
             </div>
             <div class="flex flex-col gap-1">
                 <label for="screenshot" class="font-bold">Screenshot</label>
@@ -96,23 +96,23 @@
                     <img id="screenshot_preview"
                          src="{{ project.screenshot_url }}"
                          alt="Project screenshot"
-                         class="max-h-48 w-auto border border-border object-contain bg-card" />
+                         class="max-h-48 w-auto border border-border object-contain bg-card">
                 {% else %}
                     <img id="screenshot_preview"
                          src="data:image/gif;base64,R0lGODlhAQABAIAAAOXl5eXl5SH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
                          alt=""
-                         class="hidden max-h-48 w-auto border border-border object-contain bg-card" />
+                         class="hidden max-h-48 w-auto border border-border object-contain bg-card">
                 {% endif %}
                 <input id="screenshot"
                        type="file"
                        accept="image/*"
-                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" />
+                       class="w-full bg-card text-card-foreground border border-border px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring">
                 <span class="text-xs text-muted-foreground">or paste an image anywhere on this page</span>
                 <span id="screenshot_status" class="text-xs text-muted-foreground"></span>
                 <input id="screenshot_url"
                        name="screenshot_url"
                        type="hidden"
-                       value="{{ project.screenshot_url }}" />
+                       value="{{ project.screenshot_url }}">
             </div>
             <div class="pt-2">
                 <button type="submit"
