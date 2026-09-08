@@ -49,7 +49,11 @@
                         name="hackatime"
                         class="w-full bg-card text-card-foreground border border-border px-2 py-1">
                     {% if not project.hackatime_project_name %}
-                        <option value="" disabled selected hidden class="text-muted-foreground">Select a project</option>
+                        <option value=""
+                                disabled
+                                selected
+                                hidden
+                                class="text-muted-foreground">Select a project</option>
                     {% endif %}
                     {% for hack_project in hackatime_projects %}
                         {% if hack_project.total_seconds > 300 %}

@@ -4,7 +4,9 @@
         <c-slot name="header">
             <div class="flex gap-2 p-1 mb-2 rounded-xl">
                 <div>
-                    <img src="{% static 'favicon.png' %}" class="size-10 rounded-xl my-auto" alt="Twisted logo" />
+                    <img src="{% static 'favicon.png' %}"
+                         class="size-10 rounded-xl my-auto"
+                         alt="Twisted logo" />
                 </div>
                 <label class="text-lg my-auto">
                     Twisted
@@ -16,7 +18,8 @@
             <div class="flex-1"></div>
             <c-ui.button size="xs" variant="ghost" @click="drawerOpen = true">
                 <img src="https://icons.hackclub.com/api/icons/white/align-left"
-                     class="size-10" alt="Open menu" />
+                     class="size-10"
+                     alt="Open menu" />
             </c-ui.button>
         </div>
         <c-slot name="content">
@@ -34,7 +37,9 @@
     <div class="border border-gray-700 bg-zinc-900 p-1 rounded-xl w-60 h-full hidden md:flex flex-col">
         <div class="flex gap-2 p-1 mb-2 rounded-xl">
             <div>
-                <img src="{% static 'favicon.png' %}" class="size-10 rounded-xl my-auto" alt="Twisted logo" />
+                <img src="{% static 'favicon.png' %}"
+                     class="size-10 rounded-xl my-auto"
+                     alt="Twisted logo" />
             </div>
             <div class="flex flex-col my-auto">
                 <label class="text-lg">Twisted</label>

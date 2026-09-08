@@ -163,7 +163,8 @@
                                             <span class="font-bold">{{ journal.reduced_minutes|minutes_to_hours_minutes }}</span>
                                             <span class="text-muted-foreground">logged via {{ journal.get_type_display }}</span>
                                             <span class="mx-1 text-subtle">•</span>
-                                            <span class="text-muted-foreground" title="{{ journal.created_at }}">{{ journal.created_at|naturaltime }}</span>
+                                            <span class="text-muted-foreground"
+                                                  title="{{ journal.created_at }}">{{ journal.created_at|naturaltime }}</span>
                                         </div>
                                         {% if project.user == request.user %}
                                             {% if not project.is_shipped %}
@@ -219,7 +220,8 @@
                                     <div class="p-2 px-3 border-b border-success flex gap-2">
                                         <span class="font-bold text-success">Project shipped</span>
                                         <span class="mx-1 text-success opacity-50">•</span>
-                                        <span class="text-success opacity-50" title="{{ ship.created_at }}">{{ ship.created_at|naturaltime }}</span>
+                                        <span class="text-success opacity-50"
+                                              title="{{ ship.created_at }}">{{ ship.created_at|naturaltime }}</span>
                                     </div>
                                     <div class="p-3">
                                         <div class="mt-1 text-sm text-muted-foreground">This project is now read-only.</div>

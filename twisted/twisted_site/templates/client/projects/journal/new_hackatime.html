@@ -2,7 +2,8 @@
 {% load static time_filters %}
 {% block links %}
     {% if project.project_type == "hardware" %}
-        <button type="button" class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border bg-primary/80">Hackatime</button>
+        <button type="button"
+                class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border bg-primary/80">Hackatime</button>
         <a href="{% url 'fr.projects.journals.new.untracked' project.id %}"
            class="inline-block px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">untracked</a>
     {% endif %}
