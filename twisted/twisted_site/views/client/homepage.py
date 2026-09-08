@@ -20,7 +20,7 @@ class HomepageView(View):
             {"login_enabled": login_enabled},
         )
 
-        if referral_code:
+        if referral_code not in (None, ""):
             response.set_cookie(
                 "referral",
                 referral_code,

@@ -45,7 +45,7 @@ class PathwayCreateView(AdminView):
         context = self.get_context_data(page="pathways", subpage="create")
         context.update(extracontext)
 
-        if error:
+        if error not in (None, ""):
             messages.error(request, error)
 
         return render(request, "admin/pathways/create.html", context=context)
@@ -70,19 +70,19 @@ class PathwayCreateView(AdminView):
             "min_mins": min_mins,
         }
 
-        if not pathway_name:
+        if pathway_name in (None, ""):
             return self.get(request, "No pathway name typed!", errcontext)
 
-        if not start_date:
+        if start_date in (None, ""):
             return self.get(request, "No start date selected!", errcontext)
 
-        if not start_time:
+        if start_time in (None, ""):
             return self.get(request, "No start time selected!", errcontext)
 
-        if not end_date:
+        if end_date in (None, ""):
             return self.get(request, "No end date selected!", errcontext)
 
-        if not end_time:
+        if end_time in (None, ""):
             return self.get(request, "No end time selected!", errcontext)
 
         if min_mins <= 0:

@@ -54,7 +54,7 @@ csrf_origins_raw = os.getenv(
     "CSRF_TRUSTED_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000"
 )
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() for origin in csrf_origins_raw.split(",") if origin.strip()
+    origin.strip() for origin in csrf_origins_raw.split(",") if origin.strip() != ""
 ]
 
 # Application definition

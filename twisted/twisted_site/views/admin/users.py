@@ -14,8 +14,8 @@ from .admin import AdminView
 class UsersView(AdminView):
     def get(self, request):
         context = self.get_context_data(page="users")
-        if request.GET.get("search"):
-            query = request.GET["search"]
+        if request.GET.get("search") not in (None, ""):
+            query: str = request.GET["search"]
             context["users"] = User.objects.all()
             context["users"] = User.objects.filter(
                 Q(profile__slack_username__icontains=query)

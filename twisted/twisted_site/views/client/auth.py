@@ -116,9 +116,9 @@ class AuthCallbackView(View):
         profile.hca_access_token = token["access_token"]
 
         referral_code = self.request.COOKIES.get("referral")
-        if created and referral_code:
+        if created and referral_code not in (None, ""):
             referral_profiles = Profile.objects.filter(my_referral_code=referral_code)
-            if referral_profiles:
+            if referral_profiles.exists():
                 referral_profile = referral_profiles.get()
                 profile.referred_by = referral_profile
 

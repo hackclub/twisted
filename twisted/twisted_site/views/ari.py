@@ -88,7 +88,7 @@ def _build_review_approved_blocks(project, note_to_maker):
             },
         },
     ]
-    if note_to_maker:
+    if note_to_maker != "":
         blocks.append({"type": "divider"})
         blocks.append(
             {
@@ -112,7 +112,7 @@ def _build_review_rejected_blocks(project, note_to_maker):
             },
         },
     ]
-    if note_to_maker:
+    if note_to_maker != "":
         blocks.append({"type": "divider"})
         blocks.append(
             {
@@ -176,8 +176,8 @@ class AriView(View):
 
         data = json.loads(body)
 
-        external_id = data.get("external_id")
-        if not external_id:
+        external_id = cast("str | None", data.get("external_id"))
+        if external_id in (None, ""):
             return HttpResponseBadRequest("Missing external_id")
 
         try:
@@ -186,8 +186,8 @@ class AriView(View):
         except (ValueError, Project.DoesNotExist):
             return HttpResponseBadRequest("Invalid external_id")
 
-        event = data.get("event")
-        if not event:
+        event = cast("str | None", data.get("event"))
+        if event in (None, ""):
             return HttpResponseBadRequest("Missing event")
 
         if data["event"] == "ship.updated":
