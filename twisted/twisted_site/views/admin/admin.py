@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from django.shortcuts import resolve_url
+from django.shortcuts import redirect, resolve_url
 from django.views import View
 
 from ...models import AuditLog, ProfileStaffPermissions
