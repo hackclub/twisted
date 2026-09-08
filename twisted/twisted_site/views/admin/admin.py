@@ -1,10 +1,10 @@
+from dataclasses import dataclass
+
 from django.shortcuts import resolve_url
 from django.views import View
-from dataclasses import dataclass
-import json
-from typing import Literal
-from django_htmx.http import trigger_client_event
+
 from ...models import AuditLog, ProfileStaffPermissions
+
 
 @dataclass
 class SidebarLink:
@@ -67,27 +67,27 @@ class AdminView(View):
                 href=resolve_url("admin.logs") + "?page=1",
             ),
         ]
-        context["profile"] = self.request.user.profile
+        context["profile"] = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return context
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:
+        if not request.user.profile.is_staff:  # pyright: ignore[reportAttributeAccessIssue]
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,
             path=self.request.get_full_path(),
-            post=(request.method.lower() == "post"),
+            post=((request.method or "").lower() == "post"),
             additional_context={},
         )
-        
+
         perms = self.request.user.profile.staff_permissions
         if perms is None:
             profile = self.request.user.profile
             profile.staff_permissions = ProfileStaffPermissions.objects.create()
             profile.save()
-        
+
         self.perms = perms
         response = super().dispatch(request, *args, **kwargs)
         self.audit_log.save()

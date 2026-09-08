@@ -1,13 +1,11 @@
 import math
 import re
+from typing import Any
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.shortcuts import render, redirect, get_object_or_404, resolve_url
-from ...models import Profile, Project, Journal
-from ... import hackatime
-import re
-import math
+
+from ...models import Journal, Project
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
@@ -178,7 +176,7 @@ class NewProjectUntrackedJournal(View):
 
 
 class DeleteJournal(View):
-    def get(self, request, id, context=None):
+    def get(self, request, id, context: dict[str, Any] | None = None):
         if context is None:
             context = {"success": False}
 

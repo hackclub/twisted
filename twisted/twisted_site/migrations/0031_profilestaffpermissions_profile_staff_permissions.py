@@ -5,22 +5,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0030_alter_journal_minutes_worked_and_more'),
+        ("twisted_site", "0030_alter_journal_minutes_worked_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProfileStaffPermissions',
+            name="ProfileStaffPermissions",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('superuser', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("superuser", models.BooleanField(default=False)),
             ],
         ),
         migrations.AddField(
-            model_name='profile',
-            name='staff_permissions',
-            field=models.OneToOneField(default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='twisted_site.profilestaffpermissions'),
+            model_name="profile",
+            name="staff_permissions",
+            field=models.OneToOneField(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="twisted_site.profilestaffpermissions",
+            ),
         ),
     ]

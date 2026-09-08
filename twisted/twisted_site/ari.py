@@ -3,7 +3,7 @@ import hmac
 import json
 import time
 from collections.abc import Iterable
-from typing import Literal
+from typing import Any, Literal
 
 import requests
 from django.conf import settings
@@ -83,13 +83,13 @@ def send_ship(ship: ProjectShip):
 
     untracked_time = 0
     if ship.project.project_type == "hardware":
-        for journal in ship.project.journals.filter(type="untracked"):
+        for journal in ship.project.journals.filter(type="untracked"):  # pyrefly: ignore[missing-attribute]
             untracked_time += journal.reduced_minutes
 
     maker = {
-        "email": ship.project.user.email,
-        "name": ship.project.user.profile.slack_username,
-        "slack_id": ship.project.user.profile.slack_id,
+        "email": ship.project.user.email,  # pyrefly: ignore[missing-attribute]
+        "name": ship.project.user.profile.slack_username,  # pyrefly: ignore[missing-attribute]
+        "slack_id": ship.project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
         "program_hours": untracked_time / 60,
     }
 
@@ -112,9 +112,9 @@ def send_ship(ship: ProjectShip):
     }
 
     journals = []
-    orm_journals: Iterable[Journal] = ship.project.journals.all()
+    orm_journals: Iterable[Journal] = ship.project.journals.all()  # pyrefly: ignore[missing-attribute]
     for journal in orm_journals:
-        content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"
+        content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
             {
                 "at": journal.created_at.isoformat(),
@@ -146,7 +146,7 @@ def send_ship(ship: ProjectShip):
 
 
 def get_project_status(project: Project):
-    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")
+    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
     _resp = r.content
     r.raise_for_status()
     return r.json()
@@ -163,14 +163,15 @@ _ARI_DECISION_TO_SHIP_STATUS = {
 }
 
 
-def ship_passes_from_status(status: dict | None) -> tuple[str, str]:
+def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:
     """Maps an ARI /status response into (first_pass_status, second_pass_status),
     using the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes)."""
     if not status:
         return "pending", "pending"
 
     phase = status.get("phase")
-    decision = _ARI_DECISION_TO_SHIP_STATUS.get(status.get("decision"), "pending")
+    raw_decision = status.get("decision", "pending")
+    decision = _ARI_DECISION_TO_SHIP_STATUS.get(raw_decision, "pending")
 
     if phase == "second_pass":
         return decision, "pending"

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import TextField
@@ -8,6 +9,7 @@ from . import hackatime
 
 User = get_user_model()
 
+
 class UploadedFile(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT)
     link = models.CharField(max_length=500)
@@ -16,7 +18,7 @@ class UploadedFile(models.Model):
     filesize = models.IntegerField()
 
     def __str__(self):
-        return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"
+        return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
 
 
 # Create your models here.
@@ -32,11 +34,16 @@ class Profile(models.Model):
     hackatime_state = models.CharField(max_length=100, blank=True, default="")
 
     hca_access_token = models.CharField(max_length=2000, blank=True, default="")
-    
+
     is_allowed = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    staff_permissions = models.OneToOneField('twisted_site.ProfileStaffPermissions', on_delete=models.PROTECT, default=None, null=True)
-    
+    staff_permissions = models.OneToOneField(
+        "twisted_site.ProfileStaffPermissions",
+        on_delete=models.PROTECT,
+        default=None,
+        null=True,
+    )
+
     twists = models.IntegerField(default=0)
 
     referred_by = models.ForeignKey(
@@ -50,14 +57,14 @@ class Profile(models.Model):
 
     def shipped_projects(self):
         shipped_projects = []
-        for project in self.user.projects.all():
+        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
             if project.is_shipped():
                 shipped_projects.append(project)
         return shipped_projects
 
     def time_logged(self):
         time_logged = 0
-        for project in self.user.projects.all():
+        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
             time_logged += project.time_logged()
         return time_logged
 
@@ -68,24 +75,24 @@ class Profile(models.Model):
         return time_shipped
 
     def __str__(self):
-        return self.user.username  # ty:ignore[unresolved-attribute]
+        return self.user.username  # pyrefly: ignore[missing-attribute]
 
 
 class ProfileStaffPermissions(models.Model):
     superuser = models.BooleanField(default=False)
 
     view_users = models.BooleanField(default=False)
-    
+
     view_pathways = models.BooleanField(default=False)
     manage_pathways = models.BooleanField(default=False)
-    
+
     manage_fulfillments = models.BooleanField(default=False)
-    
+
     manage_shop = models.BooleanField(default=False)
-    
+
     view_review = models.BooleanField(default=False)
     manage_review = models.BooleanField(default=False)
-    
+
     manage_announcements = models.BooleanField(default=False)
 
     view_auditlogs = models.BooleanField(default=False)
@@ -116,7 +123,7 @@ class Project(models.Model):
     def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
         if not self.hackatime_project_name:
             return
-        projects = hackatime.projects(self.user.profile.hackatime_access_token)
+        projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[missing-attribute]
         for project in projects:
             if project.name == self.hackatime_project_name:
                 return project
@@ -124,7 +131,7 @@ class Project(models.Model):
 
     def time_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
                 minutes += journal.minutes_worked
@@ -134,7 +141,7 @@ class Project(models.Model):
 
     def hackatime_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if journal.type != "hackatime":
                 continue
             if include_all_minutes:
@@ -154,7 +161,7 @@ class Project(models.Model):
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
     def latest_ship(self):
-        ship = self.ships.order_by("-created_at").first()
+        ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return ship
 
     def is_shipped(self):
@@ -169,11 +176,13 @@ class Project(models.Model):
             return False
         return latest_ship.status == "approved"
 
+
 JOURNAL_TYPES = {
     "hackatime": "Hackatime",
     "lookout": "Lookout",
     "untracked": "Untracked",
 }
+
 
 class Journal(models.Model):
     project = models.ForeignKey(
@@ -223,7 +232,7 @@ class ProjectShip(models.Model):
     final_audit_note = models.TextField(blank=True, default="")
 
     def __str__(self):
-        return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute]
+        return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
 
 class Pathway(models.Model):
@@ -253,7 +262,7 @@ class Pathway(models.Model):
         if self.in_progress():
             return "in progress"
 
-    def mins_spent(self, user: User):
+    def mins_spent(self, user: AbstractBaseUser):
         pathways = Pathway.objects.order_by("start").values(
             "id", "start", "end", "min_mins"
         )
@@ -291,7 +300,7 @@ class Pathway(models.Model):
                 mins_remaining -= mins_donated
                 pathway_totals[p_id] = mins_completed + mins_donated
 
-        return pathway_totals[self.id]
+        return pathway_totals[self.id]  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
@@ -349,7 +358,7 @@ class Pathway(models.Model):
 
         # Extract only this pathway's result for each participant
         return {
-            user_id: totals.get(self.id, 0)
+            user_id: totals.get(self.id, 0)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             for user_id, totals in user_pathway_totals.items()
         }
 
@@ -375,4 +384,4 @@ class AuditLog(models.Model):
     additional_context = models.JSONField(null=True, default=None)
 
     def __str__(self):
-        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"
+        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[missing-attribute]

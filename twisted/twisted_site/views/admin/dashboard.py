@@ -15,8 +15,8 @@ class DashboardView(AdminView):
             return redirect("homepage")
         hours_logged = 0
         hours_logged_chart = {}
-        logged_project_type = {"Software": 0, "Hardware": 0}
-        shipped_project_type = {"Software": 0, "Hardware": 0}
+        logged_project_type: dict[str, float] = {"Software": 0, "Hardware": 0}
+        shipped_project_type: dict[str, float] = {"Software": 0, "Hardware": 0}
         hours_shipped = 0
         hours_shipped_chart = {}
         for journal in Journal.objects.all().prefetch_related("project"):
