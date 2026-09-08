@@ -60,7 +60,7 @@
                         window.addEventListener('load', (event) => {
                             message = document.querySelector('#djangomessage{{ forloop.counter }}').dataset.message
                             setTimeout(() => {
-                                console.log("sending message " + message + "...")
+                                console.log(`sending message ${message}...`)
                                 window.dispatchEvent(new CustomEvent('toast', {
                                     detail: {
                                         message: message,

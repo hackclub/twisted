@@ -237,7 +237,8 @@
             const container = document.getElementById("windows-container");
             const clone = template.content.cloneNode(true);
             const win = clone.querySelector(".window");
-            const id = "win-" + ++windowCounter;
+            windowCounter++
+            const id = `win-${windowCounter}`;
             win.dataset.winId = id;
 
             win.querySelector(".title-bar-text").textContent = title;
@@ -250,13 +251,13 @@
             if (y === null) y = Math.random() * (window.innerHeight - w);
 
 
-            win.style.left = x + "px";
-            win.style.top = y + "px";
-            win.style.width = w + "px";
-            win.style.height = h + "px";
+            win.style.left = `${x}px`;
+            win.style.top = `${y}px`;
+            win.style.width = `${w}px`;
+            win.style.height = `${h}px`;
             container.appendChild(clone);
 
-            const realWin = container.querySelector('[data-win-id="' + id + '"]');
+            const realWin = container.querySelector(`[data-win-id="${id}"]`);
 
             // Taskbar button with round png icon
             const taskbutton_template = document.getElementById("taskbutton-template");
