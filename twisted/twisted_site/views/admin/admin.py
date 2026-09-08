@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any, override
 
 from django.shortcuts import redirect, resolve_url
 from django.views import View
@@ -70,6 +71,7 @@ class AdminView(View):
         context["profile"] = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return context
 
+    @override
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
             return redirect("homepage")

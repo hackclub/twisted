@@ -19,6 +19,7 @@ class UploadedFile(models.Model):
     uploaded_thru = models.CharField(max_length=500)
     filesize = models.IntegerField()
 
+    @override
     def __str__(self):
         return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
 
@@ -76,6 +77,7 @@ class Profile(models.Model):
             time_shipped += project.time_logged()
         return time_shipped
 
+    @override
     def __str__(self):
         return self.user.username  # pyrefly: ignore[missing-attribute]
 
@@ -119,6 +121,7 @@ class Project(models.Model):
     playable_url = models.CharField(max_length=200, blank=True, default="")
     screenshot_url = models.CharField(max_length=500, blank=True, default="")
 
+    @override
     def __str__(self):
         return self.project_name
 
@@ -200,6 +203,7 @@ class Journal(models.Model):
     minutes_worked = models.IntegerField(validators=[MinValueValidator(0)])
     reduced_minutes = models.IntegerField(validators=[MinValueValidator(0)])
 
+    @override
     def __str__(self):
         return f"{self.reduced_minutes} mins on {self.project}"
 
@@ -233,6 +237,7 @@ class ProjectShip(models.Model):
     final_note_to_maker = models.TextField(blank=True, default="")
     final_audit_note = models.TextField(blank=True, default="")
 
+    @override
     def __str__(self):
         return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
@@ -372,6 +377,7 @@ class Pathway(models.Model):
                 qualified.append(User.objects.get(id=userid))
         return qualified
 
+    @override
     def __str__(self):
         return self.name
 
@@ -385,5 +391,6 @@ class AuditLog(models.Model):
 
     additional_context = models.JSONField(null=True, default=None)
 
+    @override
     def __str__(self):
         return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[missing-attribute]
