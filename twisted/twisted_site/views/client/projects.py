@@ -1,4 +1,7 @@
-from django.http import HttpResponse
+from typing import cast
+
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
@@ -12,9 +15,9 @@ class ListProjects(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        profile = request.user.profile
+        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
-        projects = request.user.projects.all()
+        projects = cast(QuerySet[Project], request.user.projects.all())  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         return render(
             request,

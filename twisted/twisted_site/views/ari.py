@@ -1,6 +1,7 @@
 import json
+from typing import Any, cast
 
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -213,7 +214,9 @@ class AriView(View):
             project.save()
             _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
-                blocks=_build_ship_update_blocks(project, data["changes"]),
+                blocks=_build_ship_update_blocks(
+                    project, cast("list[dict[str, str]]", data["changes"])
+                ),
                 text=f"Your ship for {project.project_name} has been updated by a reviewer!",
             )
 
@@ -222,7 +225,7 @@ class AriView(View):
         if data["event"] == "review.changes":
             if data["decision"] != "changes":
                 return HttpResponse("Event ignored")
-            note_to_maker = data["review"]["note_to_maker"]
+            note_to_maker = cast(str, data["review"]["note_to_maker"])
 
             ship = project.latest_ship()
             if ship is None:
@@ -241,9 +244,9 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.approved":
-            review = data["review"]
-            note_to_maker = review.get("note_to_maker", "")
-            justification = review.get("justification") or {}
+            review = cast("dict[str, Any]", data["review"])
+            note_to_maker = cast(str, review.get("note_to_maker", ""))
+            raw_justification = review.get("justification")
 
             ship = project.latest_ship()
             if ship is None:
@@ -252,8 +255,11 @@ class AriView(View):
             ship.status = "approved"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
-            ship.technical_features = justification.get("technical_features", "")
-            ship.deflation_reason = justification.get("deflation_reason", "")
+            if isinstance(raw_justification, dict):
+                ship.technical_features = raw_justification.get(
+                    "technical_features", ""
+                )
+                ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 
             _ = send_blocks(
@@ -265,9 +271,9 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.rejected":
-            review = data["review"]
-            note_to_maker = review.get("note_to_maker", "")
-            justification = review.get("justification") or {}
+            review = cast("dict[str, Any]", data["review"])
+            note_to_maker = cast(str, review.get("note_to_maker", ""))
+            raw_justification = review.get("justification")
 
             ship = project.latest_ship()
             if ship is None:
@@ -276,8 +282,11 @@ class AriView(View):
             ship.status = "rejected"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
-            ship.technical_features = justification.get("technical_features", "")
-            ship.deflation_reason = justification.get("deflation_reason", "")
+            if isinstance(raw_justification, dict):
+                ship.technical_features = raw_justification.get(
+                    "technical_features", ""
+                )
+                ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 
             _ = send_blocks(

@@ -12,6 +12,10 @@ from . import hackatime
 
 User = get_user_model()
 
+#: Template context dictionaries mix value types by design (mirroring
+#: `django.shortcuts.render`), so they are typed loosely.
+TemplateContext = dict[str, Any]  # pyrefly: ignore[explicit-any]
+
 
 class UploadedFile(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -66,13 +70,13 @@ class Profile(models.Model):
                 shipped_projects.append(project)
         return shipped_projects
 
-    def time_logged(self):
+    def time_logged(self) -> int:
         time_logged = 0
-        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
+        for project in cast(list[Project], self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
             time_logged += project.time_logged()
         return time_logged
 
-    def time_shipped(self):
+    def time_shipped(self) -> int:
         time_shipped = 0
         for project in self.shipped_projects():
             time_shipped += project.time_logged()
@@ -140,9 +144,9 @@ class Project(models.Model):
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += journal.minutes_worked
+                minutes += cast(int, journal.minutes_worked)
             else:
-                minutes += journal.reduced_minutes
+                minutes += cast(int, journal.reduced_minutes)
         return minutes
 
     def hackatime_logged(self, include_all_minutes: bool = False) -> int:
@@ -152,12 +156,12 @@ class Project(models.Model):
                 continue
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += journal.minutes_worked
+                minutes += cast(int, journal.minutes_worked)
             else:
-                minutes += journal.reduced_minutes
+                minutes += cast(int, journal.reduced_minutes)
         return minutes
 
-    def time_spent(self):
+    def time_spent(self) -> int:
         project = self.get_hackatime_project()
         if project is None:
             return 0
@@ -174,13 +178,13 @@ class Project(models.Model):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status != "requested_changes"
+        return cast(bool, latest_ship.status != "requested_changes")  # pyrefly: ignore[redundant-cast]
 
     def is_approved(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status == "approved"
+        return cast(bool, latest_ship.status == "approved")  # pyrefly: ignore[redundant-cast]
 
 
 JOURNAL_TYPES = {
@@ -277,7 +281,7 @@ class Pathway(models.Model):
         if not pathways:
             return 0
 
-        pathway_totals = {p["id"]: 0 for p in pathways}
+        pathway_totals: dict[int, int] = {p["id"]: 0 for p in pathways}
 
         journals = (
             Journal.objects.filter(project__user=user)
@@ -286,7 +290,7 @@ class Pathway(models.Model):
         )
 
         for j_created, j_mins in journals:
-            mins_remaining = j_mins
+            mins_remaining = cast(int, j_mins)
             for pathway in pathways:
                 if mins_remaining <= 0:
                     break
@@ -295,9 +299,9 @@ class Pathway(models.Model):
                 if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = pathway["id"]
+                p_id = cast(int, pathway["id"])
                 mins_completed = pathway_totals.get(p_id, 0)
-                mins_required = pathway["min_mins"]
+                mins_required = cast(int, pathway["min_mins"])
 
                 if mins_completed >= mins_required:
                     continue
@@ -335,14 +339,14 @@ class Pathway(models.Model):
             .values_list("project__user_id", "created_at", "reduced_minutes")
         )
 
-        user_pathway_totals = {}
+        user_pathway_totals: dict[int, dict[int, int]] = {}
 
         for user_id, j_created, j_mins in journals:
             if user_id not in user_pathway_totals:
                 user_pathway_totals[user_id] = {p["id"]: 0 for p in pathways}
 
             pathway_totals = user_pathway_totals[user_id]
-            mins_remaining = j_mins
+            mins_remaining = cast(int, j_mins)
 
             for pathway in pathways:
                 if mins_remaining <= 0:
@@ -351,9 +355,9 @@ class Pathway(models.Model):
                 if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = pathway["id"]
+                p_id = cast(int, pathway["id"])
                 mins_completed = pathway_totals[p_id]
-                mins_required = pathway["min_mins"]
+                mins_required = cast(int, pathway["min_mins"])
 
                 if mins_completed >= mins_required:
                     continue
@@ -372,7 +376,7 @@ class Pathway(models.Model):
 
     def qualified_participants(self) -> list[AbstractBaseUser]:
         per_part = self.mins_spent_per_participant()
-        qualified = []
+        qualified: list[AbstractBaseUser] = []
         for userid, mins in per_part.items():
             if mins >= self.min_mins:
                 qualified.append(User.objects.get(id=userid))

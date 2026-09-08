@@ -31,15 +31,15 @@ class ReviewView(AdminView):
     def debug_post(self, request: HttpRequest) -> HttpResponse:
         id: str = request.POST["id"]
 
-        status = request.POST["status"]
-        note_to_maker = request.POST["note_to_maker"]
-        audit_note = request.POST["audit_note"]
-        technical_features = request.POST["technical_features"]
-        deflation_reason = request.POST["deflation_reason"]
+        status: str = request.POST["status"]
+        note_to_maker: str = request.POST["note_to_maker"]
+        audit_note: str = request.POST["audit_note"]
+        technical_features: str = request.POST["technical_features"]
+        deflation_reason: str = request.POST["deflation_reason"]
 
-        final_status = request.POST["final_status"]
-        final_note_to_maker = request.POST["final_note_to_maker"]
-        final_audit_note = request.POST["final_audit_note"]
+        final_status: str = request.POST["final_status"]
+        final_note_to_maker: str = request.POST["final_note_to_maker"]
+        final_audit_note: str = request.POST["final_audit_note"]
 
         ship = get_object_or_404(ProjectShip, id=id)
 

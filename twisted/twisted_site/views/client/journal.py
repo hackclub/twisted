@@ -2,10 +2,11 @@ import math
 import re
 from typing import Any
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from ...models import Journal, Project
+from ...models import Journal, Project, TemplateContext
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
@@ -20,7 +21,7 @@ class NewProjectHackatimeJournal(View):
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
-            context = {}
+            context = TemplateContext()
 
         context["info"] = info
         if self.request.user.is_anonymous:
@@ -105,7 +106,7 @@ class NewProjectUntrackedJournal(View):
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
-            context = {}
+            context = TemplateContext()
 
         context["info"] = info
         if self.request.user.is_anonymous:

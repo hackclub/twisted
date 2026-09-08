@@ -13,7 +13,7 @@ class HomepageView(View):
         else:
             login_enabled = True
 
-        referral_code = request.GET.get("ref")
+        referral_code: str | None = request.GET.get("ref")
 
         response = render(
             request,

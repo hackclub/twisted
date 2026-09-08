@@ -1,6 +1,8 @@
 import random
 import string
+from typing import Any, cast
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
@@ -13,9 +15,10 @@ class ReferralsView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        context = {}
+        context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
 
-        context["profile"] = profile = request.user.profile
+        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        context["profile"] = profile
 
         if profile.my_referral_code == "":
             while True:

@@ -18,9 +18,9 @@ class PathwayListView(AdminView):
 
         pathways = Pathway.objects.order_by("start").all()
 
-        current_pathways = []
-        past_pathways = []
-        future_pathways = []
+        current_pathways: list[Pathway] = []
+        past_pathways: list[Pathway] = []
+        future_pathways: list[Pathway] = []
 
         for pathway in pathways:
             if pathway.in_progress():
@@ -56,18 +56,18 @@ class PathwayCreateView(AdminView):
 
         return render(request, "admin/pathways/create.html", context=context)
 
-    def post(self, request):
-        pathway_name = request.POST.get("name")
+    def post(self, request: HttpRequest) -> HttpResponse:
+        pathway_name: str | None = request.POST.get("name")
 
-        start_date = request.POST.get("startDate")
-        start_time = request.POST.get("startTime")
+        start_date: str | None = request.POST.get("startDate")
+        start_time: str | None = request.POST.get("startTime")
 
-        end_date = request.POST.get("endDate")
-        end_time = request.POST.get("endTime")
+        end_date: str | None = request.POST.get("endDate")
+        end_time: str | None = request.POST.get("endTime")
 
         min_mins = int(request.POST.get("mins", "0"))
 
-        errcontext = {
+        errcontext: dict[str, Any] = {  # pyrefly: ignore[explicit-any]
             "pathway_name": pathway_name,
             "start_date": start_date,
             "start_time": start_time,

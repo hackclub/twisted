@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any
 
 import requests
 
@@ -40,14 +41,15 @@ def me(access_token: str) -> MeResponse:
         headers=authhelper(access_token),
     )
     resp.raise_for_status()
-    data = resp.json()
+    data: dict[str, Any] = resp.json()  # pyrefly: ignore[explicit-any]
+    trust_factor: dict[str, Any] = data["trust_factor"]  # pyrefly: ignore[explicit-any]
     return MeResponse(
         id=data["id"],
         emails=data["emails"],
         slack_id=data["slack_id"],
         gh_username=data["github_username"],
-        trust_level=data["trust_factor"]["trust_level"],
-        trust_value=data["trust_factor"]["trust_value"],
+        trust_level=trust_factor["trust_level"],
+        trust_value=trust_factor["trust_value"],
     )
 
 
@@ -70,9 +72,10 @@ def projects(
         headers=authhelper(access_token),
     )
     resp.raise_for_status()
-    data = resp.json()
-    hackatime_projects = []
-    for project in data["projects"]:
+    data: dict[str, Any] = resp.json()  # pyrefly: ignore[explicit-any]
+    project_dicts: list[dict[str, Any]] = data["projects"]  # pyrefly: ignore[explicit-any]
+    hackatime_projects: list[HackatimeProject] = []
+    for project in project_dicts:
         recent_heartbeat = project["most_recent_heartbeat"]
         dt = datetime.fromisoformat(recent_heartbeat)
         hackatime_projects.append(

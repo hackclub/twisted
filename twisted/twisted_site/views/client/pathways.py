@@ -1,7 +1,11 @@
+from typing import cast
+
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
-from ...models import Pathway
+from ...models import Pathway, Profile
 
 
 # Create your views here.
@@ -10,15 +14,15 @@ class PathwaysView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        profile = request.user.profile
+        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         pathways = Pathway.objects.order_by("start").all()
 
-        current_pathways = []
-        past_pathways = []
-        future_pathways = []
+        current_pathways: list[dict[str, Pathway | int | bool]] = []
+        past_pathways: list[dict[str, Pathway | int | bool]] = []
+        future_pathways: list[dict[str, Pathway | int | bool]] = []
 
         for pathway in pathways:
-            minutes_spent = pathway.mins_spent(request.user)
+            minutes_spent = pathway.mins_spent(cast(AbstractBaseUser, request.user))
             pathway_info = {
                 "pathway": pathway,
                 "minutes_spent": minutes_spent,

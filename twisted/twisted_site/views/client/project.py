@@ -1,4 +1,6 @@
 from itertools import chain
+from operator import attrgetter
+from typing import cast
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
@@ -6,7 +8,13 @@ from django.views import View
 from requests import HTTPError, RequestException
 
 from ... import ari, hackatime
-from ...models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip
+from ...models import (
+    PROJECT_TYPE_CHOICES,
+    Profile,
+    Project,
+    ProjectShip,
+    TemplateContext,
+)
 from ...slack import log_to_channel
 
 
@@ -16,7 +24,7 @@ class ProjectDetail(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        context = {}
+        context = TemplateContext()
 
         profile = request.user.profile
         assert isinstance(profile, Profile)
@@ -29,7 +37,7 @@ class ProjectDetail(View):
         ships = project.ships.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context["journals"] = list(chain(journals, ships))
-        context["journals"].sort(key=lambda x: x.created_at, reverse=True)
+        context["journals"].sort(key=attrgetter("created_at"), reverse=True)
 
         context["first_pass_status"] = "pending"
         context["second_pass_status"] = "pending"
@@ -61,7 +69,7 @@ class ProjectSettings(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        context = {}
+        context = TemplateContext()
 
         project = get_object_or_404(Project, id=id)
         context["project"] = project
@@ -72,7 +80,7 @@ class ProjectSettings(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        profile = request.user.profile
+        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
         try:
