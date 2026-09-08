@@ -32,6 +32,7 @@ class UsersView(AdminView):
         if request.POST.get("action") == "logoutall":
             session_count = Session.objects.count()
             Session.objects.all().delete()
+            assert isinstance(self.audit_log.additional_context, dict)
             self.audit_log.additional_context["action"] = "logoutall"
             self.audit_log.additional_context["sessions_deleted"] = session_count
 
@@ -43,8 +44,9 @@ class UserDetailView(AdminView):
         context = self.get_context_data(page="users", subpage="detail")
         user = get_object_or_404(User, id=id)
 
-        self.audit_log.additional_context["user_pfp__img"] = user.profile.slack_pfp_url
-        self.audit_log.additional_context["user"] = user.profile.slack_username
+        assert isinstance(self.audit_log.additional_context, dict)
+        self.audit_log.additional_context["user_pfp__img"] = user.profile.slack_pfp_url  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        self.audit_log.additional_context["user"] = user.profile.slack_username  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context["user"] = user
         context["login_maybe"] = os.environ.get("LOGIN_ENABLED") == "maybe"
@@ -53,11 +55,12 @@ class UserDetailView(AdminView):
     def post(self, request, id):
         user = get_object_or_404(User, id=id)
 
-        self.audit_log.additional_context["user_pfp__img"] = user.profile.slack_pfp_url
-        self.audit_log.additional_context["user"] = user.profile.slack_username
+        assert isinstance(self.audit_log.additional_context, dict)
+        self.audit_log.additional_context["user_pfp__img"] = user.profile.slack_pfp_url  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        self.audit_log.additional_context["user"] = user.profile.slack_username  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         if request.POST.get("action") == "toggle_is_allowed":
-            prof = user.profile
+            prof = user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             prof.is_allowed = not prof.is_allowed
             self.audit_log.additional_context["is_allowed"] = (
                 f"Set to {prof.is_allowed}"

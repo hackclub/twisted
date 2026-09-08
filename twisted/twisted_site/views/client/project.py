@@ -24,8 +24,8 @@ class ProjectDetail(View):
         project = get_object_or_404(Project, id=id)
         context["project"] = project
 
-        journals = project.journals.all()
-        ships = project.ships.all()
+        journals = project.journals.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        ships = project.ships.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context["journals"] = list(chain(journals, ships))
         context["journals"].sort(key=lambda x: x.created_at, reverse=True)
@@ -115,7 +115,7 @@ class ProjectSettings(View):
         log_to_channel(f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {project.hackatime_project_name or 'None'}\n- *Repo*: {project.repo_url or 'None'}\n- *Demo*: {project.playable_url or 'None'}\n- *Screenshot*: {project.screenshot_url}")
         
         
-        return redirect("fr.projects.detail", project.id)
+        return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
 
 class SubmitProject(View):
@@ -136,7 +136,7 @@ class SubmitProject(View):
         if not project.screenshot_url:
             return redirect("fr.projects.detail", id)
 
-        if not project.user.profile.ysws_eligible:
+        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
             context["info"] = (
                 "You are not YSWS eligible yet! Please get IDVd! Get help with it at #identity-help! (if you think this is a mistake, please ask in #twisted-help)"
             )
@@ -153,7 +153,7 @@ class SubmitProject(View):
 
         project = get_object_or_404(Project, id=id)
         if project.user != request.user:
-            return redirect("fr.projects.detail", project.id)
+            return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
         if project.is_shipped():
             return self.get(
@@ -166,7 +166,7 @@ class SubmitProject(View):
         if not project.screenshot_url:
             return redirect("fr.projects.detail", id)
 
-        if not project.user.profile.ysws_eligible:
+        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
             return self.get(request, id)
         
 
@@ -181,4 +181,4 @@ class SubmitProject(View):
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         log_to_channel(f":shipitparrot: Project *<{project_url}|{project.name}> shipped with *{project.time_logged} minutes*")
         
-        return redirect('fr.projects.detail', project.id)
+        return redirect('fr.projects.detail', project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]

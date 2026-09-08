@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Any
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -67,36 +70,33 @@ class PathwayCreateView(AdminView):
             "min_mins": min_mins,
         }
 
-        if "form validation":
-            if not pathway_name:
-                return self.get(request, "No pathway name typed!", errcontext)
+        if not pathway_name:
+            return self.get(request, "No pathway name typed!", errcontext)
 
-            if not start_date:
-                return self.get(request, "No start date selected!", errcontext)
+        if not start_date:
+            return self.get(request, "No start date selected!", errcontext)
 
-            if not start_time:
-                return self.get(request, "No start time selected!", errcontext)
+        if not start_time:
+            return self.get(request, "No start time selected!", errcontext)
 
-            if not end_date:
-                return self.get(request, "No end date selected!", errcontext)
+        if not end_date:
+            return self.get(request, "No end date selected!", errcontext)
 
-            if not end_time:
-                return self.get(request, "No end time selected!", errcontext)
+        if not end_time:
+            return self.get(request, "No end time selected!", errcontext)
 
-            if min_mins <= 0:
-                return self.get(
-                    request, "Minimum minutes must be greater than zero!", errcontext
-                )
+        if min_mins <= 0:
+            return self.get(
+                request, "Minimum minutes must be greater than zero!", errcontext
+            )
 
-        current_tz_offset = timezone.datetime.now(
-            timezone.get_current_timezone()
-        ).strftime("%z")
+        current_tz_offset = datetime.now(timezone.get_current_timezone()).strftime("%z")
 
-        start = timezone.datetime.strptime(
+        start = datetime.strptime(
             f"{start_date} {start_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
 
-        end = timezone.datetime.strptime(
+        end = datetime.strptime(
             f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
 
@@ -115,6 +115,7 @@ class PathwayDetailView(AdminView):
         pathway = get_object_or_404(Pathway, id=id)
         context["pathway"] = pathway
 
+        assert isinstance(self.audit_log.additional_context, dict)
         self.audit_log.additional_context["pathway_name"] = pathway.name
 
         mins_per_participant = pathway.mins_spent_per_participant()
@@ -122,16 +123,17 @@ class PathwayDetailView(AdminView):
             "profile"
         )
 
-        participants = [
+        participants: list[dict[str, Any]] = [
             {
                 "user": user,
-                "mins": mins_per_participant[user.id],
+                "mins": mins_per_participant[user.id],  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 "percent": min(
-                    100, round(mins_per_participant[user.id] / pathway.min_mins * 100)
+                    100,
+                    round(mins_per_participant[user.id] / pathway.min_mins * 100),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 )
                 if pathway.min_mins
                 else 0,
-                "qualified": mins_per_participant[user.id] >= pathway.min_mins,
+                "qualified": mins_per_participant[user.id] >= pathway.min_mins,  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             }
             for user in users
         ]

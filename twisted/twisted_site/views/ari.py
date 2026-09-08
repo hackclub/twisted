@@ -183,7 +183,7 @@ class AriView(View):
         try:
             project_id = int(external_id.removeprefix("twisted-"))
             project = Project.objects.get(id=project_id)
-        except (ValueError, Project.DoesNotExist):  # ty:ignore[unresolved-attribute]
+        except (ValueError, Project.DoesNotExist):
             return HttpResponseBadRequest("Invalid external_id")
 
         event = data.get("event")
@@ -200,7 +200,7 @@ class AriView(View):
             project.hackatime_project_name = data["ship"]["hackatime_projects"][0]
             project.save()
             slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+                channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_ship_update_blocks(project, data["changes"]),
                 text=f"Your ship for {project.project_name} has been updated by a reviewer!",
             )
@@ -214,12 +214,12 @@ class AriView(View):
 
             ship: ProjectShip = project.latest_ship()
 
-            ship.status = "requested_changes"  # ty:ignore[invalid-assignment]
+            ship.status = "requested_changes"
             ship.note_to_maker = note_to_maker
             ship.save()
 
             slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+                channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_changes_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} needs some changes!",
             )
@@ -232,7 +232,7 @@ class AriView(View):
             justification = review.get("justification") or {}
 
             ship: ProjectShip = project.latest_ship()
-            ship.status = "approved"  # ty:ignore[invalid-assignment]
+            ship.status = "approved"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
             ship.technical_features = justification.get("technical_features", "")
@@ -240,7 +240,7 @@ class AriView(View):
             ship.save()
 
             slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+                channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_approved_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} was approved!",
             )
@@ -253,7 +253,7 @@ class AriView(View):
             justification = review.get("justification") or {}
 
             ship: ProjectShip = project.latest_ship()
-            ship.status = "rejected"  # ty:ignore[invalid-assignment]
+            ship.status = "rejected"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
             ship.technical_features = justification.get("technical_features", "")
@@ -261,7 +261,7 @@ class AriView(View):
             ship.save()
 
             slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+                channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_rejected_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} was rejected.",
             )
@@ -270,11 +270,11 @@ class AriView(View):
 
         if data["event"] == "review.reverted":
             ship: ProjectShip = project.latest_ship()
-            ship.status = "pending"  # ty:ignore[invalid-assignment]
+            ship.status = "pending"
             ship.save()
 
             slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+                channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_reverted_blocks(project),
                 text=f"The decision on your ship for {project.project_name} was reverted.",
             )
@@ -283,11 +283,11 @@ class AriView(View):
 
         if data["event"] == "review.requeued":
             ship: ProjectShip = project.latest_ship()
-            ship.status = "pending"  # ty:ignore[invalid-assignment]
+            ship.status = "pending"
             ship.save()
 
             slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+                channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_requeued_blocks(project),
                 text=f"Your ship for {project.project_name} is back in the review queue.",
             )

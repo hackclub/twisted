@@ -31,3 +31,10 @@ dependencies = [
 
 [tool.ruff.lint.per-file-ignores]
 "*/migrations/*.py" = ["RUF012"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
+[tool.pyrefly]
+infer-with-first-use = false

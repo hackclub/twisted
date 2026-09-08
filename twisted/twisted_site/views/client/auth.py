@@ -85,19 +85,23 @@ class AuthCallbackView(View):
 
         try:
             slack_user = slack_bot.users_info(user=slack_id)["user"]
+            assert isinstance(slack_user, dict), "Slack users_info missing user"
             slack_profile = slack_user["profile"]
+            assert isinstance(slack_profile, dict), "Slack user missing profile"
 
-            display_name = slack_profile.get("display_name") or slack_profile.get(
-                "real_name"
+            display_name = (
+                slack_profile.get("display_name")
+                or slack_profile.get("real_name")
+                or name
             )
-            avatar_url = slack_profile.get("image_512")
+            avatar_url = slack_profile.get("image_512") or os.environ["DEFAULT_PFP"]
 
         except Exception:
             logger.exception("Slack profile fetch failed")
             display_name = name
             avatar_url = os.environ["DEFAULT_PFP"]
 
-        profile, created = Profile.objects.get_or_create(user=user)  # ty:ignore[unresolved-attribute]
+        profile, created = Profile.objects.get_or_create(user=user)
         profile.verification_status = verification_status
         profile.slack_id = slack_id
         profile.slack_username = display_name
