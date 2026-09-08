@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0024_auditlog_timestamp'),
+        ("twisted_site", "0024_auditlog_timestamp"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='auditlog',
-            name='additional_context',
+            model_name="auditlog",
+            name="additional_context",
             field=models.JSONField(default=None, null=True),
         ),
     ]

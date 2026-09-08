@@ -1,8 +1,29 @@
-from .homepage import HomepageView, FaqsView
 from .dashboard import DashboardView
-from .projects import ListProjects, CreateProject
-from .project import ProjectDetail, ProjectSettings, SubmitProject
-from .journal import NewProjectHackatimeJournal, NewProjectUntrackedJournal, DeleteJournal
-from .pathways import PathwaysView
-from .referrals import ReferralsView
 from .discover import DiscoverView
+from .homepage import FaqsView, HomepageView
+from .journal import (
+    DeleteJournal,
+    NewProjectHackatimeJournal,
+    NewProjectUntrackedJournal,
+)
+from .pathways import PathwaysView
+from .project import ProjectDetail, ProjectSettings, SubmitProject
+from .projects import CreateProject, ListProjects
+from .referrals import ReferralsView
+
+__all__ = [
+    "CreateProject",
+    "DashboardView",
+    "DeleteJournal",
+    "DiscoverView",
+    "FaqsView",
+    "HomepageView",
+    "ListProjects",
+    "NewProjectHackatimeJournal",
+    "NewProjectUntrackedJournal",
+    "PathwaysView",
+    "ProjectDetail",
+    "ProjectSettings",
+    "ReferralsView",
+    "SubmitProject",
+]

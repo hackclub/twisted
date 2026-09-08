@@ -1,15 +1,16 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django.views import View
-from django.shortcuts import render, redirect
-from ...models import Project, PROJECT_TYPE_CHOICES
+
+from ...models import PROJECT_TYPE_CHOICES, Project
 
 
 # Create your views here.
 class ListProjects(View):
     def get(self, request):
         if self.request.user.is_anonymous:
-            return redirect('homepage')
-        
+            return redirect("homepage")
+
         profile = request.user.profile
 
         projects = request.user.projects.all()
@@ -24,14 +25,14 @@ class ListProjects(View):
 class CreateProject(View):
     def get(self, request):
         if self.request.user.is_anonymous:
-            return redirect('homepage')
-        
+            return redirect("homepage")
+
         return render(request, "client/projects/create.html")
 
     def post(self, request):
         if self.request.user.is_anonymous:
-            return redirect('homepage')
-        
+            return redirect("homepage")
+
         project_name = request.POST["name"]
         project_description = request.POST["description"]
         project_type = request.POST["type"]
@@ -46,4 +47,4 @@ class CreateProject(View):
             project_type=project_type,
         )
 
-        return redirect('fr.projects')
+        return redirect("fr.projects")

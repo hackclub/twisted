@@ -1,12 +1,13 @@
-from requests import HTTPError, RequestException
 from itertools import chain
-from markdown_it.rules_inline import image
-from django.http import JsonResponse, HttpResponse
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.shortcuts import render, redirect, get_object_or_404
-from ...models import Profile, Project, Journal, ProjectShip, PROJECT_TYPE_CHOICES
-from ... import hackatime
-from ... import ari
+from requests import HTTPError, RequestException
+
+from ... import ari, hackatime
+from ...models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip
+
 
 # Create your views here.
 class ProjectDetail(View):
@@ -111,7 +112,10 @@ class ProjectSettings(View):
 
 
 class SubmitProject(View):
-    def get(self, request, id, context={}):
+    def get(self, request, id, context=None):
+        if context is None:
+            context = {}
+
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -133,13 +137,16 @@ class SubmitProject(View):
         context["project"] = project
         return render(request, "client/projects/ship.html", context)
 
-    def post(self, request, id, context={}):
+    def post(self, request, id, context=None):
+        if context is None:
+            context = {}
+
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
         project = get_object_or_404(Project, id=id)
         if project.user != request.user:
-            return redirect('fr.projects.detail', project.id)
+            return redirect("fr.projects.detail", project.id)
 
         if project.is_shipped():
             return self.get(
@@ -159,7 +166,7 @@ class SubmitProject(View):
         ship.save()
         try:
             ari.send_ship(ship)
-        except Exception as e:
+        except Exception:
             ship.delete()
-            raise e
-        return redirect('fr.projects.detail', project.id)
+            raise
+        return redirect("fr.projects.detail", project.id)

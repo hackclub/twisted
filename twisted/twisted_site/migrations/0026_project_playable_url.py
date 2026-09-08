@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0025_alter_auditlog_additional_context'),
+        ("twisted_site", "0025_alter_auditlog_additional_context"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='playable_url',
-            field=models.CharField(blank=True, default='', max_length=200),
+            model_name="project",
+            name="playable_url",
+            field=models.CharField(blank=True, default="", max_length=200),
         ),
     ]

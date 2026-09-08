@@ -4,16 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0004_alter_journal_project_alter_project_user'),
+        ("twisted_site", "0004_alter_journal_project_alter_project_user"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='project_type',
-            field=models.CharField(choices=[('software', 'Software'), ('hardware', 'Hardware')], default='', max_length=100),
+            model_name="project",
+            name="project_type",
+            field=models.CharField(
+                choices=[("software", "Software"), ("hardware", "Hardware")],
+                default="",
+                max_length=100,
+            ),
             preserve_default=False,
         ),
     ]
