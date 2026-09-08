@@ -19,6 +19,7 @@ def _quote_block(value: str) -> str:
     lines = _escape_mrkdwn(value).splitlines()
     if len(lines) == 0:
         lines = [""]
+
     return "\n".join(f"> {line}" for line in lines)
 
 

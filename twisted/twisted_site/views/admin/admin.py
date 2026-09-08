@@ -81,7 +81,7 @@ class AdminView(View):
     ) -> HttpResponseBase:
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        if not request.user.profile.is_staff:  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,

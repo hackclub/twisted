@@ -1,6 +1,5 @@
 import math
 import re
-from typing import Any
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render

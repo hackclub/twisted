@@ -54,7 +54,7 @@ class CreateProject(View):
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
         log_to_channel(
-            f"*{request.user.profile.slack_username}* created a <{project_url}|new project>!\n- *Name*: {project_name}\n- *Description*: {project_description}\n- {project_type.title()}"
+            f"*{request.user.profile.slack_username}* created a <{project_url}|new project>!\n- *Name*: {project_name}\n- *Description*: {project_description}\n- {project_type.title()}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         )
 
         return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]

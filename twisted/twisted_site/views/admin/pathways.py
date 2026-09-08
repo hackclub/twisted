@@ -129,7 +129,7 @@ class PathwayDetailView(AdminView):
             "profile"
         )
 
-        participants: list[dict[str, Any]] = [
+        participants: list[dict[str, Any]] = [  # pyrefly: ignore[explicit-any]
             {
                 "user": user,
                 "mins": mins_per_participant[user.id],  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
@@ -143,7 +143,7 @@ class PathwayDetailView(AdminView):
             }
             for user in users
         ]
-        participants.sort(key=lambda p: p["mins"], reverse=True)
+        participants.sort(key=lambda p: p["mins"], reverse=True)  # pyrefly: ignore[implicit-any-lambda]
 
         context["participants"] = participants
         context["qualified_count"] = sum(1 for p in participants if p["qualified"])

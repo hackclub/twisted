@@ -37,7 +37,7 @@ class LoginView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         if (
             request.user.is_authenticated
-            and request.user.profile.hackatime_access_token
+            and request.user.profile.hackatime_access_token  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         ):
             return redirect("dashboard")
 

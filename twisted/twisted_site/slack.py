@@ -13,7 +13,7 @@ slack_bot = WebClient(token=SLACK_TOKEN)
 def send_blocks(
     *,
     channel: str,
-    blocks: list[dict[str, Any]],
+    blocks: list[dict[str, Any]],  # pyrefly: ignore[explicit-any]
     text: str = " ",
     **kwargs: Any,  # pyrefly: ignore[explicit-any]
 ) -> SlackResponse:
