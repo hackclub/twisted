@@ -2,18 +2,16 @@
 {% load static time_filters %}
 {% block body %}
     <script type="speculationrules">
-{
-  "prerender": [
-    {
-      "source": "list",
-      "urls": [
-        "{% url 'fr.projects.journals.new.hackatime' project.id %}",
-        "{% url 'fr.projects.journals.new.untracked' project.id %}"
-      ],
-      "eagerness": "eager"
-    }
-  ]
-}
+        {
+            "prerender": [{
+                "source": "list",
+                "urls": [
+                    "{% url 'fr.projects.journals.new.hackatime' project.id %}",
+                    "{% url 'fr.projects.journals.new.untracked' project.id %}"
+                ],
+                "eagerness": "eager"
+            }]
+        }
     </script>
     <div class="bg-surface text-foreground flex flex-col w-full h-full font-vintage">
         {% if not success %}

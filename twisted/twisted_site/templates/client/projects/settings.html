@@ -123,63 +123,63 @@
         </form>
     </div>
     <script>
-    const screenshotInput = document.getElementById("screenshot");
-    const screenshotUrlField = document.getElementById("screenshot_url");
-    const screenshotPreview = document.getElementById("screenshot_preview");
-    const screenshotStatus = document.getElementById("screenshot_status");
+        const screenshotInput = document.getElementById("screenshot");
+        const screenshotUrlField = document.getElementById("screenshot_url");
+        const screenshotPreview = document.getElementById("screenshot_preview");
+        const screenshotStatus = document.getElementById("screenshot_status");
 
-    function uploadScreenshot(file) {
-        screenshotStatus.textContent = "Uploading...";
+        function uploadScreenshot(file) {
+            screenshotStatus.textContent = "Uploading...";
 
-        const formData = new FormData();
-        formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
-        formData.append("file", file);
-        formData.append("ref", "project_screenshot");
+            const formData = new FormData();
+            formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+            formData.append("file", file);
+            formData.append("ref", "project_screenshot");
 
-        fetch("{% url 'misc.upload_file' %}", {
-            method: "POST",
-            body: formData
-        })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === "ok") {
-                    screenshotUrlField.value = result.link;
-                    screenshotPreview.src = result.link;
-                    screenshotPreview.classList.remove("hidden");
-                    screenshotStatus.textContent = "";
-                } else {
-                    screenshotStatus.textContent = `Error: ${result.reason || result.error}`;
+            fetch("{% url 'misc.upload_file' %}", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === "ok") {
+                        screenshotUrlField.value = result.link;
+                        screenshotPreview.src = result.link;
+                        screenshotPreview.classList.remove("hidden");
+                        screenshotStatus.textContent = "";
+                    } else {
+                        screenshotStatus.textContent = `Error: ${result.reason || result.error}`;
+                    }
+                })
+                .catch(() => {
+                    screenshotStatus.textContent = "Error: upload failed";
+                });
+        }
+
+        screenshotInput.addEventListener("change", () => {
+            const file = screenshotInput.files[0];
+            if (!file) {
+                return;
+            }
+
+            uploadScreenshot(file);
+        });
+
+        document.addEventListener("paste", (event) => {
+            const items = (event.clipboardData || window.clipboardData).items;
+
+            for (let i = 0; i < items.length; i++) {
+                if (!items[i].type.startsWith("image/")) {
+                    continue;
                 }
-            })
-            .catch(() => {
-                screenshotStatus.textContent = "Error: upload failed";
-            });
-    }
 
-    screenshotInput.addEventListener("change", () => {
-        const file = screenshotInput.files[0];
-        if (!file) {
-            return;
-        }
+                const blob = items[i].getAsFile();
+                if (blob) {
+                    uploadScreenshot(blob);
+                }
 
-        uploadScreenshot(file);
-    });
-
-    document.addEventListener("paste", (event) => {
-        const items = (event.clipboardData || window.clipboardData).items;
-
-        for (let i = 0; i < items.length; i++) {
-            if (!items[i].type.startsWith("image/")) {
-                continue;
+                break;
             }
-
-            const blob = items[i].getAsFile();
-            if (blob) {
-                uploadScreenshot(blob);
-            }
-
-            break;
-        }
-    });
+        });
     </script>
 {% endblock body %}

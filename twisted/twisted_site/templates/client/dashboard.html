@@ -198,397 +198,401 @@
         </button>
     </template>
     <script>
-    let windowCounter = 0;
-    let currentMaximisedWindow = null;
+        let windowCounter = 0;
+        let currentMaximisedWindow = null;
 
-    function getSafeInternalUrl(urlValue) {
-        try {
-            const parsed = new URL(urlValue, window.location.origin);
-            const allowedProtocols = ["http:", "https:"];
-            if (!allowedProtocols.includes(parsed.protocol)) return null;
-            if (parsed.origin !== window.location.origin) return null;
-            return parsed.href;
-        } catch (_) {
-            return null;
-        }
-    }
-
-    window.addEventListener( // newWindow from iframe events
-        "message",
-        (event) => {
-            if (event.origin !== window.location.origin) return;
-            const data = event.data;
-            if (data.type != "internal") return;
-            if (data.action == "open") {
-                let w = 600,
-                    h = 600;
-                if (data.width) w = data.width;
-                if (data.height) h = data.height;
-                const safeSrc = getSafeInternalUrl(data.src);
-                if (!safeSrc) return;
-                newWindow(data.title, safeSrc, w, h);
+        function getSafeInternalUrl(urlValue) {
+            try {
+                const parsed = new URL(urlValue, window.location.origin);
+                const allowedProtocols = ["http:", "https:"];
+                if (!allowedProtocols.includes(parsed.protocol)) return null;
+                if (parsed.origin !== window.location.origin) return null;
+                return parsed.href;
+            } catch (_) {
+                return null;
             }
-        },
-        false,
-    );
-
-    function newWindow(title, src, w = 600, h = 600, x=null, y=null) {
-        const template = document.getElementById("window-template");
-        const container = document.getElementById("windows-container");
-        const clone = template.content.cloneNode(true);
-        const win = clone.querySelector(".window");
-        const id = "win-" + ++windowCounter;
-        win.dataset.winId = id;
-
-        win.querySelector(".title-bar-text").textContent = title;
-        const safeSrc = getSafeInternalUrl(src);
-        if (!safeSrc) return;
-        win.querySelector(".src-frame").src = safeSrc;
-        console.log(x, y);
-
-        if (x === null) x = Math.random() * (window.innerWidth - w);
-        if (y === null) y = Math.random() * (window.innerHeight - w);
-
-
-        win.style.left = x + "px";
-        win.style.top = y + "px";
-        win.style.width = w + "px";
-        win.style.height = h + "px";
-        container.appendChild(clone);
-
-        const realWin = container.querySelector('[data-win-id="' + id + '"]');
-
-        // Taskbar button with round png icon
-        const taskbutton_template = document.getElementById("taskbutton-template");
-        const template_clone = taskbutton_template.content.cloneNode(true);
-        const taskBtn = template_clone.querySelector('button')
-        taskBtn.dataset.winId = id;
-        taskBtn.querySelector(".taskbtn-title").textContent = title;
-        document.getElementById("taskbar-windows").appendChild(taskBtn);
-
-        realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
-        dragWindow(realWin);
-        initResizeHandles(realWin);
-        focusWindow(id);
-        realWin.querySelector(".max-button").addEventListener("click", () => {
-            fullscreenWindow(realWin);
-        });
-        realWin.querySelector(".title-bar-controls").addEventListener("mousedown", (event) => {
-            event.stopPropagation();
-        });
-        realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
-            frame = realWin.querySelector(".src-frame");
-            frame.src = frame.src;
-        });
-        realWin.querySelector(".close-button").addEventListener("mouseup", () => {
-            realWin.remove();
-            taskBtn.remove();
-        });
-    }
-
-    function fullscreenWindow(win) {
-        if (currentMaximisedWindow?.win === win) {
-            const previous = currentMaximisedWindow;
-
-            win.style.position = previous.position;
-            win.style.left = previous.left;
-            win.style.top = previous.top;
-            win.style.right = previous.right;
-            win.style.bottom = previous.bottom;
-            win.style.width = previous.width;
-            win.style.height = previous.height;
-
-            win.classList.add("resize");
-
-            currentMaximisedWindow = null;
-            return;
         }
 
-        if (currentMaximisedWindow) {
-            fullscreenWindow(currentMaximisedWindow.win);
+        window.addEventListener( // newWindow from iframe events
+            "message",
+            (event) => {
+                if (event.origin !== window.location.origin) return;
+                const data = event.data;
+                if (data.type != "internal") return;
+                if (data.action == "open") {
+                    let w = 600,
+                        h = 600;
+                    if (data.width) w = data.width;
+                    if (data.height) h = data.height;
+                    const safeSrc = getSafeInternalUrl(data.src);
+                    if (!safeSrc) return;
+                    newWindow(data.title, safeSrc, w, h);
+                }
+            },
+            false,
+        );
+
+        function newWindow(title, src, w = 600, h = 600, x = null, y = null) {
+            const template = document.getElementById("window-template");
+            const container = document.getElementById("windows-container");
+            const clone = template.content.cloneNode(true);
+            const win = clone.querySelector(".window");
+            const id = "win-" + ++windowCounter;
+            win.dataset.winId = id;
+
+            win.querySelector(".title-bar-text").textContent = title;
+            const safeSrc = getSafeInternalUrl(src);
+            if (!safeSrc) return;
+            win.querySelector(".src-frame").src = safeSrc;
+            console.log(x, y);
+
+            if (x === null) x = Math.random() * (window.innerWidth - w);
+            if (y === null) y = Math.random() * (window.innerHeight - w);
+
+
+            win.style.left = x + "px";
+            win.style.top = y + "px";
+            win.style.width = w + "px";
+            win.style.height = h + "px";
+            container.appendChild(clone);
+
+            const realWin = container.querySelector('[data-win-id="' + id + '"]');
+
+            // Taskbar button with round png icon
+            const taskbutton_template = document.getElementById("taskbutton-template");
+            const template_clone = taskbutton_template.content.cloneNode(true);
+            const taskBtn = template_clone.querySelector('button')
+            taskBtn.dataset.winId = id;
+            taskBtn.querySelector(".taskbtn-title").textContent = title;
+            document.getElementById("taskbar-windows").appendChild(taskBtn);
+
+            realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
+            dragWindow(realWin);
+            initResizeHandles(realWin);
+            focusWindow(id);
+            realWin.querySelector(".max-button").addEventListener("click", () => {
+                fullscreenWindow(realWin);
+            });
+            realWin.querySelector(".title-bar-controls").addEventListener("mousedown", (event) => {
+                event.stopPropagation();
+            });
+            realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
+                frame = realWin.querySelector(".src-frame");
+                frame.src = frame.src;
+            });
+            realWin.querySelector(".close-button").addEventListener("mouseup", () => {
+                realWin.remove();
+                taskBtn.remove();
+            });
         }
 
-        currentMaximisedWindow = {
-            win,
-            position: win.style.position,
-            left: win.style.left,
-            top: win.style.top,
-            right: win.style.right,
-            bottom: win.style.bottom,
-            width: win.style.width,
-            height: win.style.height,
-        };
+        function fullscreenWindow(win) {
+            if (currentMaximisedWindow?.win === win) {
+                const previous = currentMaximisedWindow;
 
-        const taskbar = document.getElementById("taskbar");
-        const taskbarHeight = taskbar?.offsetHeight || 48;
+                win.style.position = previous.position;
+                win.style.left = previous.left;
+                win.style.top = previous.top;
+                win.style.right = previous.right;
+                win.style.bottom = previous.bottom;
+                win.style.width = previous.width;
+                win.style.height = previous.height;
 
-        win.classList.remove("resize");
+                win.classList.add("resize");
 
-        win.style.position = "fixed";
-        win.style.left = "0";
-        win.style.top = "0";
-        win.style.right = "0";
-        win.style.bottom = `${taskbarHeight}px`;
-        win.style.width = "auto";
-        win.style.height = "auto";
-    }
-
-    function focusWindow(id) {
-        document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
-        const win = document.querySelector('.window[data-win-id="' + id + '"]');
-
-        container = document.getElementById("windows-container");
-        container.moveBefore(win, null);
-
-        document.querySelectorAll(".window").forEach((w) => {
-            w.style.zIndex = "";
-            w.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "none"));
-        });
-        win.style.zIndex = "100";
-        win.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "auto"));
-
-        const btn = document.querySelector('#taskbar-windows button[data-win-id="' + id + '"]');
-        if (btn) btn.classList.add("!bg-twisted-999");
-    }
-
-    function dragWindow(mywindow) {
-        const titleBar = mywindow.getElementsByClassName("title-bar")[0];
-        let dragging = false,
-            startX = 0,
-            startY = 0,
-            origX = 0,
-            origY = 0,
-            pendingX = 0,
-            pendingY = 0,
-            rafId = null;
-
-        function apply() {
-            rafId = null;
-            mywindow.style.left = pendingX + "px";
-            mywindow.style.top = pendingY + "px";
-        }
-
-        function onMove(e) {
-            if (currentMaximisedWindow != null && currentMaximisedWindow.win == mywindow) {
+                currentMaximisedWindow = null;
                 return;
             }
-            if (!dragging) return;
-            e.preventDefault();
-            const rect = mywindow.getBoundingClientRect();
-            let x = origX + (e.clientX - startX);
-            let y = origY + (e.clientY - startY);
-            const viewportWidth = document.documentElement.clientWidth;
-            const viewportHeight = document.documentElement.clientHeight;
-            const maxX = Math.max(0, viewportWidth - rect.width);
-            const maxY = Math.max(0, viewportHeight - rect.height);
-            x = Math.max(0, Math.min(x, maxX));
-            y = Math.max(0, Math.min(y, maxY));
-            pendingX = x;
-            pendingY = y;
-            // throttle DOM writes to one per animation frame for smoothness
-            if (rafId === null) rafId = requestAnimationFrame(apply);
-        }
 
-        function onUp() {
-            dragging = false;
-            document.body.style.userSelect = "";
-            document.removeEventListener("mousemove", onMove);
-            document.removeEventListener("mouseup", onUp);
-            if (rafId !== null) {
-                cancelAnimationFrame(rafId);
-                rafId = null;
+            if (currentMaximisedWindow) {
+                fullscreenWindow(currentMaximisedWindow.win);
             }
+
+            currentMaximisedWindow = {
+                win,
+                position: win.style.position,
+                left: win.style.left,
+                top: win.style.top,
+                right: win.style.right,
+                bottom: win.style.bottom,
+                width: win.style.width,
+                height: win.style.height,
+            };
+
+            const taskbar = document.getElementById("taskbar");
+            const taskbarHeight = taskbar?.offsetHeight || 48;
+
+            win.classList.remove("resize");
+
+            win.style.position = "fixed";
+            win.style.left = "0";
+            win.style.top = "0";
+            win.style.right = "0";
+            win.style.bottom = `${taskbarHeight}px`;
+            win.style.width = "auto";
+            win.style.height = "auto";
         }
 
-        titleBar.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-            dragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            origX = mywindow.offsetLeft;
-            origY = mywindow.offsetTop;
-            document.body.style.userSelect = "none";
-            document.addEventListener("mousemove", onMove);
-            document.addEventListener("mouseup", onUp);
-        });
-    }
+        function focusWindow(id) {
+            document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
+            const win = document.querySelector('.window[data-win-id="' + id + '"]');
 
-    function initResizeHandles(mywindow) {
-        const handles = mywindow.querySelectorAll(".resize-handle");
-        const frame = mywindow.querySelector(".src-frame");
-        handles.forEach((handle) => {
-            handle.addEventListener("mousedown", (e) => {
+            container = document.getElementById("windows-container");
+            container.moveBefore(win, null);
+
+            document.querySelectorAll(".window").forEach((w) => {
+                w.style.zIndex = "";
+                w.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "none"));
+            });
+            win.style.zIndex = "100";
+            win.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "auto"));
+
+            const btn = document.querySelector('#taskbar-windows button[data-win-id="' + id + '"]');
+            if (btn) btn.classList.add("!bg-twisted-999");
+        }
+
+        function dragWindow(mywindow) {
+            const titleBar = mywindow.getElementsByClassName("title-bar")[0];
+            let dragging = false,
+                startX = 0,
+                startY = 0,
+                origX = 0,
+                origY = 0,
+                pendingX = 0,
+                pendingY = 0,
+                rafId = null;
+
+            function apply() {
+                rafId = null;
+                mywindow.style.left = pendingX + "px";
+                mywindow.style.top = pendingY + "px";
+            }
+
+            function onMove(e) {
+                if (currentMaximisedWindow != null && currentMaximisedWindow.win == mywindow) {
+                    return;
+                }
+                if (!dragging) return;
                 e.preventDefault();
-                if (!mywindow.classList.contains("resize")) return;
-                const dir = handle.classList[1].replace("resize-", "");
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startLeft = mywindow.offsetLeft;
-                const startTop = mywindow.offsetTop;
-                const startWidth = mywindow.offsetWidth;
-                const startHeight = mywindow.offsetHeight;
-                const minW = 200;
-                const minH = 200;
-                const oldPointerEvents = frame.style.pointerEvents;
-                frame.style.pointerEvents = "none";
+                const rect = mywindow.getBoundingClientRect();
+                let x = origX + (e.clientX - startX);
+                let y = origY + (e.clientY - startY);
+                const viewportWidth = document.documentElement.clientWidth;
+                const viewportHeight = document.documentElement.clientHeight;
+                const maxX = Math.max(0, viewportWidth - rect.width);
+                const maxY = Math.max(0, viewportHeight - rect.height);
+                x = Math.max(0, Math.min(x, maxX));
+                y = Math.max(0, Math.min(y, maxY));
+                pendingX = x;
+                pendingY = y;
+                // throttle DOM writes to one per animation frame for smoothness
+                if (rafId === null) rafId = requestAnimationFrame(apply);
+            }
 
-                function onMove(ev) {
-                    const dx = ev.clientX - startX;
-                    const dy = ev.clientY - startY;
-                    let newLeft = startLeft;
-                    let newTop = startTop;
-                    let newWidth = startWidth;
-                    let newHeight = startHeight;
-
-                    if (dir.includes("e")) newWidth = Math.max(minW, startWidth + dx);
-                    if (dir.includes("s")) newHeight = Math.max(minH, startHeight + dy);
-                    if (dir.includes("w")) {
-                        newWidth = Math.max(minW, startWidth - dx);
-                        newLeft = startLeft + (startWidth - newWidth);
-                    }
-                    if (dir.includes("n")) {
-                        newHeight = Math.max(minH, startHeight - dy);
-                        newTop = startTop + (startHeight - newHeight);
-                    }
-
-                    mywindow.style.left = newLeft + "px";
-                    mywindow.style.top = newTop + "px";
-                    mywindow.style.width = newWidth + "px";
-                    mywindow.style.height = newHeight + "px";
+            function onUp() {
+                dragging = false;
+                document.body.style.userSelect = "";
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+                if (rafId !== null) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
                 }
+            }
 
-                function onUp() {
-                    frame.style.pointerEvents = oldPointerEvents;
-                    document.removeEventListener("mousemove", onMove);
-                    document.removeEventListener("mouseup", onUp);
-                    document.body.style.userSelect = "";
-                }
-
+            titleBar.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                dragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                origX = mywindow.offsetLeft;
+                origY = mywindow.offsetTop;
                 document.body.style.userSelect = "none";
                 document.addEventListener("mousemove", onMove);
                 document.addEventListener("mouseup", onUp);
             });
+        }
+
+        function initResizeHandles(mywindow) {
+            const handles = mywindow.querySelectorAll(".resize-handle");
+            const frame = mywindow.querySelector(".src-frame");
+            handles.forEach((handle) => {
+                handle.addEventListener("mousedown", (e) => {
+                    e.preventDefault();
+                    if (!mywindow.classList.contains("resize")) return;
+                    const dir = handle.classList[1].replace("resize-", "");
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startLeft = mywindow.offsetLeft;
+                    const startTop = mywindow.offsetTop;
+                    const startWidth = mywindow.offsetWidth;
+                    const startHeight = mywindow.offsetHeight;
+                    const minW = 200;
+                    const minH = 200;
+                    const oldPointerEvents = frame.style.pointerEvents;
+                    frame.style.pointerEvents = "none";
+
+                    function onMove(ev) {
+                        const dx = ev.clientX - startX;
+                        const dy = ev.clientY - startY;
+                        let newLeft = startLeft;
+                        let newTop = startTop;
+                        let newWidth = startWidth;
+                        let newHeight = startHeight;
+
+                        if (dir.includes("e")) newWidth = Math.max(minW, startWidth + dx);
+                        if (dir.includes("s")) newHeight = Math.max(minH, startHeight + dy);
+                        if (dir.includes("w")) {
+                            newWidth = Math.max(minW, startWidth - dx);
+                            newLeft = startLeft + (startWidth - newWidth);
+                        }
+                        if (dir.includes("n")) {
+                            newHeight = Math.max(minH, startHeight - dy);
+                            newTop = startTop + (startHeight - newHeight);
+                        }
+
+                        mywindow.style.left = newLeft + "px";
+                        mywindow.style.top = newTop + "px";
+                        mywindow.style.width = newWidth + "px";
+                        mywindow.style.height = newHeight + "px";
+                    }
+
+                    function onUp() {
+                        frame.style.pointerEvents = oldPointerEvents;
+                        document.removeEventListener("mousemove", onMove);
+                        document.removeEventListener("mouseup", onUp);
+                        document.body.style.userSelect = "";
+                    }
+
+                    document.body.style.userSelect = "none";
+                    document.addEventListener("mousemove", onMove);
+                    document.addEventListener("mouseup", onUp);
+                });
+            });
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = now.getMinutes().toString().padStart(2, "0");
+            const ampm = h >= 12 ? "PM" : "AM";
+            h = h % 12 || 12;
+            document.getElementById("taskbar-clock").textContent = h + ":" + m + " " + ampm;
+        }
+
+        function toggleStartMenu(event) {
+            event.stopPropagation();
+            const menu = document.getElementById("start-menu");
+            menu.classList.toggle("hidden");
+        }
+
+        document.addEventListener("click", (e) => {
+            const menu = document.getElementById("start-menu");
+            if (!menu.classList.contains("hidden") && !menu.contains(e.target)) {
+                menu.classList.add("hidden");
+            }
         });
-    }
 
-    function updateClock() {
-        const now = new Date();
-        let h = now.getHours();
-        const m = now.getMinutes().toString().padStart(2, "0");
-        const ampm = h >= 12 ? "PM" : "AM";
-        h = h % 12 || 12;
-        document.getElementById("taskbar-clock").textContent = h + ":" + m + " " + ampm;
-    }
+        updateClock();
+        setInterval(updateClock, 1000);
 
-    function toggleStartMenu(event) {
-        event.stopPropagation();
-        const menu = document.getElementById("start-menu");
-        menu.classList.toggle("hidden");
-    }
+        const music = document.getElementById("bg-music");
+        const savedTime = parseFloat(sessionStorage.getItem("musicTime") || "0");
+        const wasPlaying = sessionStorage.getItem("musicPlaying") === "true";
+        if (savedTime) music.currentTime = savedTime;
 
-    document.addEventListener("click", (e) => {
-        const menu = document.getElementById("start-menu");
-        if (!menu.classList.contains("hidden") && !menu.contains(e.target)) {
-            menu.classList.add("hidden");
+        let audioCtx,
+            analyser,
+            dataArray,
+            sourceConnected = false;
+        const canvas = document.getElementById("spectrum");
+        const ctx = canvas ? canvas.getContext("2d") : null;
+
+        function initAudioGraph() {
+            if (sourceConnected) return;
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            audioCtx = new AC();
+            const source = audioCtx.createMediaElementSource(music);
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 64;
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            sourceConnected = true;
+            drawSpectrum();
         }
-    });
 
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    const music = document.getElementById("bg-music");
-    const savedTime = parseFloat(sessionStorage.getItem("musicTime") || "0");
-    const wasPlaying = sessionStorage.getItem("musicPlaying") === "true";
-    if (savedTime) music.currentTime = savedTime;
-
-    let audioCtx,
-        analyser,
-        dataArray,
-        sourceConnected = false;
-    const canvas = document.getElementById("spectrum");
-    const ctx = canvas ? canvas.getContext("2d") : null;
-
-    function initAudioGraph() {
-        if (sourceConnected) return;
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        audioCtx = new AC();
-        const source = audioCtx.createMediaElementSource(music);
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 64;
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        sourceConnected = true;
-        drawSpectrum();
-    }
-
-    function playMusic() {
-        initAudioGraph();
-        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-        music.play().catch(() => { });
-    }
-
-    function toggleMusic() {
-        if (music.paused) {
-            playMusic();
-        } else {
-            music.pause();
+        function playMusic() {
+            initAudioGraph();
+            if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+            music.play().catch(() => {});
         }
-    }
 
-    if (wasPlaying) {
-        playMusic();
-        const resumeOnce = () => {
-            playMusic();
-            document.removeEventListener("pointerdown", resumeOnce);
-            document.removeEventListener("keydown", resumeOnce);
-        };
-        document.addEventListener("pointerdown", resumeOnce, { once: true });
-        document.addEventListener("keydown", resumeOnce, { once: true });
-    }
-
-    setInterval(() => {
-        sessionStorage.setItem("musicTime", music.currentTime);
-        sessionStorage.setItem("musicPlaying", (!music.paused).toString());
-    }, 400);
-    window.addEventListener("beforeunload", () => {
-        sessionStorage.setItem("musicTime", music.currentTime);
-        sessionStorage.setItem("musicPlaying", (!music.paused).toString());
-    });
-
-    function drawSpectrum() {
-        if (!ctx) return;
-        requestAnimationFrame(drawSpectrum);
-        ctx.fillStyle = "#1E072F";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        if (!analyser || music.paused) return;
-        analyser.getByteFrequencyData(dataArray);
-        const bars = 8,
-            barWidth = canvas.width / bars,
-            pixel = 3;
-        for (let i = 0; i < bars; i++) {
-            const value = dataArray[i] / 255;
-            const barHeight = Math.floor((value * canvas.height) / pixel) * pixel;
-            for (let y = 0; y < barHeight; y += pixel) {
-                const ratio = y / canvas.height;
-                ctx.fillStyle = ratio > 0.6 ? "#CAB3E1" : ratio > 0.3 ? "#8364A2" : "#5A4471";
-                ctx.fillRect(i * barWidth + 1, canvas.height - y - pixel, barWidth - 2, pixel - 1);
+        function toggleMusic() {
+            if (music.paused) {
+                playMusic();
+            } else {
+                music.pause();
             }
         }
-    }
-    drawSpectrum();
 
-    setTimeout(() => {
-        console.log(
-            '%cConsole?',
-            'color: #B7AFBC; background: #160D1E; font-size: 1.5rem; padding: 0.15rem 0.25rem; margin: 1rem; border: 2px solid #A79FAC;'
-        );
-        console.log('WELCOME TO TWISTED!!!')
-        console.log('shh....')
+        if (wasPlaying) {
+            playMusic();
+            const resumeOnce = () => {
+                playMusic();
+                document.removeEventListener("pointerdown", resumeOnce);
+                document.removeEventListener("keydown", resumeOnce);
+            };
+            document.addEventListener("pointerdown", resumeOnce, {
+                once: true
+            });
+            document.addEventListener("keydown", resumeOnce, {
+                once: true
+            });
+        }
 
-        console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
-    }, 500)
+        setInterval(() => {
+            sessionStorage.setItem("musicTime", music.currentTime);
+            sessionStorage.setItem("musicPlaying", (!music.paused).toString());
+        }, 400);
+        window.addEventListener("beforeunload", () => {
+            sessionStorage.setItem("musicTime", music.currentTime);
+            sessionStorage.setItem("musicPlaying", (!music.paused).toString());
+        });
+
+        function drawSpectrum() {
+            if (!ctx) return;
+            requestAnimationFrame(drawSpectrum);
+            ctx.fillStyle = "#1E072F";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (!analyser || music.paused) return;
+            analyser.getByteFrequencyData(dataArray);
+            const bars = 8,
+                barWidth = canvas.width / bars,
+                pixel = 3;
+            for (let i = 0; i < bars; i++) {
+                const value = dataArray[i] / 255;
+                const barHeight = Math.floor((value * canvas.height) / pixel) * pixel;
+                for (let y = 0; y < barHeight; y += pixel) {
+                    const ratio = y / canvas.height;
+                    ctx.fillStyle = ratio > 0.6 ? "#CAB3E1" : ratio > 0.3 ? "#8364A2" : "#5A4471";
+                    ctx.fillRect(i * barWidth + 1, canvas.height - y - pixel, barWidth - 2, pixel - 1);
+                }
+            }
+        }
+        drawSpectrum();
+
+        setTimeout(() => {
+            console.log(
+                '%cConsole?',
+                'color: #B7AFBC; background: #160D1E; font-size: 1.5rem; padding: 0.15rem 0.25rem; margin: 1rem; border: 2px solid #A79FAC;'
+            );
+            console.log('WELCOME TO TWISTED!!!')
+            console.log('shh....')
+
+            console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
+        }, 500)
     </script>
     {% if startup_windows %}
         <div id="_startup" class="hidden">

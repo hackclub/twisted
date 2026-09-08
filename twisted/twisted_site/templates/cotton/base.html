@@ -20,10 +20,15 @@
             <div id="errorMessage"
                  data-message="{{ error|default:'no error found!' }}">
                 <script>
-                message = document.querySelector('#errorMessage').dataset.message
-                setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: message, variant: 'error' }}))
-                }, 100)
+                    message = document.querySelector('#errorMessage').dataset.message
+                    setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('toast', {
+                            detail: {
+                                message: message,
+                                variant: 'error'
+                            }
+                        }))
+                    }, 100)
                 </script>
             </div>
         {% endif %}
@@ -52,13 +57,18 @@
             {% for message in messages %}
                 <div id="djangomessage{{ forloop.counter }}" data-message="{{ message }}">
                     <script>
-                window.addEventListener('load', (event) => {
-                    message = document.querySelector('#djangomessage{{ forloop.counter }}').dataset.message
-                    setTimeout(() => {
-                        console.log("sending message "+message+"...")
-                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: message, variant: '{{ message.tags }}' }}))
-                    }, 100)
-                })
+                        window.addEventListener('load', (event) => {
+                            message = document.querySelector('#djangomessage{{ forloop.counter }}').dataset.message
+                            setTimeout(() => {
+                                console.log("sending message " + message + "...")
+                                window.dispatchEvent(new CustomEvent('toast', {
+                                    detail: {
+                                        message: message,
+                                        variant: '{{ message.tags }}'
+                                    }
+                                }))
+                            }, 100)
+                        })
                     </script>
                 </div>
             {% endfor %}

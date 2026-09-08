@@ -81,17 +81,17 @@
         </div>
     </div>
     <script>
-    document.querySelectorAll("[data-project-id]").forEach((project) => {
-        project.addEventListener("click", () => {
-            const title = document.getElementById(
-                `discover-project-${project.dataset.projectId}`
-            ).value;
+        document.querySelectorAll("[data-project-id]").forEach((project) => {
+            project.addEventListener("click", () => {
+                const title = document.getElementById(
+                    `discover-project-${project.dataset.projectId}`
+                ).value;
 
-            createWindow(
-                title,
-                project.dataset.projectUrl
-            );
+                createWindow(
+                    title,
+                    project.dataset.projectUrl
+                );
+            });
         });
-    });
     </script>
 {% endblock body %}

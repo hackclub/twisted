@@ -12,14 +12,14 @@
         {% block js %}
         {% endblock js %}
         <script>
-        function createWindow(title, src) {
-            window.parent.postMessage({
-                'type': 'internal',
-                'action': 'open',
-                'title': title,
-                'src': src
-            }, '*')
-        }
+            function createWindow(title, src) {
+                window.parent.postMessage({
+                    'type': 'internal',
+                    'action': 'open',
+                    'title': title,
+                    'src': src
+                }, '*')
+            }
         </script>
         <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
         <script src="
@@ -28,8 +28,8 @@
     </head>
     <body class="font-vintage h-full">{% block body %} meow :3 {% endblock body %}</body>
     <script>
-    // Timezone settings
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
-    document.cookie = "django_timezone=" + timezone;
+        // Timezone settings
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
+        document.cookie = "django_timezone=" + timezone;
     </script>
 </html>

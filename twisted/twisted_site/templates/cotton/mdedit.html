@@ -109,9 +109,9 @@
             formData.append("ref", "journals");
 
             fetch("{% url 'misc.upload_file' %}", {
-                method: "POST",
-                body: formData
-            })
+                    method: "POST",
+                    body: formData
+                })
                 .then(response => response.json())
                 .then(result => {
 

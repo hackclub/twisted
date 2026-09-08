@@ -50,29 +50,29 @@
                         </div>
                     </div>
                     <script>
-                    function copyShareLink(el, styled) {
-                        if (el.dataset.originalText === undefined) {
-                            el.dataset.originalText = el.textContent
-                        }
-                        if (styled && !el.style.width) {
-                            el.style.width = el.offsetWidth + "px"
-                        }
-                        navigator.clipboard.writeText(el.dataset.url).then(() => {
-                            clearTimeout(el._copyRevertTimeout)
-                            el.textContent = "Copied!"
-                            if (styled) {
-                                el.classList.remove("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
-                                el.classList.add("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
+                        function copyShareLink(el, styled) {
+                            if (el.dataset.originalText === undefined) {
+                                el.dataset.originalText = el.textContent
                             }
-                            el._copyRevertTimeout = setTimeout(() => {
-                                el.textContent = el.dataset.originalText
+                            if (styled && !el.style.width) {
+                                el.style.width = el.offsetWidth + "px"
+                            }
+                            navigator.clipboard.writeText(el.dataset.url).then(() => {
+                                clearTimeout(el._copyRevertTimeout)
+                                el.textContent = "Copied!"
                                 if (styled) {
-                                    el.classList.remove("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
-                                    el.classList.add("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
+                                    el.classList.remove("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
+                                    el.classList.add("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
                                 }
-                            }, 1500)
-                        }).catch(() => alert("Failed to copy link"))
-                    }
+                                el._copyRevertTimeout = setTimeout(() => {
+                                    el.textContent = el.dataset.originalText
+                                    if (styled) {
+                                        el.classList.remove("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
+                                        el.classList.add("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
+                                    }
+                                }, 1500)
+                            }).catch(() => alert("Failed to copy link"))
+                        }
                     </script>
                 </div>
             </div>

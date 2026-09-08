@@ -43,16 +43,25 @@
                             </div>
                         </div>
                         <script>
-                            google.charts.load('current', {'packages':['corechart']});
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ hours_logged_chart|safe }});
 
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160
@@ -71,16 +80,25 @@
                             </div>
                         </div>
                         <script>
-                            google.charts.load('current', {'packages':['corechart']});
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ logged_project_type|safe }});
 
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160
@@ -104,21 +122,30 @@
                             <div class="text-center py-4">Loading chart...</div>
                         </div>
                         <script>
-                            google.charts.load('current', {'packages':['corechart']});
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
-    
+
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ hours_shipped_chart|safe }});
-    
+
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160
                                 };
-    
+
                                 var chart = new google.visualization.AreaChart(document.getElementById('hours_shipped_chart'));
                                 chart.draw(data, options);
                             }
@@ -132,16 +159,25 @@
                             </div>
                         </div>
                         <script>
-                            google.charts.load('current', {'packages':['corechart']});
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ shipped_project_type|safe }});
 
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160

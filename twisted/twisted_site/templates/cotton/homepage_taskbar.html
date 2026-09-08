@@ -44,263 +44,261 @@
     <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg">
 </audio>
 <script>
-  const music = document.getElementById("bg-music");
+    const music = document.getElementById("bg-music");
 
-  const savedTime =
-    parseFloat(sessionStorage.getItem("musicTime") || "0");
+    const savedTime =
+        parseFloat(sessionStorage.getItem("musicTime") || "0");
 
-  const wasPlaying =
-    sessionStorage.getItem("musicPlaying") === "true";
+    const wasPlaying =
+        sessionStorage.getItem("musicPlaying") === "true";
 
-  if (savedTime) {
-    music.currentTime = savedTime;
-  }
-
-
-  let audioCtx;
-  let analyser;
-  let dataArray;
-  let sourceConnected = false;
-
-  const canvas = document.getElementById("spectrum");
-  const ctx = canvas ? canvas.getContext("2d") : null;
-
-
-  function getThemeColor(variable) {
-    return getComputedStyle(document.documentElement)
-      .getPropertyValue(variable)
-      .trim();
-  }
-
-
-  function initAudioGraph() {
-    if (sourceConnected) return;
-
-    const AC =
-      window.AudioContext ||
-      window.webkitAudioContext;
-
-    if (!AC) return;
-
-    audioCtx = new AC();
-
-    const source =
-      audioCtx.createMediaElementSource(music);
-
-    analyser = audioCtx.createAnalyser();
-
-    analyser.fftSize = 64;
-
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-
-    dataArray =
-      new Uint8Array(analyser.frequencyBinCount);
-
-    sourceConnected = true;
-
-    drawSpectrum();
-  }
-
-
-  function playMusic() {
-    initAudioGraph();
-
-    if (
-      audioCtx &&
-      audioCtx.state === "suspended"
-    ) {
-      audioCtx.resume();
+    if (savedTime) {
+        music.currentTime = savedTime;
     }
 
-    music.play().catch(() => { });
-  }
+
+    let audioCtx;
+    let analyser;
+    let dataArray;
+    let sourceConnected = false;
+
+    const canvas = document.getElementById("spectrum");
+    const ctx = canvas ? canvas.getContext("2d") : null;
 
 
-  function toggleMusic() {
-    if (music.paused) {
-      playMusic();
-    } else {
-      music.pause();
+    function getThemeColor(variable) {
+        return getComputedStyle(document.documentElement)
+            .getPropertyValue(variable)
+            .trim();
     }
-  }
 
 
-  if (wasPlaying) {
+    function initAudioGraph() {
+        if (sourceConnected) return;
 
-    const resume = () => {
+        const AC =
+            window.AudioContext ||
+            window.webkitAudioContext;
 
-      playMusic();
+        if (!AC) return;
 
-      [
-        "click",
-        "keydown",
-        "scroll",
-        "mousemove",
-        "touchstart"
-      ].forEach(event => {
-        document.removeEventListener(event, resume);
-      });
+        audioCtx = new AC();
 
-    };
+        const source =
+            audioCtx.createMediaElementSource(music);
 
-    [
-      "click",
-      "keydown",
-      "scroll",
-      "mousemove",
-      "touchstart"
-    ].forEach(event => {
-      document.addEventListener(
-        event,
-        resume,
-        { once: true }
-      );
-    });
+        analyser = audioCtx.createAnalyser();
 
-  }
+        analyser.fftSize = 64;
+
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        dataArray =
+            new Uint8Array(analyser.frequencyBinCount);
+
+        sourceConnected = true;
+
+        drawSpectrum();
+    }
 
 
-  setInterval(() => {
+    function playMusic() {
+        initAudioGraph();
 
-    sessionStorage.setItem(
-      "musicTime",
-      music.currentTime
-    );
+        if (
+            audioCtx &&
+            audioCtx.state === "suspended"
+        ) {
+            audioCtx.resume();
+        }
 
-    sessionStorage.setItem(
-      "musicPlaying",
-      (!music.paused).toString()
-    );
-
-  }, 400);
-
-
-  window.addEventListener("beforeunload", () => {
-
-    sessionStorage.setItem(
-      "musicTime",
-      music.currentTime
-    );
-
-    sessionStorage.setItem(
-      "musicPlaying",
-      (!music.paused).toString()
-    );
-
-  });
+        music.play().catch(() => {});
+    }
 
 
-  function drawSpectrum() {
-
-    if (!ctx) return;
-
-    requestAnimationFrame(drawSpectrum);
-
-    const background =
-      getThemeColor("--color-background");
-
-    const low =
-      getThemeColor("--color-twisted-600");
-
-    const medium =
-      getThemeColor("--color-twisted-400");
-
-    const high =
-      getThemeColor("--color-twisted-200");
+    function toggleMusic() {
+        if (music.paused) {
+            playMusic();
+        } else {
+            music.pause();
+        }
+    }
 
 
-    ctx.fillStyle = background;
-    ctx.fillRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    if (wasPlaying) {
+
+        const resume = () => {
+
+            playMusic();
+
+            [
+                "click",
+                "keydown",
+                "scroll",
+                "mousemove",
+                "touchstart"
+            ].forEach(event => {
+                document.removeEventListener(event, resume);
+            });
+
+        };
+
+        [
+            "click",
+            "keydown",
+            "scroll",
+            "mousemove",
+            "touchstart"
+        ].forEach(event => {
+            document.addEventListener(
+                event,
+                resume, {
+                    once: true
+                }
+            );
+        });
+
+    }
 
 
-    if (!analyser || music.paused) return;
+    setInterval(() => {
 
-
-    analyser.getByteFrequencyData(dataArray);
-
-    const bars = 8;
-    const barWidth = canvas.width / bars;
-    const pixel = 3;
-
-
-    for (let i = 0; i < bars; i++) {
-
-      const value =
-        dataArray[i] / 255;
-
-      const barHeight =
-        Math.floor(
-          (value * canvas.height) / pixel
-        ) * pixel;
-
-
-      for (
-        let y = 0;
-        y < barHeight;
-        y += pixel
-      ) {
-
-        const ratio =
-          y / canvas.height;
-
-
-        ctx.fillStyle =
-          ratio > 0.6
-            ? high
-            : ratio > 0.3
-              ? medium
-              : low;
-
-
-        ctx.fillRect(
-          i * barWidth + 1,
-          canvas.height - y - pixel,
-          barWidth - 2,
-          pixel - 1
+        sessionStorage.setItem(
+            "musicTime",
+            music.currentTime
         );
 
-      }
+        sessionStorage.setItem(
+            "musicPlaying",
+            (!music.paused).toString()
+        );
+
+    }, 400);
+
+
+    window.addEventListener("beforeunload", () => {
+
+        sessionStorage.setItem(
+            "musicTime",
+            music.currentTime
+        );
+
+        sessionStorage.setItem(
+            "musicPlaying",
+            (!music.paused).toString()
+        );
+
+    });
+
+
+    function drawSpectrum() {
+
+        if (!ctx) return;
+
+        requestAnimationFrame(drawSpectrum);
+
+        const background =
+            getThemeColor("--color-background");
+
+        const low =
+            getThemeColor("--color-twisted-600");
+
+        const medium =
+            getThemeColor("--color-twisted-400");
+
+        const high =
+            getThemeColor("--color-twisted-200");
+
+
+        ctx.fillStyle = background;
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        if (!analyser || music.paused) return;
+
+
+        analyser.getByteFrequencyData(dataArray);
+
+        const bars = 8;
+        const barWidth = canvas.width / bars;
+        const pixel = 3;
+
+
+        for (let i = 0; i < bars; i++) {
+
+            const value =
+                dataArray[i] / 255;
+
+            const barHeight =
+                Math.floor(
+                    (value * canvas.height) / pixel
+                ) * pixel;
+
+
+            for (
+                let y = 0; y < barHeight; y += pixel
+            ) {
+
+                const ratio =
+                    y / canvas.height;
+
+
+                ctx.fillStyle =
+                    ratio > 0.6 ?
+                    high :
+                    ratio > 0.3 ?
+                    medium :
+                    low;
+
+
+                ctx.fillRect(
+                    i * barWidth + 1,
+                    canvas.height - y - pixel,
+                    barWidth - 2,
+                    pixel - 1
+                );
+
+            }
+
+        }
 
     }
 
-  }
+
+    function updateClock() {
+
+        const now = new Date();
+
+        let hours = now.getHours();
+
+        const minutes =
+            now.getMinutes()
+            .toString()
+            .padStart(2, "0");
+
+        const ampm =
+            hours >= 12 ? "PM" : "AM";
+
+        hours =
+            hours % 12 || 12;
 
 
-  function updateClock() {
+        document.getElementById(
+                "taskbar-clock"
+            ).textContent =
+            `${hours}:${minutes} ${ampm}`;
 
-    const now = new Date();
-
-    let hours = now.getHours();
-
-    const minutes =
-      now.getMinutes()
-        .toString()
-        .padStart(2, "0");
-
-    const ampm =
-      hours >= 12 ? "PM" : "AM";
-
-    hours =
-      hours % 12 || 12;
+    }
 
 
-    document.getElementById(
-      "taskbar-clock"
-    ).textContent =
-      `${hours}:${minutes} ${ampm}`;
+    setInterval(updateClock, 1000);
 
-  }
-
-
-  setInterval(updateClock, 1000);
-
-  updateClock();
-  drawSpectrum();
-
+    updateClock();
+    drawSpectrum();
 </script>
