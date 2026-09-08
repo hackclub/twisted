@@ -22,6 +22,11 @@
                     <c-ui.badge size="sm" color="{{ user.profile.ysws_eligible|yesno:'green,red' }}"
                         >{{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}</c-ui.badge
                     >
+                    {% if user.profile.referred_by %}
+                    <c-ui.badge size="sm" color="blue" href="{% url 'admin.users.detail' id=user.profile.referred_by.user.id %}"
+                        >Referred by @{{ user.profile.referred_by.slack_username }}</c-ui.badge
+                    >
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
@@ -57,6 +62,61 @@
             </h1>
             <p>
                 This user has not created any projects!
+            </p>
+        </c-ui.card>
+        {% endif %}
+    </div>
+    <div class="mt-4">
+        <h1 class="text-2xl font-black">Referrals</h1>
+        {% if user.profile.referrals.all %}
+        <c-ui.card class="bg-ink-900 p-0">
+            <c-ui.table>
+                <thead>
+                    <tr>
+                        <th>Referral</th>
+                        <th>Time logged</th>
+                        <th>Progress</th>
+                        <th>YSWS eligible</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for referral in user.profile.referrals.all %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin.users.detail' id=referral.user.id %}" class="flex items-center gap-2">
+                                <c-ui.avatar size="sm" src="{{ referral.slack_pfp_url }}" />
+                                @{{ referral.slack_username }}
+                            </a>
+                        </td>
+                        <td>{{ referral.time_logged|minutes_to_hours_minutes }} / 1h</td>
+                        <td class="min-w-32">
+                            <c-ui.progress
+                                value="{% if referral.time_logged > 60 %}100{% else %}{% widthratio referral.time_logged 60 100 %}{% endif %}"
+                                color="{% if referral.time_logged >= 60 %}green{% else %}accent{% endif %}"
+                                show_value="True"
+                            />
+                        </td>
+                        <td>
+                            <div class="size-8">
+                                {% if referral.ysws_eligible %}
+                                <img src="https://icons.hackclub.com/api/icons/green/checkmark" alt="YSWS eligible" class="size-fill">
+                                {% else %}
+                                <img src="https://icons.hackclub.com/api/icons/red/view-close" alt="Not YSWS eligible" class="size-fill">
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </c-ui.table>
+        </c-ui.card>
+        {% else %}
+        <c-ui.card class="bg-ink-900">
+            <h1 class="text-lg font-bold">
+                No referrals found :(
+            </h1>
+            <p>
+                This user hasn't referred anyone yet!
             </p>
         </c-ui.card>
         {% endif %}
