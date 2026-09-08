@@ -21,20 +21,26 @@
                 <span class="block text-center text-sm">Projects</span>
             </div>
             <div class="font-vintage w-fit cursor-pointer select-none" data-url="{% url 'fr.pathways' %}"
-                onclick="newWindow('Pathways', this.dataset.url)">
-                <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🛣️</div>
+            onclick="newWindow('Pathways', this.dataset.url)">
+                <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
+                    <span class="block text-center text-sm">
+                        <img src="{% static 'icons/pathways.png' %}" class="size-10" alt="">
+                    </span>
+                </div>
                 <span class="block text-center text-sm">Pathways</span>
             </div>
             <div class="font-vintage w-fit cursor-pointer select-none" data-url="{% url 'fr.referrals' %}"
                 onclick="newWindow('Referrals', this.dataset.url)">
-                <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">👥</div>
+                <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
+                    <img class="size-10" src="{% static 'icons/gift.png' %}" alt="">
+                </div>
                 <span class="block text-center text-sm">Referrals</span>
             </div>
-            <div class="font-vintage w-fit cursor-pointer select-none" data-url="{% url 'fr.discover' %}"
-                onclick="newWindow('Discover', this.dataset.url)">
+            {% comment %} <div class="font-vintage w-fit cursor-pointer select-none" data-url="{% url 'fr.discover' %}"
+            onclick="newWindow('Discover', this.dataset.url)">
                 <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🧭</div>
                 <span class="block text-center text-sm">Discover</span>
-            </div>
+            </div> {% endcomment %}
         </div>
 
         <div id="windows-container"></div>
@@ -570,6 +576,17 @@
         }
     }
     drawSpectrum();
+
+    setTimeout(() => {
+        console.log(
+            '%cConsole?',
+            'color: #B7AFBC; background: #160D1E; font-size: 1.5rem; padding: 0.15rem 0.25rem; margin: 1rem; border: 2px solid #A79FAC;'
+        );
+        console.log('WELCOME TO TWISTED!!!')
+        console.log('shh....')
+        
+        console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
+    }, 500)
 </script>
 
 {% if startup_windows %}

@@ -1,10 +1,10 @@
-from dataclasses import dataclass
-
-from django.shortcuts import redirect, resolve_url
+from django.shortcuts import resolve_url
 from django.views import View
-
-from ...models import AuditLog
-
+from dataclasses import dataclass
+import json
+from typing import Literal
+from django_htmx.http import trigger_client_event
+from ...models import AuditLog, ProfileStaffPermissions
 
 @dataclass
 class SidebarLink:
@@ -81,6 +81,14 @@ class AdminView(View):
             post=(request.method.lower() == "post"),
             additional_context={},
         )
+        
+        perms = self.request.user.profile.staff_permissions
+        if perms is None:
+            profile = self.request.user.profile
+            profile.staff_permissions = ProfileStaffPermissions.objects.create()
+            profile.save()
+        
+        self.perms = perms
         response = super().dispatch(request, *args, **kwargs)
         self.audit_log.save()
         return response
