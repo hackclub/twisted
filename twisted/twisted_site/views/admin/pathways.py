@@ -70,26 +70,25 @@ class PathwayCreateView(AdminView):
             "min_mins": min_mins,
         }
 
-        if "form validation":
-            if not pathway_name:
-                return self.get(request, "No pathway name typed!", errcontext)
+        if not pathway_name:
+            return self.get(request, "No pathway name typed!", errcontext)
 
-            if not start_date:
-                return self.get(request, "No start date selected!", errcontext)
+        if not start_date:
+            return self.get(request, "No start date selected!", errcontext)
 
-            if not start_time:
-                return self.get(request, "No start time selected!", errcontext)
+        if not start_time:
+            return self.get(request, "No start time selected!", errcontext)
 
-            if not end_date:
-                return self.get(request, "No end date selected!", errcontext)
+        if not end_date:
+            return self.get(request, "No end date selected!", errcontext)
 
-            if not end_time:
-                return self.get(request, "No end time selected!", errcontext)
+        if not end_time:
+            return self.get(request, "No end time selected!", errcontext)
 
-            if min_mins <= 0:
-                return self.get(
-                    request, "Minimum minutes must be greater than zero!", errcontext
-                )
+        if min_mins <= 0:
+            return self.get(
+                request, "Minimum minutes must be greater than zero!", errcontext
+            )
 
         current_tz_offset = timezone.datetime.now(
             timezone.get_current_timezone()
