@@ -24,14 +24,16 @@ class HackatimeProject:
     languages: list[str]
 
 
-def authhelper(access_token, headers=None):
+def authhelper(
+    access_token: str, headers: dict[str, str] | None = None
+) -> dict[str, str]:
     if headers is None:
         headers = {}
 
     return {"Authorization": f"Bearer {access_token}", **headers}
 
 
-def me(access_token) -> MeResponse:
+def me(access_token: str) -> MeResponse:
     """Returns information about the authenticated user."""
     resp = requests.get(
         HACKATIME_ROOT_URL + "/api/v1/authenticated/me",
@@ -50,8 +52,8 @@ def me(access_token) -> MeResponse:
 
 
 def projects(
-    access_token,
-    include_archived=False,
+    access_token: str,
+    include_archived: bool = False,
     start: datetime | None = datetime(2026, 9, 7, tzinfo=UTC),
     projects: list[str] | None = None,
 ) -> list[HackatimeProject]:

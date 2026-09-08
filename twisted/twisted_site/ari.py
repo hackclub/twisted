@@ -40,7 +40,7 @@ def verify_webhook_signature(
     return hmac.compare_digest(expected_signature, signature)
 
 
-def get_hex_signature(content):
+def get_hex_signature(content: bytes | str) -> str:
     key_bytes = ARI_SIGNING_SECRET.encode("utf-8")
     try:
         message_bytes = content.encode("utf-8")
@@ -76,7 +76,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
 
 
 # external_id = "twisted-{project.id}"
-def send_ship(ship: ProjectShip):
+def send_ship(ship: ProjectShip) -> None:
     if settings.DEBUG_REVIEW:
         return
     external_id = f"twisted-{ship.project.id}"
@@ -145,7 +145,7 @@ def send_ship(ship: ProjectShip):
     r.raise_for_status()
 
 
-def get_project_status(project: Project):
+def get_project_status(project: Project) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
     _resp = r.content
     r.raise_for_status()

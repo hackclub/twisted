@@ -1,4 +1,5 @@
-from typing import cast, override
+from datetime import datetime
+from typing import Any, cast, override
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -20,7 +21,7 @@ class UploadedFile(models.Model):
     filesize = models.IntegerField()
 
     @override
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
 
 
@@ -58,9 +59,9 @@ class Profile(models.Model):
     )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
-    def shipped_projects(self):
-        shipped_projects = []
-        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
+    def shipped_projects(self) -> list["Project"]:
+        shipped_projects: list[Project] = []
+        for project in cast(list[Project], self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
             if project.is_shipped():
                 shipped_projects.append(project)
         return shipped_projects
@@ -78,8 +79,8 @@ class Profile(models.Model):
         return time_shipped
 
     @override
-    def __str__(self):
-        return self.user.username  # pyrefly: ignore[missing-attribute]
+    def __str__(self) -> str:
+        return cast(str, self.user.username)  # pyrefly: ignore[missing-attribute]
 
 
 class ProfileStaffPermissions(models.Model):
@@ -122,8 +123,8 @@ class Project(models.Model):
     screenshot_url = models.CharField(max_length=500, blank=True, default="")
 
     @override
-    def __str__(self):
-        return self.project_name
+    def __str__(self) -> str:
+        return cast(str, self.project_name)  # pyrefly: ignore[redundant-cast]
 
     def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
         if self.hackatime_project_name == "":
@@ -134,7 +135,7 @@ class Project(models.Model):
                 return project
         return
 
-    def time_logged(self, include_all_minutes=False):
+    def time_logged(self, include_all_minutes: bool = False) -> int:
         minutes = 0
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
@@ -144,7 +145,7 @@ class Project(models.Model):
                 minutes += journal.reduced_minutes
         return minutes
 
-    def hackatime_logged(self, include_all_minutes=False):
+    def hackatime_logged(self, include_all_minutes: bool = False) -> int:
         minutes = 0
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if journal.type != "hackatime":
@@ -162,20 +163,20 @@ class Project(models.Model):
             return 0
         return project.total_seconds // 60
 
-    def hackatime_time_unjournaled(self):
+    def hackatime_time_unjournaled(self) -> int:
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
     def latest_ship(self) -> "ProjectShip | None":
         ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return cast("ProjectShip | None", ship)
 
-    def is_shipped(self):
+    def is_shipped(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
         return latest_ship.status != "requested_changes"
 
-    def is_approved(self):
+    def is_approved(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
@@ -204,7 +205,7 @@ class Journal(models.Model):
     reduced_minutes = models.IntegerField(validators=[MinValueValidator(0)])
 
     @override
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.reduced_minutes} mins on {self.project}"
 
 
@@ -238,7 +239,7 @@ class ProjectShip(models.Model):
     final_audit_note = models.TextField(blank=True, default="")
 
     @override
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
 
@@ -252,16 +253,16 @@ class Pathway(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def ended(self):
-        return timezone.now() > self.end
+    def ended(self) -> bool:
+        return timezone.now() > cast(datetime, self.end)  # pyrefly: ignore[redundant-cast]
 
-    def didnt_start(self):
-        return self.start > timezone.now()
+    def didnt_start(self) -> bool:
+        return cast(datetime, self.start) > timezone.now()  # pyrefly: ignore[redundant-cast]
 
-    def in_progress(self):
+    def in_progress(self) -> bool:
         return not self.ended() and not self.didnt_start()
 
-    def status(self):
+    def status(self) -> str | None:
         if self.ended():
             return "ended"
         if self.didnt_start():
@@ -269,7 +270,7 @@ class Pathway(models.Model):
         if self.in_progress():
             return "in progress"
 
-    def mins_spent(self, user: AbstractBaseUser):
+    def mins_spent(self, user: AbstractBaseUser) -> int:
         pathways = Pathway.objects.order_by("start").values(
             "id", "start", "end", "min_mins"
         )
@@ -369,7 +370,7 @@ class Pathway(models.Model):
             for user_id, totals in user_pathway_totals.items()
         }
 
-    def qualified_participants(self):
+    def qualified_participants(self) -> list[AbstractBaseUser]:
         per_part = self.mins_spent_per_participant()
         qualified = []
         for userid, mins in per_part.items():
@@ -378,8 +379,8 @@ class Pathway(models.Model):
         return qualified
 
     @override
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return cast(str, self.name)  # pyrefly: ignore[redundant-cast]
 
 
 class AuditLog(models.Model):
@@ -392,5 +393,5 @@ class AuditLog(models.Model):
     additional_context = models.JSONField(null=True, default=None)
 
     @override
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[missing-attribute]

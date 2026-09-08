@@ -18,8 +18,11 @@ class SidebarLink:
 
 # Create your views here.
 class AdminView(View):
-    def get_context_data(self, page, subpage=None) -> dict[str, Any]:
-        context = {}
+    audit_log: AuditLog
+    perms: ProfileStaffPermissions | None
+
+    def get_context_data(self, page: str, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
+        context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
         context["page"] = page
         context["subpage"] = subpage
         context["sidebar_links"] = [

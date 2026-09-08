@@ -14,14 +14,14 @@ def send_blocks(
     channel: str,
     blocks: list[dict[str, Any]],
     text: str = " ",
-    **kwargs: Any,
-):
+    **kwargs: Any,  # pyrefly: ignore[explicit-any]
+) -> SlackResponse:
     return slack_bot.chat_postMessage(
         channel=channel, text=text, blocks=blocks, **kwargs
     )
 
 
-def log_to_channel(message):
+def log_to_channel(message: str) -> None:
     if settings.DEBUG:
         _ = slack_bot.chat_postMessage(
             channel=SLACK_LOG_CHANNEL, text=message, username="[DEBUG]"

@@ -19,8 +19,10 @@ def _quote_block(value):
     return "\n".join(f"> {line}" for line in lines)
 
 
-def _build_ship_update_blocks(project, changes):
-    blocks = [
+def _build_ship_update_blocks(
+    project: Project, changes: list[dict[str, str]]
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
+    blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
             "type": "section",
             "text": {
@@ -50,7 +52,9 @@ def _build_ship_update_blocks(project, changes):
     return blocks
 
 
-def _build_review_changes_blocks(project, note_to_maker):
+def _build_review_changes_blocks(
+    project: Project, note_to_maker: str
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
             "type": "section",
@@ -78,8 +82,10 @@ def _build_review_changes_blocks(project, note_to_maker):
     ]
 
 
-def _build_review_approved_blocks(project, note_to_maker):
-    blocks = [
+def _build_review_approved_blocks(
+    project: Project, note_to_maker: str
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
+    blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
             "type": "section",
             "text": {
@@ -102,8 +108,10 @@ def _build_review_approved_blocks(project, note_to_maker):
     return blocks
 
 
-def _build_review_rejected_blocks(project, note_to_maker):
-    blocks = [
+def _build_review_rejected_blocks(
+    project: Project, note_to_maker: str
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
+    blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
             "type": "section",
             "text": {
@@ -136,7 +144,9 @@ def _build_review_rejected_blocks(project, note_to_maker):
     return blocks
 
 
-def _build_review_reverted_blocks(project):
+def _build_review_reverted_blocks(
+    project: Project,
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
             "type": "section",
@@ -148,7 +158,9 @@ def _build_review_reverted_blocks(project):
     ]
 
 
-def _build_review_requeued_blocks(project):
+def _build_review_requeued_blocks(
+    project: Project,
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
             "type": "section",
@@ -163,7 +175,7 @@ def _build_review_requeued_blocks(project):
 # Create your views here.
 @method_decorator(csrf_exempt, name="dispatch")
 class AriView(View):
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         body = request.body
 
         if not verify_webhook_signature(

@@ -12,7 +12,13 @@ IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
 
 
 class NewProjectHackatimeJournal(View):
-    def get(self, request, id, info=None, context=None):
+    def get(
+        self,
+        request: HttpRequest,
+        id: int,
+        info: str | None = None,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         if context is None:
             context = {}
 
@@ -91,7 +97,13 @@ UNTRACKED_MAX_LOGGABLE_MINUTES = 60
 
 
 class NewProjectUntrackedJournal(View):
-    def get(self, request, id, info=None, context=None):
+    def get(
+        self,
+        request: HttpRequest,
+        id: int,
+        info: str | None = None,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         if context is None:
             context = {}
 

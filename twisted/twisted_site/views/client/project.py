@@ -1,6 +1,6 @@
 from itertools import chain
 
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 from requests import HTTPError, RequestException
