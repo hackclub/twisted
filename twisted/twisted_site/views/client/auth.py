@@ -1,4 +1,5 @@
 import hmac
+import logging
 import os
 import secrets
 
@@ -12,6 +13,8 @@ from django.views import View
 from ... import hackatime
 from ...models import Profile
 from ...slack import slack_bot
+
+logger = logging.getLogger(__name__)
 
 oauth = OAuth()
 
@@ -87,8 +90,8 @@ class AuthCallbackView(View):
             )
             avatar_url = slack_profile.get("image_512")
 
-        except Exception as e:
-            print("Slack profile fetch failed", e)
+        except Exception:
+            logger.exception("Slack profile fetch failed")
             display_name = name
             avatar_url = os.environ["DEFAULT_PFP"]
 

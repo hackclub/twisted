@@ -15,7 +15,7 @@ class TimezoneMiddleware:
                 timezone.activate(zoneinfo.ZoneInfo(tzname))
             else:
                 timezone.deactivate()
-        except Exception:
+        except (zoneinfo.ZoneInfoNotFoundError, ValueError):
             timezone.deactivate()
 
         return self.get_response(request)

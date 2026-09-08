@@ -44,7 +44,7 @@ def get_hex_signature(content):
     key_bytes = ARI_SIGNING_SECRET.encode("utf-8")
     try:
         message_bytes = content.encode("utf-8")
-    except Exception:
+    except AttributeError:
         message_bytes = content
 
     hmac_object = hmac.new(key_bytes, message_bytes, hashlib.sha256)

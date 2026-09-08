@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from uuid import uuid4
@@ -9,6 +10,8 @@ from django.http import JsonResponse
 from django.utils.text import slugify
 
 from ..models import UploadedFile
+
+logger = logging.getLogger(__name__)
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif"}
 
@@ -100,6 +103,7 @@ def _upload_fileobj(fileobj, filename, content_type, size):
         return {"status": "error", "error": str(e)}
 
     except Exception as e:
+        logger.exception("Unknown error during file upload")
         return {
             "status": "error",
             "error": f"Unknown Error Occurred: {e!s}",
