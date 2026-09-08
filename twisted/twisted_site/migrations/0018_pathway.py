@@ -4,22 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0017_remove_profile_dark_theme_profile_is_allowed_and_more'),
+        ("twisted_site", "0017_remove_profile_dark_theme_profile_is_allowed_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Pathway',
+            name="Pathway",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start', models.DateTimeField()),
-                ('end', models.DateTimeField()),
-                ('name', models.CharField(max_length=200)),
-                ('min_mins', models.IntegerField(default=300)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start", models.DateTimeField()),
+                ("end", models.DateTimeField()),
+                ("name", models.CharField(max_length=200)),
+                ("min_mins", models.IntegerField(default=300)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

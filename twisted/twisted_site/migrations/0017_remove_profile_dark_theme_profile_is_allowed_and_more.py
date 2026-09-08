@@ -4,24 +4,33 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0016_profile_ysws_eligible'),
+        ("twisted_site", "0016_profile_ysws_eligible"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='profile',
-            name='dark_theme',
+            model_name="profile",
+            name="dark_theme",
         ),
         migrations.AddField(
-            model_name='profile',
-            name='is_allowed',
+            model_name="profile",
+            name="is_allowed",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='projectship',
-            name='status',
-            field=models.CharField(choices=[('created', 'Awaiting review'), ('rejected', 'Rejected ship'), ('requested_changes', 'Requested Changes'), ('reqchecked', 'Checked by T1'), ('approved', 'Approved by T2')], default='created', max_length=200),
+            model_name="projectship",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("created", "Awaiting review"),
+                    ("rejected", "Rejected ship"),
+                    ("requested_changes", "Requested Changes"),
+                    ("reqchecked", "Checked by T1"),
+                    ("approved", "Approved by T2"),
+                ],
+                default="created",
+                max_length=200,
+            ),
         ),
     ]

@@ -5,15 +5,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0009_uploadedimage'),
+        ("twisted_site", "0009_uploadedimage"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='UploadedImage',
-            new_name='UploadedFile',
+            old_name="UploadedImage",
+            new_name="UploadedFile",
         ),
     ]

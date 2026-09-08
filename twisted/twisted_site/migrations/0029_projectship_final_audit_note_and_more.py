@@ -4,25 +4,33 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0028_remove_projectship_final_message_and_more'),
+        ("twisted_site", "0028_remove_projectship_final_message_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='projectship',
-            name='final_audit_note',
-            field=models.TextField(blank=True, default=''),
+            model_name="projectship",
+            name="final_audit_note",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='final_note_to_maker',
-            field=models.TextField(blank=True, default=''),
+            model_name="projectship",
+            name="final_note_to_maker",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='final_status',
-            field=models.CharField(choices=[('pending', 'Awaiting review'), ('requested_changes', 'Changes Requested'), ('rejected', 'Rejected'), ('approved', 'Approved')], default='pending', max_length=200),
+            model_name="projectship",
+            name="final_status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Awaiting review"),
+                    ("requested_changes", "Changes Requested"),
+                    ("rejected", "Rejected"),
+                    ("approved", "Approved"),
+                ],
+                default="pending",
+                max_length=200,
+            ),
         ),
     ]
