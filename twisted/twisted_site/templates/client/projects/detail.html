@@ -131,7 +131,8 @@
                 <div class="mb-3 border border-warning bg-warning/10 p-3">
                     <div class="font-bold text-warning">log more time!</div>
                     <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
-                    <button onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                    <button type="button"
+                            onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                             class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                         + New journal
                     </button>
@@ -144,7 +145,8 @@
                         <div class="text-xs text-muted-foreground">Devlogs and progress....</div>
                     </div>
                     {% if not project.is_shipped %}
-                        <button onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                        <button type="button"
+                                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                 class="border border-border bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
                             + New journal
                         </button>
@@ -167,7 +169,8 @@
                                             {% if not project.is_shipped %}
                                                 <div class="flex shrink-0 gap-1">
                                                     {% if journal.type == "untracked" %}
-                                                        <button title="Delete"
+                                                        <button type="button"
+                                                                title="Delete"
                                                                 onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'Delete journal', 'src': '{% url 'fr.projects.journals.delete' journal.pk %}'}, '*')"
                                                                 class="flex h-7 w-7 items-center justify-center border border-border bg-secondary p-1 hover:bg-destructive hover:text-destructive-foreground">
                                                             <img draggable="false"
@@ -243,7 +246,8 @@
                             <div class="font-bold">No journal entries</div>
                             <div class="mt-1 text-sm text-muted-foreground">Your project progress will appear here... after you journal</div>
                             {% if not project.is_shipped %}
-                                <button onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                <button type="button"
+                                        onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                         class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                                     + New journal
                                 </button>
