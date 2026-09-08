@@ -18,6 +18,11 @@ from ...models import (
 from ...slack import log_to_channel
 
 
+def _or_none(value: str) -> str:
+    """Renders an optional display string, falling back to "None"."""
+    return value if value != "" else "None"
+
+
 # Create your views here.
 class ProjectDetail(View):
     def get(self, request: HttpRequest, id: int) -> HttpResponse:
@@ -122,7 +127,7 @@ class ProjectSettings(View):
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         log_to_channel(
-            f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {project.hackatime_project_name or 'None'}\n- *Repo*: {project.repo_url or 'None'}\n- *Demo*: {project.playable_url or 'None'}\n- *Screenshot*: {project.screenshot_url}"
+            f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(project.hackatime_project_name)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}"
         )
 
         return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
