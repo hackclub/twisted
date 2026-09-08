@@ -1,0 +1,123 @@
+{% extends "client/osbase.html" %}
+{% load static time_filters %}
+
+{% block body %}
+
+<script type="speculationrules">
+{
+  "prerender": [
+    {
+      "source": "list",
+      "urls": [
+        "{% url 'fr.projects.journals.new.hackatime' project.id %}",
+        "{% url 'fr.projects.journals.new.untracked' project.id %}"
+      ],
+      "eagerness": "eager"
+    }
+  ]
+}
+</script>
+
+<div class="bg-surface text-foreground flex flex-col w-full h-full font-vintage">
+
+    {% if not success %}
+
+    <div class="shrink-0 flex items-center justify-between bg-card border-b border-border px-3 py-2">
+        <div class="text-xl font-bold">
+            New journal
+        </div>
+        <div class="text-sm text-muted-foreground truncate">
+            Project: <u> {{ project.project_name }}</u>
+        </div>
+    </div>
+
+    <div class="flex flex-col flex-1 min-h-0 overflow-y-auto p-3">
+
+        {% if project.project_type == 'hardware' %}
+        <div class="mb-3">
+            <div class="flex flex-wrap gap-2">
+                {% block links %}
+
+                <a href="{% url 'fr.projects.journals.new.hackatime' project.id %}">
+                    <button type="button"
+                        class="px-3 py-1.5 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                        Hackatime
+                    </button>
+                </a>
+
+                <a href="{% url 'fr.projects.journals.new.untracked' project.id %}">
+                    <button type="button"
+                        class="px-3 py-1.5 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                        Untracked
+                    </button>
+                </a>
+                
+                {% endblock links %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if info %}
+        <div class="mb-3 border border-warning bg-warning/30 px-3 py-2">
+            <div class="text-sm ">
+                {{ info|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% block journal_log_message %}
+        <div class="mb-3 border border-border bg-background px-3 py-2">
+            This journal will log {{ log_minutes|minutes_to_hours_minutes }}.
+        </div>
+        {% endblock journal_log_message %}
+        
+        <form method="post" class="flex-1 min-h-0 flex flex-col">
+            {% csrf_token %}
+
+            {% block form %}
+
+            {% block preform %}
+            {% endblock preform %}
+
+            <div class="flex-1 border border-border bg-card">
+                <c-mdedit class="h-full overflow-auto "></c-mdedit>
+            </div>
+
+            <div class="flex justify-end pt-3">
+                <button type="submit"
+                    class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">
+                    Log journal
+                </button>
+            </div>
+
+            {% endblock form %}
+        </form>
+
+    </div>
+
+    {% else %}
+
+    <div class="flex-1 flex items-center justify-center p-6 text-center">
+        <div class="border border-success bg-success/30 p-6 max-w-sm">
+
+            <div class="text-2xl font-bold mb-2">
+                Journal logged!
+            </div>
+
+            <p class="text-sm text-muted-foreground mb-4">
+                Your journal has been successfully logged yay!
+            </p>
+
+            <button type="button" onclick="location = location"
+                class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">
+                Log another journal?
+            </button>
+
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock body %}

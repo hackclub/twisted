@@ -24,13 +24,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&3p#whs%8@!e1=fl$!wk^y6^e@z+714@714xd$=0ghmfyk43bn'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'false').lower() in ['true', 'on', '1']
+DEBUG_REVIEW = os.environ.get('DEBUG_REVIEW', str(DEBUG)).lower() in ['true', 'on', '1']
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Behind the TLS-terminating proxy above, cookies should never travel over plain
+# HTTP once we're not in local dev.
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 0 if DEBUG else 60 * 60 * 24 * 365
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
@@ -45,13 +55,13 @@ CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_raw.split(",")
 TAILWIND_APP_NAME = 'tailwindcsstheme'
 
 INSTALLED_APPS = [
-    'jazzmin',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     # Your apps
     'common',
@@ -59,8 +69,13 @@ INSTALLED_APPS = [
     
     # 3rd party apps
     'django_cotton',
+    'django_cotton_ui',
     'tailwind',
     TAILWIND_APP_NAME,
+    'django_htmx',
+    'django_extensions',
+    'mathfilters',
+    'django_humanize'
 ]
 
 if DEBUG:
@@ -76,6 +91,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'mysite.middleware.TimezoneMiddleware',
+    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 if DEBUG:
@@ -146,6 +163,7 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
+USE_L10N = True
 
 USE_TZ = True
 
@@ -157,3 +175,30 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'static'
 CSRF_COOKIE_HTTPONLY = False
 NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm")
+
+# Django Messages Framework
+MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
+
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # Keeps Gunicorn's loggers active
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
+
+# Ari (Review)
+# https://ari.hackclub.com/docs/webhooks
+ARI_INGEST_ENDPOINT = os.environ.get('ARI_INGEST_ENDPOINT')
+ARI_SIGNING_SECRET = os.environ.get('ARI_SIGNING_SECRET')
+# Separate from ARI_SIGNING_SECRET: signs deliveries Ari sends to us (Settings -> Webhooks),
+# not requests we send to Ari.
+ARI_WEBHOOK_SECRET = os.environ.get('ARI_WEBHOOK_SECRET')

@@ -5,7 +5,8 @@ from django.shortcuts import redirect
 import os
 from authlib.integrations.django_client import OAuth
 from django.views import View
-import random
+import secrets
+import hmac
 
 from ...models import Profile
 from ... import hackatime
@@ -18,13 +19,18 @@ oauth.register(
     server_metadata_url="https://auth.hackclub.com/.well-known/openid-configuration",
     client_id=os.environ["HCA_CLIENT_ID"],
     client_secret=os.environ["HCA_CLIENT_SECRET"],
-    client_kwargs={"scope": "openid email name profile verification_status slack_id"},
+    client_kwargs={
+        "scope": "openid profile email phone address birthdate slack_id verification_status"
+    },
 )
 
 
 class LoginView(View):
     def post(self, request):
-        if request.user.is_authenticated and request.user.profile.hackatime_access_token:
+        if (
+            request.user.is_authenticated
+            and request.user.profile.hackatime_access_token
+        ):
             return redirect("dashboard")
 
         redirect_uri = os.environ["HCA_REDIRECT_URI"]
@@ -32,13 +38,16 @@ class LoginView(View):
         response = oauth.hca.authorize_redirect(request, redirect_uri)
         return response
 
+
 class AuthCallbackView(View):
     def get(self, request):
-        if os.environ.get("LOGIN_ENABLED") == 'false':
-            return JsonResponse("not allowed!")
-        
+        if os.environ.get("LOGIN_ENABLED") == "false":
+            return JsonResponse(
+                {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
+            )
+
         token = oauth.hca.authorize_access_token(request)
-        
+
         userinfo = token.get("userinfo")
         if not userinfo:
             userinfo = oauth.hackclub.userinfo(token=token)
@@ -48,98 +57,131 @@ class AuthCallbackView(View):
         sub = userinfo.get("sub")
         clean_sub = sub.replace("!", "_")
         slack_id = userinfo.get("slack_id", "")
-        verification_status = userinfo.get("verification_status", "")
+        if not slack_id:
+            return JsonResponse(
+                {
+                    "error": "Twisted requires a Slack account linked to Hack Club Identity. "
+                    "Please sign up for Slack and link it at https://auth.hackclub.com, then try logging in again."
+                }
+            )
 
+        verification_status = userinfo.get("verification_status", "")
+        ysws_eligible = userinfo.get("ysws_eligible", False)
         user_model = get_user_model()
         user, created = user_model.objects.get_or_create(
             username=clean_sub,
             defaults={
                 "email": email,
                 "first_name": userinfo.get("given_name", ""),
-                "last_name": userinfo.get("family_name", "")
+                "last_name": userinfo.get("family_name", ""),
             },
-        )  
+        )
 
-        if slack_id:
-            try:
-                slack_user = slack_bot.users_info(user=slack_id)["user"]  # ty:ignore[not-subscriptable]
-                slack_profile = slack_user["profile"]
+        try:
+            slack_user = slack_bot.users_info(user=slack_id)["user"]
+            slack_profile = slack_user["profile"]
 
-                display_name = (
-                    slack_profile.get("display_name")
-                    or slack_profile.get("real_name")
-                )
-                avatar_url = slack_profile.get("image_512")
+            display_name = slack_profile.get("display_name") or slack_profile.get(
+                "real_name"
+            )
+            avatar_url = slack_profile.get("image_512")
 
-            except Exception as e:
-                print("Slack profile fetch failed", e)
-                display_name = name
-                avatar_url = os.environ["DEFAULT_PFP"]
+        except Exception as e:
+            print("Slack profile fetch failed", e)
+            display_name = name
+            avatar_url = os.environ["DEFAULT_PFP"]
 
         profile, created = Profile.objects.get_or_create(user=user)  # ty:ignore[unresolved-attribute]
-        if created:
-            profile.verification_status = verification_status
-            profile.slack_id = slack_id
-            profile.slack_username = display_name
-            profile.slack_pfp_url = avatar_url
-            profile.save()
+        profile.verification_status = verification_status
+        profile.slack_id = slack_id
+        profile.slack_username = display_name
+        profile.slack_pfp_url = avatar_url
+        profile.ysws_eligible = ysws_eligible
+        profile.hca_access_token = token['access_token']
+        
+        referral_code = self.request.COOKIES.get('referral')
+        if created and referral_code:
+            referral_profiles = Profile.objects.filter(my_referral_code=referral_code)
+            if referral_profiles:
+                referral_profile = referral_profiles.get()
+                profile.referred_by = referral_profile
+        
+        profile.save()
+
+        if os.environ.get("LOGIN_ENABLED") == "maybe":
+            if not profile.is_allowed:
+                return JsonResponse(
+                    {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
+                )
 
         login(request, user)
-        
+
         if not profile.hackatime_access_token:
-            HACKATIME_CLIENT_ID = os.environ['HACKATIME_CLIENT_ID']
-            HACKATIME_REDIRECT_URI = os.environ['HACKATIME_REDIRECT_URI']
-            scopes = 'profile+read'
-            
-            profile.hackatime_state = str(random.randint(0,10**20))
+            HACKATIME_CLIENT_ID = os.environ["HACKATIME_CLIENT_ID"]
+            HACKATIME_REDIRECT_URI = os.environ["HACKATIME_REDIRECT_URI"]
+            scopes = "profile+read"
+
+            profile.hackatime_state = secrets.token_urlsafe(32)
             profile.save()
-            
-            return redirect(f'https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}')
-        
+
+            return redirect(
+                f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}"
+            )
+
         return redirect("dashboard")
+
 
 class HackatimeCallbackView(View):
     def get(self, request):
-        if os.environ.get("LOGIN_ENABLED") == 'false':
+        if os.environ.get("LOGIN_ENABLED") == "false":
             return JsonResponse("not allowed!")
-        
+
         profile = request.user.profile
-        
-        state = request.GET['state']
-        if state != profile.hackatime_state:
+
+        state = request.GET["state"]
+        if not hmac.compare_digest(state, profile.hackatime_state):
             profile.hackatime_state = ""
             profile.save()
-            return JsonResponse({"error": "State mismatch; Auth failed. Please contact support with the error code if this is unexpected!"})
+            return JsonResponse(
+                {
+                    "error": "State mismatch; Auth failed. Please contact support with the error code if this is unexpected!"
+                }
+            )
         profile.hackatime_state = ""
         profile.save()
-        
-        code = request.GET['code']
-        HACKATIME_CLIENT_ID = os.environ['HACKATIME_CLIENT_ID']
-        HACKATIME_CLIENT_SECRET = os.environ['HACKATIME_CLIENT_SECRET']
-        HACKATIME_REDIRECT_URI = os.environ['HACKATIME_REDIRECT_URI']
-        resp = requests.post("https://hackatime.hackclub.com/oauth/token", data={
-            "client_id": HACKATIME_CLIENT_ID,
-            "client_secret": HACKATIME_CLIENT_SECRET,
-            "code": code,
-            "redirect_uri": HACKATIME_REDIRECT_URI,
-            "grant_type": "authorization_code",
-        })
+
+        code = request.GET["code"]
+        HACKATIME_CLIENT_ID = os.environ["HACKATIME_CLIENT_ID"]
+        HACKATIME_CLIENT_SECRET = os.environ["HACKATIME_CLIENT_SECRET"]
+        HACKATIME_REDIRECT_URI = os.environ["HACKATIME_REDIRECT_URI"]
+        resp = requests.post(
+            "https://hackatime.hackclub.com/oauth/token",
+            data={
+                "client_id": HACKATIME_CLIENT_ID,
+                "client_secret": HACKATIME_CLIENT_SECRET,
+                "code": code,
+                "redirect_uri": HACKATIME_REDIRECT_URI,
+                "grant_type": "authorization_code",
+            },
+        )
         resp.raise_for_status()
         data = resp.json()
-        access_token = data['access_token']
-        
+        access_token = data["access_token"]
+
         me = hackatime.me(access_token)
         if profile.slack_id != me.slack_id:
-            return JsonResponse({"error": "Slack ID mismatch. Please contact support with the error code if this is unexpected!"})
+            return JsonResponse(
+                {
+                    "error": "Slack ID mismatch. Please contact support with the error code if this is unexpected!"
+                }
+            )
 
         profile.hackatime_access_token = access_token
         profile.save()
-        return redirect('dashboard')
+        return redirect("dashboard")
 
-        
-        
 
 class LogoutView(View):
     def post(self, request):
         logout(request)
-        return redirect('homepage')
+        return redirect("homepage")

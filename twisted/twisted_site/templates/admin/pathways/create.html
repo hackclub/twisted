@@ -1,0 +1,44 @@
+{% load tz %}
+{% get_current_timezone as TIMEZONE %}
+<c-base>
+
+    <div>
+        <c-ui.breadcrumbs>
+            <c-ui.breadcrumbs.item href="{% url 'admin.dash' %}">Admin</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item href="{% url 'admin.pathways' %}">Pathways</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item :current="True">New</c-ui.breadcrumbs.item>
+        </c-ui.breadcrumbs>
+        <h1 class="text-2xl font-bold mt-2">Create Pathway</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mt-2 flex flex-col gap-2">
+                <c-ui.input label="Pathway name" name="name" placeholder="CPU" required="True" value="{{ pathway_name }}" />
+                <div class="flex flex-col lg:flex-row gap-2 w-full *:w-full">
+                    <div>
+                        <c-ui.label>Start</c-ui.label>
+                        <div class="flex gap-2 *:w-full">
+                            <c-ui.datepicker mode="single" name="startDate" value="{{ start_date }}" required />
+                            <c-ui.input type="time" name="startTime" value="{{ start_time }}" required />
+                        </div>
+                    </div>
+                    <div class="hidden lg:block border border-zinc-800 flex-0">
+                    </div>
+                    <div>
+                        <c-ui.label>End</c-ui.label>
+                        <div class="flex gap-2 *:w-full">
+                            <c-ui.datepicker mode="single" name="endDate" value="{{ end_date }}" required />
+                            <c-ui.input type="time" name="endTime" value="{{ end_time }}" required />
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <c-ui.alert>Start/End is in {{ TIMEZONE }} (your local time).</c-ui.alert>
+                </div>
+                <div>
+                    <c-ui.input label="Minimum time required to unlock (in minutes)" type="number" value="{{ min_mins }}" name="mins" placeholder="300" required />
+                </div>
+                <c-ui.button class="lg:w-min" type="submit" variant="primary">Create Pathway</c-ui.mode-toggle>
+            </div>
+        </form>
+    </div>
+</c-base>

@@ -1,0 +1,46 @@
+{% load humanize maths mathfilters %}
+<a href="{% url 'admin.pathways.detail' pathway.id %}">
+    <c-ui.card class="bg-ink-900 hover:bg-ink-800">
+        <h3 class="text-lg font-bold">{{ pathway.name }}</h3>
+        <div class="flex flex-col gap-2">
+            <div>
+                <p class="text-ink-400">Start</p>
+                <p title="local time">{{ pathway.start }}</p>
+                {% if pathway.didnt_start %}
+                <p>({{ pathway.start|naturaltime }})</p>
+                {% endif %}
+            </div>
+            <div>
+                <p class="text-ink-400">End</p>
+                <p title="local time">{{ pathway.end }}</p>
+                {% if pathway.in_progress %}
+                <p>({{ pathway.end|naturaltime }})</p>
+                {% endif %}
+            </div>
+            {% if not pathway.didnt_start %}
+            <div>
+                <p class="text-ink-400">Participated</p>
+                <p>{{ pathway.mins_spent_per_participant|length }} participant{{ pathway.mins_spent_per_participant|pluralize }}</p>
+                <p class="text-ink-400">Qualified</p>
+                <p title="local time">{{ pathway.qualified_participants|length }} qualified</p>
+                {% if pathway.qualified_participants %}
+                <p class="mt-2">
+                    <c-ui.avatar.group>
+                    {% for user in pathway.qualified_participants %}
+                        {% if forloop.counter < 8 %}
+                            <c-ui.tooltip content="{{ user.profile.slack_username }}">
+                                <c-ui.avatar class="ring-2 ring-ink-900" title="{{ user.profile.slack_username }}" src="{{ user.profile.slack_pfp_url }}" alt="Jane Doe" />
+                            </c-ui.tooltip>
+                        {% endif %}
+                        {% if forloop.counter == 8 %}
+                            <c-ui.avatar initials="+{{ pathway.qualified_participants|length|sub:7 }}" />
+                        {% endif %}
+                    {% endfor %}
+                    </c-ui.avatar.group>
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </c-ui.card>
+</a>

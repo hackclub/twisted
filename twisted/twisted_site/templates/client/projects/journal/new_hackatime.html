@@ -1,0 +1,11 @@
+{% extends "client/projects/journal/new_journal.base.html" %} {% load static time_filters %}
+{% block links %}
+{% if project.project_type == 'hardware' %}
+<button
+    class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border bg-primary/80">Hackatime</button>
+<a href="{% url 'fr.projects.journals.new.untracked' project.id %}">
+    <button
+        class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">untracked</button>
+</a>
+{% endif %}
+{% endblock links %}

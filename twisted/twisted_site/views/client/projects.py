@@ -1,7 +1,7 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views import View
 from django.shortcuts import render, redirect
-from ...models import Project
+from ...models import Project, PROJECT_TYPE_CHOICES
 
 
 # Create your views here.
@@ -26,11 +26,7 @@ class CreateProject(View):
         if self.request.user.is_anonymous:
             return redirect('homepage')
         
-        return render(
-            request,
-            "client/projects/create.html",
-            {"complete": False},
-        )
+        return render(request, "client/projects/create.html")
 
     def post(self, request):
         if self.request.user.is_anonymous:
@@ -40,6 +36,9 @@ class CreateProject(View):
         project_description = request.POST["description"]
         project_type = request.POST["type"]
 
+        if project_type not in PROJECT_TYPE_CHOICES:
+            return HttpResponse("naughty! you arent supposed to do this!")
+
         Project.objects.create(
             user=request.user,
             project_name=project_name,
@@ -47,8 +46,4 @@ class CreateProject(View):
             project_type=project_type,
         )
 
-        return render(
-            request,
-            "client/projects/create.html",
-            {"complete": True},
-        )
+        return redirect('fr.projects')

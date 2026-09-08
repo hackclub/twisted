@@ -1,143 +1,111 @@
 {% extends "base.html" %}
 {% load static %}
 {% block body %}
+
 <a href="https://hackclub.com" target="_blank" rel="noopener" class="fixed top-0 left-4 z-50">
-  <img src="https://assets.hackclub.com/flag-orpheus-top.svg" alt="Hack Club" class="w-48 flag-wave origin-top">
+  <img src="https://assets.hackclub.com/flag-orpheus-top.svg" alt="Hack Club" class="w-30 flag-wave">
 </a>
-<div class="bg-cover w-screen h-screen bg-surface text-absolute-white p-4 sm:p-8">
-  <div class="max-w-3xl mx-auto bg-dark border-2 border-t-twisted-200 border-l-twisted-200 border-r-dark-black border-b-dark-black shadow-lg">
-    <div class="flex items-center justify-between bg-twisted-600 text-absolute-white px-2 py-1">
-      <span class="font-bold text-sm">twisted.exe</span>
+
+<div class="min-h-screen bg-gradbg text-foreground px-3 py-4 sm:px-6 sm:py-8 md:px-8 md:py-10 pb-20">
+  <main
+    class="shadow-sm shadow-primary mx-auto w-full max-w-4xl overflow-hidden border border-border bg-card max-h-[85%]">
+    <header class="flex items-center justify-between border-b border-border bg-secondary px-2 py-1.5 sm:px-3 sm:py-2">
+      <div class="flex items-center gap-2">
+        <div class="flex h-5 w-5 items-center justify-center bg-primary text-[10px] font-bold text-primary-foreground">
+          T
+        </div>
+
+        <span class="font-mono text-sm font-semibold tracking-wide">
+          twisted.exe
+        </span>
+      </div>
+
       <div class="flex gap-1">
-        <span class="bg-twisted-400 text-dark-black border border-t-twisted-200 border-l-twisted-200 border-r-dark-black border-b-dark-black px-2 leading-none">_</span>
-        <span class="bg-twisted-400 text-dark-black border border-t-twisted-200 border-l-twisted-200 border-r-dark-black border-b-dark-black px-2 leading-none">□</span>
-        <span class="bg-twisted-400 text-dark-black border border-t-twisted-200 border-l-twisted-200 border-r-dark-black border-b-dark-black px-2 leading-none">×</span>
-      </div>
-    </div>
-    <div class="p-6 text-center">
-      <img src="{% static 'images/twisted_logo.png' %}" alt="twisted logo" class="mx-auto mb-4 max-h-64">
+        <button type="button" aria-label="Minimize"
+          class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:bg-muted">
+          −
+        </button>
 
-      <p class="text-lg mb-6 max-w-xl mx-auto text-twisted-200">
-        A unique YSWS where you make cool projects and complete a twisted roadmap full of challenges to get a PC!
-      </p>
-      <nav class="flex flex-wrap justify-center gap-4 mb-6 text-twisted-200 underline">
-        <a href="https://hackclub.enterprise.slack.com/archives/C0A8G9BSCSG">slack</a>
-        <a href="{% url 'faqs' %}">FAQs</a>
-      </nav>
-      <div id="rsvp">
-        <form method="post" action="{% url 'login' %}">
-          {% csrf_token %}
-          {% if login_enabled %}
-          <button type="submit" class="bg-twisted-400 text-absolute-white text-2xl font-bold py-3 px-10 border-2 border-t-twisted-200 border-l-twisted-200 border-r-dark-black border-b-dark-black active:border-t-dark-black active:border-l-dark-black active:border-r-twisted-200 active:border-b-twisted-200">
-            Login
-          </button>
+        <button type="button" aria-label="Maximize"
+          class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:bg-muted">
+          □
+        </button>
+
+        <button type="button" aria-label="Close"
+          class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:border-destructive hover:bg-destructive hover:text-destructive-foreground">
+          ×
+        </button>
+      </div>
+    </header>
+
+    <section class="px-4 py-6 sm:px-8 sm:py-10 md:px-12">
+      <div class="mx-auto max-w-2xl text-center space-y-5">
+        <div>
+          <img src="{% static 'images/twisted_logo.png' %}" alt="Twisted"
+            class="mx-auto w-[min(65vw,20rem)] h-auto drop-shadow-sm drop-shadow-primary">
+        </div>
+
+        <div class="border border-border bg-background p-4 sm:p-5 text-left shadow-xs shadow-primary">
+          <div class="text-foreground font-vintage text-sm sm:text-base leading-relaxed">
+            <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              message from the orgs
+            </span>
+
+            <span class="h-2 w-2  full bg-success shadow-[0_0_8px_currentColor]"></span>
+          </div>
+
+          <p class="font-vintage text-sm sm:text-md md:text-lg leading-relaxed text-foreground">
+            Join a twisted YSWS where you build cool projects,
+            complete challenges, and work your way through a
+            roadmap to earn a PC.
+          </p>
+        </div>
+
+        <div id="rsvp">
+          {% if login_enabled != 'false' %}
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}">
+              <button type="button"
+                class="w-full sm:w-auto border border-primary bg-primary px-6 sm:px-10 py-3 font-vintage text-xl sm:text-2xl font-bold text-primary-foreground shadow-xs shadow-white transition hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-sm active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
+                enter twisted →
+              </button>
+            </a>
+            {% else %}
+            <form method="post" action="{% url 'login' %}">
+              {% csrf_token %}
+
+              <button type="submit"
+                class="border border-primary bg-primary px-10 py-3 font-vintage text-2xl font-bold text-primary-foreground shadow-[4px_4px_0_var(--color-dark-black)] transition hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_var(--color-dark-black)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
+                start twisting →
+              </button>
+            </form>
+            {% endif %}
           {% endif %}
-        </form>
+        </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
+  <nav class="grid grid-cols-3 gap-2 mt-6 max-w-4xl justify-self-center">
+    <a href="https://hackclub.enterprise.slack.com/archives/C0A8G9BSCSG"
+      class="flex items-center justify-center border border-border bg-secondary px-3 py-2.5 font-mono text-sm font-semibold text-secondary-foreground transition hover:border-primary hover:bg-primary hover:text-primary-foreground">
+      Slack
+    </a>
 
-  </div>
+    <a href="{% url 'faqs' %}"
+      class="flex items-center justify-center border border-border bg-secondary px-3 py-2.5 font-mono text-sm font-semibold text-secondary-foreground transition hover:border-primary hover:bg-primary hover:text-primary-foreground">
+      FAQs
+    </a>
+
+    <a href="https://docs.twisted.hackclub.com"
+      class="flex items-center justify-center border border-border bg-secondary px-3 py-2.5 font-mono text-sm font-semibold text-secondary-foreground transition hover:border-primary hover:bg-primary hover:text-primary-foreground">
+      Docs
+    </a>
+  </nav>
 </div>
-<div class="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between bg-twisted-400 border-t-2 border-t-twisted-200 px-1 py-1">
-  <button id="twist-btn" onclick="toggleMusic()" class="flex items-center gap-1 bg-twisted-600 text-absolute-white font-bold px-3 py-1 border-2 border-t-twisted-200 border-l-twisted-200 border-r-dark-black border-b-dark-black active:border-t-dark-black active:border-l-dark-black active:border-r-twisted-200 active:border-b-twisted-200">
-    <img src="{% static 'images/twisted_logo.png' %}" alt="" class="w-8 h-5"> Twist 
-  </button>
- <div  class="flex items-center gap-2">
-   <canvas id="spectrum" width="100" height="24" class="border-2 border-t-dark-black border-l-dark-black border-r-twisted-200 border-b-twisted-200"></canvas>
-  <div id="taskbar-clock" class="bg-twisted-600 text-absolute-white px-3 py-1 border-2 border-t-dark-black border-l-dark-black border-r-twisted-200 border-b-twisted-200 min-w-20 text-center">
-    00:00 00
-  </div>
- </div>
-  
-</div> 
-<audio id="bg-music" loop>
-  <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg">
-</audio>
-<script>
-  const music = document.getElementById("bg-music");
-  const savedTime = parseFloat(sessionStorage.getItem("musicTime") || "0");
-  const wasPlaying = sessionStorage.getItem("musicPlaying") === "true";
-  if (savedTime) music.currentTime = savedTime;
 
-  let audioCtx, analyser, dataArray, sourceConnected = false;
-  const canvas = document.getElementById("spectrum");
-  const ctx = canvas ? canvas.getContext("2d") : null;
-
-  function initAudioGraph() {
-    if (sourceConnected) return;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    audioCtx = new AC();
-    const source = audioCtx.createMediaElementSource(music);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 64;
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-    sourceConnected = true;
-    drawSpectrum();
-  }
-
-  function playMusic() {
-    initAudioGraph();
-    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-    music.play().catch(() => {});
-  }
-
-  function toggleMusic() {
-    if (music.paused) { playMusic(); }
-    else { music.pause(); }
-  }
-
-  if (wasPlaying) {
-    const resume = () => {
-      playMusic();
-      ["click","keydown","scroll","mousemove","touchstart"].forEach(e =>
-        document.removeEventListener(e, resume));
-    };
-    ["click","keydown","scroll","mousemove","touchstart"].forEach(e =>
-      document.addEventListener(e, resume, { once: true }));
-  }
-
-  setInterval(() => {
-    sessionStorage.setItem("musicTime", music.currentTime);
-    sessionStorage.setItem("musicPlaying", (!music.paused).toString());
-  }, 400);
-  window.addEventListener("beforeunload", () => {
-    sessionStorage.setItem("musicTime", music.currentTime);
-    sessionStorage.setItem("musicPlaying", (!music.paused).toString());
-  });
-
-  function drawSpectrum() {
-    if (!ctx) return;
-    requestAnimationFrame(drawSpectrum);
-    ctx.fillStyle = "#1E072F";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (!analyser || music.paused) return;
-    analyser.getByteFrequencyData(dataArray);
-    const bars = 8, barWidth = canvas.width / bars, pixel = 3;
-    for (let i = 0; i < bars; i++) {
-      const value = dataArray[i] / 255;
-      const barHeight = Math.floor((value * canvas.height) / pixel) * pixel;
-      for (let y = 0; y < barHeight; y += pixel) {
-        const ratio = y / canvas.height;
-        ctx.fillStyle = ratio > 0.6 ? "#CAB3E1" : ratio > 0.3 ? "#8364A2" : "#5A4471";
-        ctx.fillRect(i * barWidth + 1, canvas.height - y - pixel, barWidth - 2, pixel - 1);
-      }
-    }
-  }
-  function updateClock() {
-        const now = new Date();
-        let h = now.getHours();
-        const m = now.getMinutes().toString().padStart(2, "0");
-        const ampm = h >= 12 ? "PM" : "AM";
-        h = h % 12 || 12;
-        document.getElementById("taskbar-clock").textContent = `${h}:${m} ${ampm}`;
-    }
-    
-    setInterval(updateClock, 1000);
-    updateClock(); 
-    drawSpectrum();
-</script>
+{% comment %}
+Check out twisted_site/templates/cotton/homepage_taskbar.html
+to change the taskbar :p                           - Kavyansh
+{% endcomment %}
+<c-homepage_taskbar />
 {% endblock body %}

@@ -1,61 +1,140 @@
 @import "tailwindcss";
+@import "./cotton-ui.sources.css";
 
-/**
-* A catch-all path to Django template files, JavaScript, and Python files
-* that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
-*
-* If your final CSS file is not being updated after code changes, you may want to broaden or narrow
-* the scope of this path.
-*/
 @source "../../../**/*.{html,py,js}";
-
-button {
-    cursor: pointer;
-}
+@source "../../../../.venv/lib/python3.13/site-packages/django_cotton_ui/templates/**/*.html";
 
 @font-face {
-  font-family: "Pixelated MS Sans Serif";
-  src: url("/static/fonts/ms_sans_serif.woff") format("woff");
-  src: url("/static/fonts/ms_sans_serif.woff2") format("woff2");
-  font-weight: normal;
+  font-family: "Figtree";
   font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/figtree/v9/_Xms-HUzqDCFdgfMm4S9DbZs.woff2) format("woff2");
 }
 
 @font-face {
-  font-family: "Pixelated MS Sans Serif";
-  src: url("/static/fonts/ms_sans_serif_bold.woff") format("woff");
-  src: url("/static/fonts/ms_sans_serif_bold.woff2") format("woff2");
-  font-weight: bold;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Pirkalla';
-  src: url('/static/fonts/pirkkala.ttf') format('truetype');
-  font-weight: 400;
+  font-family: "Pirkkala";
+  src: url("/static/fonts/pirkkala.ttf") format("truetype");
+  font-weight: 200;
   font-style: normal;
   font-display: swap;
 }
 
-@theme {
-  --font-vintage: "Pirkalla", monospace, sans-serif;
-
-  --color-absolute-white: #FAFAFA;
-  --color-fair-gray: #A1A1A1;
-  --color-dark-black: #050505;
-
-  --color-twisted-200: #CAB3E1;
-  --color-twisted-400: #8364A2;
-  --color-twisted-600: #5A4471;
-  --color-twisted-800: #36214B;
-  --color-twisted-999: #29153D;
-
-  --color-surface: #1E072F;
-  --color-dark: #261F2D;
+@font-face {
+  font-family: "Piedra";
+  src: url("/static/fonts/Piedra-Regular.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
 }
+
+:root {
+    /* Accent: primary buttons, links, focus ring, active states */
+    --color-accent: var(--color-red-500);
+    --color-accent-content: var(--color-red-600);
+    --color-accent-foreground: #ffffff;
+
+    /* Corner radius, by role */
+    --radius-control: 0.375rem;
+    --radius-box: 0.5rem;
+
+    /* Form controls */
+    --focus-ring-width: 3px;
+    --shadow-input: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+    /* Structural surfaces */
+    --shadow-box: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.dark {
+  /* Dark mode: lighter accent so it stays vivid on dark surfaces */
+  --color-accent: var(--color-red-400);
+  --color-accent-content: var(--color-red-300);
+  --color-accent-foreground: var(--color-red-950);
+  --color-primary: var(--color-red-600);
+  --color-primary-foreground: var(--color-accent-foreground);
+  --color-surface: var(--color-zinc-900)
+}
+
+.os {
+  --color-accent: #E0A7FF;
+  --color-accent-foreground: #24102F;
+
+  --color-primary: #B96CFF;
+  --color-primary-foreground: #190B24;
+
+  --color-twisted-200: #E0A7FF;
+  --color-twisted-400: #B96CFF;
+  --color-twisted-600: #8C3ED1;
+  --color-twisted-800: #61268F;
+  --color-twisted-999: #3A1750;
+
+  --color-absolute-white: #FFFFFF;
+  --color-fair-gray: #B8ADBF;
+  --color-dark-black: #120817;
+
+  --color-surface: #2E153C;
+  --color-dark: #1B0D25;
+}
+
+@theme {
+  --font-vintage: "Pirkkala", sans-serif;
+  --font-latin: "Figtree", sans-serif;
+
+  --background-image-gradbg: radial-gradient(circle, var(--color-background) 33%, rgba(9, 11, 15, 1) 100%);
+
+  --color-background: #24102F;
+  --color-foreground: #FAF7FF;
+
+  --color-card: #1B0D25;
+  --color-card-foreground: #FAF7FF;
+
+  --color-popover: #48245C;
+  --color-popover-foreground: #FFFFFF;
+
+  --color-primary: #B96CFF;
+  --color-primary-foreground: #190B24;
+
+  --color-secondary: #5B2E73;
+  --color-secondary-foreground: #F1DFFF;
+
+  --color-accent: #E0A7FF;
+  --color-accent-foreground: #24102F;
+
+  --color-muted: #432252;
+  --color-muted-foreground: #C9B8D3;
+
+  --color-subtle: #806A8D;
+  --color-subtle-foreground: #E2D8E8;
+
+  --color-border: #654078;
+  --color-input: #75488A;
+  --color-ring: #C27AFF;
+
+  --color-success: #4ADE80;
+  --color-success-foreground: #092414;
+
+  --color-warning: #FACC15;
+  --color-warning-foreground: #2A2105;
+
+  --color-destructive: #FF6B7A;
+  --color-destructive-foreground: #2A080D;
+}
+
+button {
+  cursor: pointer;
+}
+
 @keyframes flag-wave {
-  0%, 100% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
+
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+
+  50% {
+    transform: rotate(2deg);
+  }
 }
 
 .flag-wave {
@@ -63,27 +142,115 @@ button {
   animation: flag-wave 4s ease-in-out infinite;
 }
 
-.scrollbar-win9x::-webkit-scrollbar {
-  width: 16px;
+@utility no-spinner {
+  appearance: textfield;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
 
-.scrollbar-win9x::-webkit-scrollbar-track {
-  background-color: #c0c0c0;
-  border-left: 2px solid #dfdfdf;
+@utility image-render-pixelated {
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
-.scrollbar-win9x::-webkit-scrollbar-thumb {
-  background-color: #c0c0c0;
-  border-top: 2px solid #ffffff;
-  border-left: 2px solid #ffffff;
-  border-right: 2px solid #0a0a0a;
-  border-bottom: 2px solid #0a0a0a;
+.window .maximized {
+  position: fixed !important;
+  inset: 0 0 32px 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
 }
 
-.scrollbar-win9x::-webkit-scrollbar-thumb:focus {
-  background-color: #FFFFFF;
-  border-top: 2px solid #ffffff;
-  border-left: 2px solid #ffffff;
-  border-right: 2px solid #0a0a0a;
-  border-bottom: 2px solid #0a0a0a;
+progress {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  display: block;
+  height: 100%;
+  border: none;
+  box-sizing: border-box;
+  background-color: var(--color-primary);
 }
+
+progress::-webkit-progress-bar {
+  background-color: var(--color-primary);
+  height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1E072F;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border: 2px solid #1E072F;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+::-webkit-scrollbar-corner {
+  background: #1E072F;
+}
+
+@utility no-scrollbar {
+  @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+}
+
+::-webkit-scrollbar-corner {
+  background: #1E072F;
+}
+.resize-handle {
+  position: absolute;
+  z-index: 10;
+}
+
+.resize-n,
+.resize-s {
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.resize-n { top: 0; }
+.resize-s { bottom: 0; }
+
+.resize-e,
+.resize-w {
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.resize-e { right: 0; }
+.resize-w { left: 0; }
+
+.resize-ne,
+.resize-nw,
+.resize-se,
+.resize-sw {
+  width: 8px;
+  height: 8px;
+}
+
+.resize-ne { top: 0; right: 0; cursor: ne-resize; }
+.resize-nw { top: 0; left: 0; cursor: nw-resize; }
+.resize-se { bottom: 0; right: 0; cursor: se-resize; }
+.resize-sw { bottom: 0; left: 0; cursor: sw-resize; }

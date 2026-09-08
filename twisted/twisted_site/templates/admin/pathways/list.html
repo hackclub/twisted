@@ -1,0 +1,54 @@
+<c-base>
+    <div class="flex flex-col min-h-0 h-full">
+        <div class="mb-2 flex mx-auto md:mx-0 flex-row">
+            <h1 class="text-center md:text-left me-4 font-semibold text-3xl mt-auto">
+                Pathways
+            </h1>
+            <a href="{% url 'admin.pathways.create' %}">
+                <c-ui.button variant="primary">
+                    <svg class="inline-block size-6" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
+                        stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="plus"
+                        viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" fill="currentColor" width="256"
+                        height="256">
+                        <path
+                            d="M16,6c5.1,0 7.247,0.575 8.336,1.664c1.089,1.089 1.664,3.236 1.664,8.336c0,5.1 -0.575,7.247 -1.664,8.336c-1.089,1.089 -3.236,1.664 -8.336,1.664c-5.1,0 -7.247,-0.575 -8.336,-1.664c-1.089,-1.089 -1.664,-3.236 -1.664,-8.336c0,-5.1 0.575,-7.247 1.664,-8.336c1.089,-1.089 3.236,-1.664 8.336,-1.664Zm0,-2c10,0 12,2 12,12c0,10 -2,12 -12,12c-10,0 -12,-2 -12,-12c0,-10 2,-12 12,-12Zm-1,8c0,-0.552 0.448,-1 1,-1c0.552,0 1,0.448 1,1l0,3l3,0c0.552,0 1,0.448 1,1c0,0.552 -0.448,1 -1,1l-3,0l0,3c0,0.552 -0.448,1 -1,1c-0.552,0 -1,-0.448 -1,-1l0,-3l-3,0c-0.552,0 -1,-0.448 -1,-1c0,-0.552 0.448,-1 1,-1l3,0l0,-3Z" />
+                    </svg>
+                    Create new
+                </c-ui.button>
+            </a>
+        </div>
+        <div class="min-h-0 overflow-y-hidden flex gap-2 *:min-w-80 *:w-200 grow max-h-full bg-slate-950">
+            <div class="bg-purple-950/40 border border-purple-900 rounded-md p-2 h-full overflow-y-auto scrollbar-none">
+                <h1 class="font-semibold mb-2 mx-2">
+                    Not started ({{ future_pathways|length }} item{{ future_pathways|pluralize }})
+                </h1>
+                <div class="flex flex-col gap-2">
+                    {% for pathway in future_pathways %}
+                    <c-pathway_card />
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="bg-orange-950/40 border border-orange-900 rounded-md p-2 h-full overflow-y-auto scrollbar-none">
+                <h1 class="font-semibold mb-2 mx-2">
+                    In progress ({{ current_pathways|length }} item{{ current_pathways|pluralize }})
+                </h1>
+                <div class="flex flex-col gap-2">
+                    {% for pathway in current_pathways %}
+                    <c-pathway_card />
+                    {% endfor %}
+                </div>
+            </div>
+            <div
+                class="bg-emerald-950/40 border border-emerald-900 rounded-md p-2 h-full overflow-y-auto scrollbar-none">
+                <h1 class="font-semibold mb-2 mx-2">
+                    Ended ({{ past_pathways|length }} item{{ past_pathways|pluralize }})
+                </h1>
+                <div class="flex flex-col gap-2">
+                    {% for pathway in past_pathways %}
+                    <c-pathway_card />
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</c-base>

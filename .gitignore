@@ -13,4 +13,3 @@ twisted/*.sqlite3
 
 .env
 twisted/.env
-static/

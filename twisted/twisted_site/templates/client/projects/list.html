@@ -1,28 +1,91 @@
 {% extends "client/osbase.html" %}
 {% load static time_filters %}
+
 {% block body %}
-<div class="bg-surface flex flex-col w-full h-full">
-    <div>
-        <button onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'New project...', 'src': '{% url 'fr.projects.create' %}'}, '*');"><span class="underline">N</span>ew project...</button>
+<div class="flex h-full w-full flex-col bg-surface text-foreground font-vintage">
+
+    <div class="flex shrink-0 items-center gap-2 border-b border-border bg-card px-2 py-1">
+        <button
+            onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'New project...', 'src': '{% url 'fr.projects.create' %}'}, '*')"
+            class="flex items-center gap-1 border border-border bg-secondary px-3 py-1 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px">
+            <span class="font-bold">+</span>
+            <span>New project...</span>
+        </button>
     </div>
-    <div
-        class="flex-1 sunken-panel font-vintage overflow-y-scroll p-4"
-    >
-    <div class="flex gap-4 w-full flex-wrap">
-        {% for project in projects %}
-        <div class="w-16 cursor-pointer" onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': '{{ project.project_name }}', 'src': '{% url 'fr.projects.detail' project.id %}'}, '*')">
-            <img src="{% static 'images/directory.png' %}" class="w-full">
-            <div class="w-full text-center text-wrap wrap-anywhere" style="text-align: center;">
-                {{ project.project_name }}
+
+    <div class="sunken-panel min-h-0 flex-1 overflow-y-auto bg-background p-3">
+
+        {% if projects %}
+        <div class="flex flex-wrap content-start gap-2">
+
+            {% for project in projects %}
+            <input type="hidden" value="{{ project.project_name }}" id="project-{{ project.id }}">
+
+            <div class="group flex w-24 cursor-pointer flex-col items-center p-2 select-none hover:bg-secondary"
+                data-project-id="{{ project.id }}" data-project-url="{% url 'fr.projects.detail' project.id %}">
+                <div
+                    class="flex h-16 w-16 items-center justify-center border border-transparent p-1">
+                    {% if project.screenshot_url %}
+                    <img src="{{ project.screenshot_url }}" alt="" class="h-full w-full object-cover">
+                    {% else %}
+                    <img src="{% static 'images/directory.png' %}" alt="" class="h-full w-full object-contain">
+                    {% endif %}
+                </div>
+
+                <div
+                    class="mt-1 w-full wrap-break-word text-center text-sm leading-tight text-foreground group-hover:text-secondary-foreground">
+                    {{ project.project_name }}
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="flex h-full min-h-48 items-center justify-center">
+            <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                <img src="{% static 'images/directory.png' %}" alt="" class="mx-auto mb-3 h-16 w-16 opacity-70">
+
+                <div class="text-lg font-bold">
+                    No projects yet
+                </div>
+
+                <div class="mt-1 text-sm text-muted-foreground">
+                    Create a project to get started.
+                </div>
+
+                <button
+                    onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'New project...', 'src': '{% url 'fr.projects.create' %}'}, '*')"
+                    class="mt-4 border border-border bg-primary px-4 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80">
+                    New project
+                </button>
             </div>
         </div>
-        {% endfor %}
+
+        {% endif %}
 
     </div>
-    </div>
-    <div class="sticky status-field-border font-vintage">
+
+    <div class="status-field-border p-1 border-t border-border flex shrink-0 items-center bg-card px-1 text-sm">
         {{ projects|length }} project{{ projects|length|pluralize }}
     </div>
+
 </div>
+
+<script>
+    document.querySelectorAll("[data-project-id]").forEach((project) => {
+        project.addEventListener("click", () => {
+            const title = document.getElementById(
+                `project-${project.dataset.projectId}`
+            ).value;
+
+            createWindow(
+                title,
+                project.dataset.projectUrl
+            );
+        });
+    });
+</script>
 
 {% endblock body %}

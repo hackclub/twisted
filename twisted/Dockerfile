@@ -1,5 +1,5 @@
 ### Build ###
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS development
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 

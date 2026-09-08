@@ -10,5 +10,7 @@
         ".venv": true,
         "**/__pycache__": true
     },
-    "djangoCotton.templatePaths": ["templates/cotton", "twisted/*/templates/cotton"]
+    "djangoCotton.templatePaths": [
+        "twisted/templates/cotton", "twisted/*/templates/cotton", ".venv/lib/*/site-packages/django_cotton_ui/templates/cotton"
+    ]
 }

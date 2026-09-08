@@ -1,0 +1,18 @@
+{% load time_filters humanize %} 
+<div class="mb-3 border border-border bg-background">
+    <div class="p-2 px-3 border-b border-border flex gap-2">
+        <span class="font-bold text-accent">{{ title }}</span>
+        <span class="mx-1 text-accent"> • </span>
+        <span class="text-accent" title="{{ time }}">
+            {{ time|naturaltime }}
+        </span>
+        <span class="mx-1 text-accent"> • </span>
+        <span class="text-accent">{{ status }}</span>
+    </div>
+    <div class="p-3">
+        <div>Message from the reviewer</div>
+        <div class="mt-1 text-sm text-muted-foreground">
+            {{ slot }}
+        </div>
+    </div>
+</div>

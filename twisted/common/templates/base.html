@@ -1,12 +1,19 @@
-{% load static tailwind_tags static %}
+{% load tailwind_tags static %}
 <html>
 <head>
    {% tailwind_css %}
    {% block head %}{% endblock head %}
+    <link rel="icon" href="{% static 'favicon.png' %}" />
+    <title>Twisted</title>
 </head>
-<body class="font-vintage">
+<body class="font-vintage os">
     {% block body %}
     meow :3
     {% endblock body %}
 </body>
+<script>
+    // Timezone settings
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
+    document.cookie = "django_timezone=" + timezone;
+</script>
 </html>

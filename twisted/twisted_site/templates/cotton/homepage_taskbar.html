@@ -1,0 +1,302 @@
+{% load static %}
+<div
+  class="fixed bottom-0 left-0 right-0 z-50 flex h-12 items-center justify-between gap-2 border-t border-border bg-card px-2 sm:px-3">
+  <button id="twist-btn"
+    class="flex shrink-0 items-center gap-1.5 sm:gap-2 border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground">
+    <img src="{% static 'images/twisted_logo.png' %}" class="h-4 w-6 object-contain" alt="">
+    Twisted
+  </button>
+
+  <div class="flex items-center gap-2">
+    <button id="speaker-btn" type="button" onclick="toggleMusic()" aria-label="Toggle music"
+      class="flex h-8 items-center border border-border bg-secondary px-2 text-secondary-foreground transition hover:bg-muted">
+      <svg id="speaker-icon" width="20" height="16" viewBox="0 0 20 16" shape-rendering="crispEdges"
+        xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="6" width="2" height="4" fill="#E0A7FF" />
+        <rect x="4" y="5" width="2" height="6" fill="#E0A7FF" />
+        <rect x="6" y="4" width="2" height="8" fill="#E0A7FF" />
+        <rect x="8" y="2" width="2" height="12" fill="#E0A7FF" />
+
+        <g id="sound-waves">
+          <rect x="12" y="5" width="2" height="6" fill="#B96CFF" />
+          <rect x="15" y="3" width="2" height="10" fill="#B96CFF" />
+        </g>
+      </svg>
+    </button>
+
+    <canvas id="spectrum" width="100" height="24" class="hidden border border-border sm:block"></canvas>
+
+    <div id="taskbar-clock"
+      class="min-w-20 border border-border bg-background px-3 py-1.5 text-center font-mono text-xs text-foreground">
+      00:00 AM
+    </div>
+  </div>
+</div>
+
+
+<audio id="bg-music" loop>
+  <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg">
+</audio>
+
+
+<script>
+  const music = document.getElementById("bg-music");
+
+  const savedTime =
+    parseFloat(sessionStorage.getItem("musicTime") || "0");
+
+  const wasPlaying =
+    sessionStorage.getItem("musicPlaying") === "true";
+
+  if (savedTime) {
+    music.currentTime = savedTime;
+  }
+
+
+  let audioCtx;
+  let analyser;
+  let dataArray;
+  let sourceConnected = false;
+
+  const canvas = document.getElementById("spectrum");
+  const ctx = canvas ? canvas.getContext("2d") : null;
+
+
+  function getThemeColor(variable) {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(variable)
+      .trim();
+  }
+
+
+  function initAudioGraph() {
+    if (sourceConnected) return;
+
+    const AC =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if (!AC) return;
+
+    audioCtx = new AC();
+
+    const source =
+      audioCtx.createMediaElementSource(music);
+
+    analyser = audioCtx.createAnalyser();
+
+    analyser.fftSize = 64;
+
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    dataArray =
+      new Uint8Array(analyser.frequencyBinCount);
+
+    sourceConnected = true;
+
+    drawSpectrum();
+  }
+
+
+  function playMusic() {
+    initAudioGraph();
+
+    if (
+      audioCtx &&
+      audioCtx.state === "suspended"
+    ) {
+      audioCtx.resume();
+    }
+
+    music.play().catch(() => { });
+  }
+
+
+  function toggleMusic() {
+    if (music.paused) {
+      playMusic();
+    } else {
+      music.pause();
+    }
+  }
+
+
+  if (wasPlaying) {
+
+    const resume = () => {
+
+      playMusic();
+
+      [
+        "click",
+        "keydown",
+        "scroll",
+        "mousemove",
+        "touchstart"
+      ].forEach(event => {
+        document.removeEventListener(event, resume);
+      });
+
+    };
+
+    [
+      "click",
+      "keydown",
+      "scroll",
+      "mousemove",
+      "touchstart"
+    ].forEach(event => {
+      document.addEventListener(
+        event,
+        resume,
+        { once: true }
+      );
+    });
+
+  }
+
+
+  setInterval(() => {
+
+    sessionStorage.setItem(
+      "musicTime",
+      music.currentTime
+    );
+
+    sessionStorage.setItem(
+      "musicPlaying",
+      (!music.paused).toString()
+    );
+
+  }, 400);
+
+
+  window.addEventListener("beforeunload", () => {
+
+    sessionStorage.setItem(
+      "musicTime",
+      music.currentTime
+    );
+
+    sessionStorage.setItem(
+      "musicPlaying",
+      (!music.paused).toString()
+    );
+
+  });
+
+
+  function drawSpectrum() {
+
+    if (!ctx) return;
+
+    requestAnimationFrame(drawSpectrum);
+
+    const background =
+      getThemeColor("--color-background");
+
+    const low =
+      getThemeColor("--color-twisted-600");
+
+    const medium =
+      getThemeColor("--color-twisted-400");
+
+    const high =
+      getThemeColor("--color-twisted-200");
+
+
+    ctx.fillStyle = background;
+    ctx.fillRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    if (!analyser || music.paused) return;
+
+
+    analyser.getByteFrequencyData(dataArray);
+
+    const bars = 8;
+    const barWidth = canvas.width / bars;
+    const pixel = 3;
+
+
+    for (let i = 0; i < bars; i++) {
+
+      const value =
+        dataArray[i] / 255;
+
+      const barHeight =
+        Math.floor(
+          (value * canvas.height) / pixel
+        ) * pixel;
+
+
+      for (
+        let y = 0;
+        y < barHeight;
+        y += pixel
+      ) {
+
+        const ratio =
+          y / canvas.height;
+
+
+        ctx.fillStyle =
+          ratio > 0.6
+            ? high
+            : ratio > 0.3
+              ? medium
+              : low;
+
+
+        ctx.fillRect(
+          i * barWidth + 1,
+          canvas.height - y - pixel,
+          barWidth - 2,
+          pixel - 1
+        );
+
+      }
+
+    }
+
+  }
+
+
+  function updateClock() {
+
+    const now = new Date();
+
+    let hours = now.getHours();
+
+    const minutes =
+      now.getMinutes()
+        .toString()
+        .padStart(2, "0");
+
+    const ampm =
+      hours >= 12 ? "PM" : "AM";
+
+    hours =
+      hours % 12 || 12;
+
+
+    document.getElementById(
+      "taskbar-clock"
+    ).textContent =
+      `${hours}:${minutes} ${ampm}`;
+
+  }
+
+
+  setInterval(updateClock, 1000);
+
+  updateClock();
+  drawSpectrum();
+
+</script>

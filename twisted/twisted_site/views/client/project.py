@@ -1,11 +1,12 @@
+from requests import HTTPError, RequestException
+from itertools import chain
 from markdown_it.rules_inline import image
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views import View
-from django.shortcuts import render, redirect
-from ...models import Profile, Project, Journal
+from django.shortcuts import render, redirect, get_object_or_404
+from ...models import Profile, Project, Journal, ProjectShip, PROJECT_TYPE_CHOICES
 from ... import hackatime
-import re
-import math
+from ... import ari
 
 # Create your views here.
 class ProjectDetail(View):
@@ -18,8 +19,26 @@ class ProjectDetail(View):
         profile: Profile = request.user.profile
         context["profile"] = profile
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         context["project"] = project
+
+        journals = project.journals.all()
+        ships = project.ships.all()
+
+        context["journals"] = list(chain(journals, ships))
+        context["journals"].sort(key=lambda x: x.created_at, reverse=True)
+
+        context["first_pass_status"] = "pending"
+        context["second_pass_status"] = "pending"
+        if project.latest_ship() is not None:
+            try:
+                status = ari.get_project_status(project)
+                context["first_pass_status"], context["second_pass_status"] = (
+                    ari.ship_passes_from_status(status)
+                )
+            except RequestException:
+                context["first_pass_status"] = "unavailable"
+                context["second_pass_status"] = "unavailable"
 
         if project.user == request.user:
             context["owner"] = True
@@ -40,8 +59,11 @@ class ProjectSettings(View):
 
         context = {}
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         context["project"] = project
+
+        if project.is_shipped():
+            return redirect("fr.projects.detail", id)
 
         if project.user != request.user:
             return redirect("dashboard")
@@ -49,9 +71,12 @@ class ProjectSettings(View):
         profile = request.user.profile
         context["profile"] = profile
 
-        context["hackatime_projects"] = hackatime.projects(
-            profile.hackatime_access_token
-        )
+        try:
+            context["hackatime_projects"] = hackatime.projects(
+                profile.hackatime_access_token
+            )
+        except HTTPError:
+            context["hackatime_projects"] = []
 
         return render(
             request,
@@ -63,72 +88,78 @@ class ProjectSettings(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
 
+        if project.is_shipped():
+            return redirect("fr.projects.detail", id)
+
+        project_type = request.POST["type"]
+        if project_type not in PROJECT_TYPE_CHOICES:
+            return HttpResponse("naughty! you arent supposed to do this!")
+
         project.project_name = request.POST["name"]
         project.project_description = request.POST["description"]
-        project.project_type = request.POST["type"]
-        project.hackatime_project_name = request.POST["hackatime"]
+        project.project_type = project_type
+        project.hackatime_project_name = request.POST.get("hackatime", "")
+        project.repo_url = request.POST["repo"]
+        project.playable_url = request.POST.get("playable_url", "")
+        project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
         return redirect("fr.projects.detail", project.id)
 
 
-MAX_LOGGABLE_MINUTES = 6 * 60
-
-
-class NewProjectJournal(View):
-    def get(self, request, id, info=None, context={}):
-        context['info'] = info
+class SubmitProject(View):
+    def get(self, request, id, context={}):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
+
+        if not project.playable_url:
+            return redirect("fr.projects.detail", id)
+
+        if not project.screenshot_url:
+            return redirect("fr.projects.detail", id)
+
+        if not project.user.profile.ysws_eligible:
+            context["info"] = (
+                "You are not YSWS eligible yet! Please get IDVd! Get help with it at #identity-help! (if you think this is a mistake, please ask in #twisted-help)"
+            )
 
         context["project"] = project
+        return render(request, "client/projects/ship.html", context)
 
-        log_minutes = project.time_unjournaled()
+    def post(self, request, id, context={}):
+        if self.request.user.is_anonymous:
+            return redirect("homepage")
 
-        log_minutes = min(log_minutes, MAX_LOGGABLE_MINUTES)
-
-        context["log_minutes"] = log_minutes
-
-        return render(request, "client/projects/journal.html", context=context)
-
-    def post(self, request, id):
-        project = Project.objects.get(id=id)
+        project = get_object_or_404(Project, id=id)
         if project.user != request.user:
-            return redirect("dashboard")
+            return redirect('fr.projects.detail', project.id)
 
-        reduced_minutes = min(
-            project.time_unjournaled(), MAX_LOGGABLE_MINUTES
-        )
-
-        content = request.POST["content"]
-        image_regex = r"\!\[.*?\]\(.*?\)"
-        image_count = len(re.findall(image_regex, content))
-        required_image_count = math.ceil(max(1, reduced_minutes / 180))
-
-        if image_count < required_image_count:
+        if project.is_shipped():
             return self.get(
-                request,
-                id,
-                info=f"please add atleast {required_image_count - image_count} more image(s) to log this journal!",
-                context={"content": content},
+                request, id, context={"info": "silly! you have already shipped."}
             )
-        if len(content) < min(100, reduced_minutes):
-            return self.get(
-                request,
-                id,
-                info=f"Content length must be more than 60 characters per hour!<br>({len(content)} of {reduced_minutes} required)",
-                context={"content": content},
-            )
-        
-        Journal(project=project, content=content, minutes_worked = project.time_unjournaled(), reduced_minutes=reduced_minutes)
 
-        return render(
-            request, "client/projects/journal.html", context={"success": True}
-        )
+        if not project.playable_url:
+            return redirect("fr.projects.detail", id)
+
+        if not project.screenshot_url:
+            return redirect("fr.projects.detail", id)
+
+        if not project.user.profile.ysws_eligible:
+            return self.get(request, id)
+
+        ship = ProjectShip(project=project)
+        ship.save()
+        try:
+            ari.send_ship(ship)
+        except Exception as e:
+            ship.delete()
+            raise e
+        return redirect('fr.projects.detail', project.id)
