@@ -3,6 +3,7 @@ from itertools import chain
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
+from requests import HTTPError, RequestException
 
 from ... import ari, hackatime
 from ...models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip
@@ -110,7 +111,7 @@ class ProjectSettings(View):
         project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
 
-        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         log_to_channel(
             f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {project.hackatime_project_name or 'None'}\n- *Repo*: {project.repo_url or 'None'}\n- *Demo*: {project.playable_url or 'None'}\n- *Screenshot*: {project.screenshot_url}"
         )
@@ -177,9 +178,9 @@ class SubmitProject(View):
             ship.delete()
             raise
 
-        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         log_to_channel(
-            f":shipitparrot: Project *<{project_url}|{project.name}> shipped with *{project.time_logged} minutes*"
+            f":shipitparrot: Project *<{project_url}|{project.project_name}> shipped with *{project.time_logged()} minutes*"
         )
 
         return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
