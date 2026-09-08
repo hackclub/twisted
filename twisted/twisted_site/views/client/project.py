@@ -134,10 +134,10 @@ class SubmitProject(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        if not project.playable_url:
+        if project.playable_url == "":
             return redirect("fr.projects.detail", id)
 
-        if not project.screenshot_url:
+        if project.screenshot_url == "":
             return redirect("fr.projects.detail", id)
 
         if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
@@ -166,10 +166,10 @@ class SubmitProject(View):
                 request, id, context={"info": "silly! you have already shipped."}
             )
 
-        if not project.playable_url:
+        if project.playable_url == "":
             return redirect("fr.projects.detail", id)
 
-        if not project.screenshot_url:
+        if project.screenshot_url == "":
             return redirect("fr.projects.detail", id)
 
         if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
