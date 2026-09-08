@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
-from ...models import PROJECT_TYPE_CHOICES, Project
+from ...models import PROJECT_TYPE_CHOICES, Profile, Project
 from ...slack import log_to_channel
 
 
@@ -37,9 +37,9 @@ class CreateProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project_name = request.POST["name"]
-        project_description = request.POST["description"]
-        project_type = request.POST["type"]
+        project_name: str = request.POST["name"]
+        project_description: str = request.POST["description"]
+        project_type: str = request.POST["type"]
 
         if project_type not in PROJECT_TYPE_CHOICES:
             return HttpResponse("naughty! you arent supposed to do this!")

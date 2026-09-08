@@ -34,5 +34,5 @@ class HomepageView(View):
 
 
 class FaqsView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         return render(request, "client/faqs.html")

@@ -7,7 +7,8 @@ from uuid import uuid4
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
+from django.http import HttpRequest, JsonResponse
 from django.utils.text import slugify
 
 from ..models import UploadedFile

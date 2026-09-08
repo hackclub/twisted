@@ -26,8 +26,7 @@ class ProjectDetail(View):
 
         context = TemplateContext()
 
-        profile = request.user.profile
-        assert isinstance(profile, Profile)
+        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
         project = get_object_or_404(Project, id=id)
@@ -88,7 +87,8 @@ class ProjectSettings(View):
                 profile.hackatime_access_token
             )
         except HTTPError:
-            context["hackatime_projects"] = []
+            no_projects: list[hackatime.HackatimeProject] = []
+            context["hackatime_projects"] = no_projects
 
         return render(
             request,
@@ -133,7 +133,7 @@ class SubmitProject(View):
         self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
-            context = {}
+            context = TemplateContext()
 
         if self.request.user.is_anonymous:
             return redirect("homepage")
@@ -160,7 +160,7 @@ class SubmitProject(View):
         self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
-            context = {}
+            context = TemplateContext()
 
         if self.request.user.is_anonymous:
             return redirect("homepage")

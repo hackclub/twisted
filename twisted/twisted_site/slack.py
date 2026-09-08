@@ -2,6 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from slack_sdk import WebClient
+from slack_sdk.web.slack_response import SlackResponse
 
 SLACK_TOKEN = settings.SLACK_TOKEN
 SLACK_LOG_CHANNEL = settings.SLACK_LOG_CHANNEL

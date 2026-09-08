@@ -11,7 +11,7 @@ from ..models import Project
 from ..slack import send_blocks
 
 
-def _escape_mrkdwn(text):
+def _escape_mrkdwn(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 

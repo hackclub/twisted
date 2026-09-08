@@ -19,7 +19,7 @@ class AuditLogsView(AdminView):
 
         auditlogs = AuditLog.objects.order_by("-timestamp")
 
-        context_mode = request.GET.get("context_mode", "false") == "true"
+        context_mode: bool = request.GET.get("context_mode", "false") == "true"
         if context_mode:
             auditlogs = auditlogs.exclude(
                 Q(additional_context__isnull=True) | Q(additional_context={})
