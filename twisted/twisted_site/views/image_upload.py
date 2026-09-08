@@ -29,6 +29,7 @@ def upload_file(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         if "file" in request.FILES:
             file = request.FILES["file"]
+            assert isinstance(file, DjangoUploadedFile)
 
             if file.content_type not in ALLOWED_CONTENT_TYPES:
                 return JsonResponse(
@@ -41,6 +42,7 @@ def upload_file(request: HttpRequest) -> JsonResponse:
             # The size limit is a server-side policy; never let the client raise it.
             max_file_mb = 10
 
+            assert file.size is not None
             file_size_mb = file.size / (1024 * 1024)
             if file_size_mb > max_file_mb:
                 return JsonResponse(
@@ -116,4 +118,5 @@ def file_uploader(request: HttpRequest, image: "DjangoUploadedFile[Any]") -> dic
     """
     Basic imgur uploader return as json data.
     """
+    assert image.name is not None
     return _upload_fileobj(image, image.name, image.content_type, image.size)
