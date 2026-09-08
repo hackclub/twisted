@@ -78,7 +78,7 @@ def upload_file(request):
 def _upload_fileobj(fileobj, filename, content_type, size):
     try:
         ext = Path(filename).suffix.lower()
-        stored_name = f"{str(uuid4())}-{size}/{slugify(Path(filename).stem)}{ext}"
+        stored_name = f"{uuid4()!s}-{size}/{slugify(Path(filename).stem)}{ext}"
         original_filename = Path(filename).stem
         s3.upload_fileobj(
             fileobj,
@@ -102,7 +102,7 @@ def _upload_fileobj(fileobj, filename, content_type, size):
     except Exception as e:
         return {
             "status": "error",
-            "error": f"Unknown Error Occurred: {str(e)}",
+            "error": f"Unknown Error Occurred: {e!s}",
         }
 
 

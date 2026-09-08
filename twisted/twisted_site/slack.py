@@ -151,7 +151,7 @@ class SlackBot:
 
         # Break up any backticks in the error text so it can't close the code
         # fence early and have the remainder render as live Slack mrkdwn.
-        safe_error = error.replace("`", "`​")
+        safe_error = error.replace("`", "`\u200b")
         thread_text = f"```{safe_error}```"
 
         if mention:

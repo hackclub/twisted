@@ -34,7 +34,7 @@ def verify_webhook_signature(
         return False
 
     key_bytes = ARI_WEBHOOK_SECRET.encode("utf-8")
-    message_bytes = f"{timestamp}.{delivery_id}.".encode("utf-8") + body
+    message_bytes = f"{timestamp}.{delivery_id}.".encode() + body
     expected_signature = hmac.new(key_bytes, message_bytes, hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected_signature, signature)
