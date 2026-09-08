@@ -67,13 +67,13 @@ class AdminView(View):
                 href=resolve_url("admin.logs") + "?page=1",
             ),
         ]
-        context["profile"] = self.request.user.profile
+        context["profile"] = self.request.user.profile  # type: ignore  # Django generates this attribute at runtime
         return context
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:
+        if not request.user.profile.is_staff:  # type: ignore  # Django generates this attribute at runtime
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,

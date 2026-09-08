@@ -22,8 +22,8 @@ class ProjectDetail(View):
         project = Project.objects.get(id=id)
         context["project"] = project
 
-        journals = project.journals.all()
-        ships = project.ships.all()
+        journals = project.journals.all()  # type: ignore  # Django generates this attribute at runtime
+        ships = project.ships.all()  # type: ignore  # Django generates this attribute at runtime
 
         context["journals"] = list(chain(journals, ships))
         context["journals"].sort(key=lambda x: x.created_at, reverse=True)
@@ -91,7 +91,7 @@ class ProjectSettings(View):
         project.playable_url = request.POST.get("playable_url", "")
         project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
-        return redirect("fr.projects.detail", project.id)
+        return redirect("fr.projects.detail", project.id)  # type: ignore  # Django generates this attribute at runtime
 
 
 class SubmitProject(View):
@@ -129,7 +129,7 @@ class SubmitProject(View):
 
         project = Project.objects.get(id=id)
         if project.user != request.user:
-            return redirect("fr.project.detail", project.id)
+            return redirect("fr.project.detail", project.id)  # type: ignore  # Django generates this attribute at runtime
 
         if project.is_shipped():
             return self.get(
@@ -152,4 +152,4 @@ class SubmitProject(View):
         except Exception:
             ship.delete()
             raise
-        return redirect("fr.projects.detail", project.id)
+        return redirect("fr.projects.detail", project.id)  # type: ignore  # Django generates this attribute at runtime

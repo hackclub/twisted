@@ -90,15 +90,15 @@ class PathwayCreateView(AdminView):
                     request, "Minimum minutes must be greater than zero!", errcontext
                 )
 
-        current_tz_offset = timezone.datetime.now(
+        current_tz_offset = timezone.datetime.now(  # type: ignore  # present at runtime but missing from django-stubs
             timezone.get_current_timezone()
         ).strftime("%z")
 
-        start = timezone.datetime.strptime(
+        start = timezone.datetime.strptime(  # type: ignore  # Django generates this attribute at runtime
             f"{start_date} {start_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
 
-        end = timezone.datetime.strptime(
+        end = timezone.datetime.strptime(  # type: ignore  # Django generates this attribute at runtime
             f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
 
@@ -127,13 +127,13 @@ class PathwayDetailView(AdminView):
         participants: list[dict[str, Any]] = [
             {
                 "user": user,
-                "mins": mins_per_participant[user.id],
+                "mins": mins_per_participant[user.id],  # type: ignore  # Django generates this attribute at runtime
                 "percent": min(
-                    100, round(mins_per_participant[user.id] / pathway.min_mins * 100)
+                    100, round(mins_per_participant[user.id] / pathway.min_mins * 100)  # type: ignore  # Django generates this attribute at runtime
                 )
                 if pathway.min_mins
                 else 0,
-                "qualified": mins_per_participant[user.id] >= pathway.min_mins,
+                "qualified": mins_per_participant[user.id] >= pathway.min_mins,  # type: ignore  # Django generates this attribute at runtime
             }
             for user in users
         ]

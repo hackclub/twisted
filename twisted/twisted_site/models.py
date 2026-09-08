@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.db.models import TextField
 from django.utils import timezone
@@ -139,7 +140,7 @@ class Project(models.Model):
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
     def latest_ship(self):
-        ship = self.ships.order_by("-created_at").first()
+        ship = self.ships.order_by("-created_at").first()  # type: ignore  # Django generates this attribute at runtime
         return ship
 
     def is_shipped(self):
@@ -332,7 +333,7 @@ class Pathway(models.Model):
                 mins_remaining -= mins_donated
                 pathway_totals[p_id] = mins_completed + mins_donated
 
-        return pathway_totals[self.id]
+        return pathway_totals[self.id]  # type: ignore  # Django generates this attribute at runtime
 
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
@@ -390,7 +391,7 @@ class Pathway(models.Model):
 
         # Extract only this pathway's result for each participant
         return {
-            user_id: totals.get(self.id, 0)
+            user_id: totals.get(self.id, 0)  # type: ignore  # Django generates this attribute at runtime
             for user_id, totals in user_pathway_totals.items()
         }
 
