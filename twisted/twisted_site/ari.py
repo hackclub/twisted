@@ -170,7 +170,8 @@ def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:
         return "pending", "pending"
 
     phase = status.get("phase")
-    decision = _ARI_DECISION_TO_SHIP_STATUS.get(status.get("decision"), "pending")
+    raw_decision = status.get("decision", "pending")
+    decision = _ARI_DECISION_TO_SHIP_STATUS.get(raw_decision, "pending")
 
     if phase == "second_pass":
         return decision, "pending"
