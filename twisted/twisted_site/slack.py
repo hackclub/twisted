@@ -108,7 +108,9 @@ class SlackBot:
         response = self.client.users_info(user=user)
 
         user_data = response["user"]
-        profile = user_data.get("profile", {})
+        assert isinstance(user_data, dict), "Slack users_info missing user"
+        profile = user_data.get("profile")
+        assert isinstance(profile, dict), "Slack user missing profile"
 
         return {
             "id": user_data["id"],
