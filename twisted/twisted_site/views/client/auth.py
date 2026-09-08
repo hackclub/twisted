@@ -95,12 +95,14 @@ class AuthCallbackView(View):
             slack_profile = slack_user["profile"]
             assert isinstance(slack_profile, dict), "Slack user missing profile"
 
-            display_name = (
-                slack_profile.get("display_name")
-                or slack_profile.get("real_name")
-                or name
-            )
-            avatar_url = slack_profile.get("image_512") or os.environ["DEFAULT_PFP"]
+            display_name = slack_profile.get("display_name")
+            if display_name in (None, ""):
+                display_name = slack_profile.get("real_name")
+            if display_name in (None, ""):
+                display_name = name
+            avatar_url = slack_profile.get("image_512")
+            if avatar_url in (None, ""):
+                avatar_url = os.environ["DEFAULT_PFP"]
 
         except Exception:
             logger.exception("Slack profile fetch failed")
@@ -131,7 +133,7 @@ class AuthCallbackView(View):
 
         login(request, user)
 
-        if not profile.hackatime_access_token:
+        if profile.hackatime_access_token == "":
             HACKATIME_CLIENT_ID = os.environ["HACKATIME_CLIENT_ID"]
             HACKATIME_REDIRECT_URI = os.environ["HACKATIME_REDIRECT_URI"]
             scopes = "profile+read"

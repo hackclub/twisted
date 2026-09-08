@@ -17,7 +17,7 @@ class ReferralsView(View):
 
         context["profile"] = profile = request.user.profile
 
-        if not profile.my_referral_code:
+        if profile.my_referral_code == "":
             while True:
                 current_code = "".join(
                     [

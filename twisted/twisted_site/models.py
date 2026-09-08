@@ -126,7 +126,7 @@ class Project(models.Model):
         return self.project_name
 
     def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
-        if not self.hackatime_project_name:
+        if self.hackatime_project_name == "":
             return
         projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[missing-attribute]
         for project in projects:

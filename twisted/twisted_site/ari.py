@@ -24,7 +24,7 @@ def verify_webhook_signature(
     """Verifies an outbound delivery from Ari (the X-Ari-Signature/-Timestamp/-Delivery-Id
     headers on review.* and ship.updated webhooks). Signed with ARI_WEBHOOK_SECRET, which is
     separate from ARI_SIGNING_SECRET (that one signs requests we send to Ari)."""
-    if not (timestamp and delivery_id and signature):
+    if timestamp == "" or delivery_id == "" or signature == "":
         return False
 
     try:
