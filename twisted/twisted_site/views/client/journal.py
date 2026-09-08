@@ -213,6 +213,6 @@ class DeleteJournal(View):
         if journal.type != "untracked":
             return redirect("dashboard")
 
-        journal.delete()
+        _ = journal.delete()
 
         return self.get(request, id=None, context={"success": True})

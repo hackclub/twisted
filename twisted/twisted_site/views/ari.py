@@ -199,7 +199,7 @@ class AriView(View):
             project.playable_url = data["ship"]["demo_url"]
             project.hackatime_project_name = data["ship"]["hackatime_projects"][0]
             project.save()
-            send_blocks(
+            _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_ship_update_blocks(project, data["changes"]),
                 text=f"Your ship for {project.project_name} has been updated by a reviewer!",
@@ -220,7 +220,7 @@ class AriView(View):
             ship.note_to_maker = note_to_maker
             ship.save()
 
-            send_blocks(
+            _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_changes_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} needs some changes!",
@@ -244,7 +244,7 @@ class AriView(View):
             ship.deflation_reason = justification.get("deflation_reason", "")
             ship.save()
 
-            send_blocks(
+            _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_approved_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} was approved!",
@@ -268,7 +268,7 @@ class AriView(View):
             ship.deflation_reason = justification.get("deflation_reason", "")
             ship.save()
 
-            send_blocks(
+            _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_rejected_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} was rejected.",
@@ -284,7 +284,7 @@ class AriView(View):
             ship.status = "pending"
             ship.save()
 
-            send_blocks(
+            _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_reverted_blocks(project),
                 text=f"The decision on your ship for {project.project_name} was reverted.",
@@ -300,7 +300,7 @@ class AriView(View):
             ship.status = "pending"
             ship.save()
 
-            send_blocks(
+            _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_review_requeued_blocks(project),
                 text=f"Your ship for {project.project_name} is back in the review queue.",

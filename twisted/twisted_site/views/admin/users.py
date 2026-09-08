@@ -31,7 +31,7 @@ class UsersView(AdminView):
     def post(self, request):
         if request.POST.get("action") == "logoutall":
             session_count = Session.objects.count()
-            Session.objects.all().delete()
+            _ = Session.objects.all().delete()
             assert isinstance(self.audit_log.additional_context, dict)
             self.audit_log.additional_context["action"] = "logoutall"
             self.audit_log.additional_context["sessions_deleted"] = session_count

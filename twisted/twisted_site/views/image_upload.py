@@ -54,7 +54,7 @@ def upload_file(request):
 
             url = response_data["link"]
             filename = response_data["name"]
-            UploadedFile.objects.create(
+            _ = UploadedFile.objects.create(
                 uploaded_by=request.user,
                 link=url,
                 cdn_response=response_data,

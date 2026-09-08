@@ -23,8 +23,8 @@ def send_blocks(
 
 def log_to_channel(message):
     if settings.DEBUG:
-        slack_bot.chat_postMessage(
+        _ = slack_bot.chat_postMessage(
             channel=SLACK_LOG_CHANNEL, text=message, username="[DEBUG]"
         )
     else:
-        slack_bot.chat_postMessage(channel=SLACK_LOG_CHANNEL, text=message)
+        _ = slack_bot.chat_postMessage(channel=SLACK_LOG_CHANNEL, text=message)

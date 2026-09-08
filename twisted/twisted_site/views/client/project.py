@@ -176,7 +176,7 @@ class SubmitProject(View):
         try:
             ari.send_ship(ship)
         except Exception:
-            ship.delete()
+            _ = ship.delete()
             raise
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]

@@ -17,7 +17,7 @@ class DashboardView(View):
 
         project_id = request.GET.get("project")
 
-        if project_id:
+        if project_id not in (None, ""):
             project = get_object_or_404(Project, id=project_id)
             startup_windows.append(
                 {

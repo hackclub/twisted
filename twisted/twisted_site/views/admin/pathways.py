@@ -100,7 +100,7 @@ class PathwayCreateView(AdminView):
             f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
 
-        Pathway.objects.create(
+        _ = Pathway.objects.create(
             start=start, end=end, name=pathway_name, min_mins=min_mins
         )
 
