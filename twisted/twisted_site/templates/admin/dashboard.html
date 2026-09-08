@@ -1,19 +1,33 @@
 <c-base>
     <c-slot name="head">
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://www.gstatic.com/charts/loader.js"></script>
     </c-slot>
     <c-ui.card class="bg-zinc-900 mb-4">
         <h3 class="text-lg font-semibold mb-2">Welcome back, {{ user.profile.slack_username }}!</h3>
         <p class="text-ink-400">
-            <c-ui.button onclick="alert('weh, you are looking at them right now >:(')">See statistics</c-ui.button>
+            <c-ui.button onclick="alert('weh, you are looking at them right now >:(')">
+                See statistics
+            </c-ui.button>
             <a href="{% url 'admin.users' %}">
-                <c-ui.button>Manage Users</c-ui.button>
+                <c-ui.button>
+                    Manage Users
+                </c-ui.button>
             </a>
-            <c-ui.button>Edit Pathways</c-ui.button>
-            <c-ui.button>Fulfill orders</c-ui.button>
-            <c-ui.button>Edit shop</c-ui.button>
-            <c-ui.button>Review projects</c-ui.button>
-            <c-ui.button>Announce stuff</c-ui.button>
+            <c-ui.button>
+                Edit Pathways
+            </c-ui.button>
+            <c-ui.button>
+                Fulfill orders
+            </c-ui.button>
+            <c-ui.button>
+                Edit shop
+            </c-ui.button>
+            <c-ui.button>
+                Review projects
+            </c-ui.button>
+            <c-ui.button>
+                Announce stuff
+            </c-ui.button>
         </p>
     </c-ui.card>
     <c-ui.tabs variant="segmented">
@@ -22,29 +36,32 @@
                 <div class="flex flex-col md:flex-row text-center md:text-left gap-4">
                     <div class="md:w-fit">
                         <div>
-                            <div class="text-center">
-                                Hours logged
-                            </div>
-                            <div class="text-center text-lg font-bold">
-                                {{ hours_logged }}h
-                            </div>
+                            <div class="text-center">Hours logged</div>
+                            <div class="text-center text-lg font-bold">{{ hours_logged }}h</div>
                             <div id="hours_logged_chart" class="mx-auto md:mx-0">
-                                <div class="text-center py-4">
-                                    Loading chart...
-                                </div>
+                                <div class="text-center py-4">Loading chart...</div>
                             </div>
                         </div>
-                        <script type="text/javascript">
-                            google.charts.load('current', {'packages':['corechart']});
+                        <script>
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ hours_logged_chart|safe }});
 
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160
@@ -57,26 +74,31 @@
                     </div>
                     <div class="md:w-fit flex flex-row">
                         <div>
-                            <div class="text-center">
-                                Project type
-                            </div>
+                            <div class="text-center">Project type</div>
                             <div id="logged_project_type" class="mx-auto md:mx-0 mt-6">
-                                <div class="text-center py-4">
-                                    Loading chart...
-                                </div>
+                                <div class="text-center py-4">Loading chart...</div>
                             </div>
                         </div>
-                        <script type="text/javascript">
-                            google.charts.load('current', {'packages':['corechart']});
+                        <script>
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ logged_project_type|safe }});
 
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160
@@ -94,33 +116,36 @@
             <c-ui.card class="bg-zinc-900">
                 <div class="flex flex-col md:flex-row text-center md:text-left gap-4">
                     <div class="md:w-fit">
-                        <div class="text-center">
-                            Hours shipped
-                        </div>
-                        <div class="text-center text-lg font-bold">
-                            {{ hours_shipped }}h
-                        </div>
+                        <div class="text-center">Hours shipped</div>
+                        <div class="text-center text-lg font-bold">{{ hours_shipped }}h</div>
                         <div id="hours_shipped_chart" class="mx-auto md:mx-0">
-                            <div class="text-center py-4">
-                                Loading chart...
-                            </div>
+                            <div class="text-center py-4">Loading chart...</div>
                         </div>
-                        <script type="text/javascript">
-                            google.charts.load('current', {'packages':['corechart']});
+                        <script>
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
-    
+
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ hours_shipped_chart|safe }});
-    
+
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160
                                 };
-    
+
                                 var chart = new google.visualization.AreaChart(document.getElementById('hours_shipped_chart'));
                                 chart.draw(data, options);
                             }
@@ -128,26 +153,31 @@
                     </div>
                     <div class="md:w-fit flex flex-row">
                         <div>
-                            <div class="text-center">
-                                Project type
-                            </div>
+                            <div class="text-center">Project type</div>
                             <div id="shipped_project_type" class="mx-auto md:mx-0 mt-6">
-                                <div class="text-center py-4">
-                                    Loading chart...
-                                </div>
+                                <div class="text-center py-4">Loading chart...</div>
                             </div>
                         </div>
-                        <script type="text/javascript">
-                            google.charts.load('current', {'packages':['corechart']});
+                        <script>
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
                                 var data = google.visualization.arrayToDataTable({{ shipped_project_type|safe }});
 
                                 var options = {
-                                    vAxis: {minValue: 0},
-                                    animation: {duration: 250, startup: true},
-                                    backgroundColor: {fill: 'transparent'},
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
                                     theme: "maximized",
                                     width: 240,
                                     height: 160

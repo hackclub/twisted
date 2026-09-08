@@ -2,35 +2,29 @@
 <c-base>
     <div class="mb-4 flex gap-2">
         <div class="flex-1">
-            <c-ui.input
-                type="search"
-                name="search"
-                hx-get="{% url 'admin.users' %}"
-                hx-trigger="input changed delay:100ms, keyup[key=='Enter']"
-                hx-target="#container"
-                hx-select="#search-results"
-                hx-indicator=".htmx-indicator"
-                placeholder="Search Users..."
-                autocomplete="off"
-                value="{{ request.GET.search }}"
-                autofocus
-            >
+            <c-ui.input type="search"
+                        name="search"
+                        hx-get="{% url 'admin.users' %}"
+                        hx-trigger="input changed delay:100ms, keyup[key=='Enter']"
+                        hx-target="#container"
+                        hx-select="#search-results"
+                        hx-indicator=".htmx-indicator"
+                        placeholder="Search Users..."
+                        autocomplete="off"
+                        value="{{ request.GET.search }}"
+                        autofocus>
                 <c-slot name="left_addon">
-                    <svg
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        stroke-linejoin="round"
-                        stroke-miterlimit="1.414"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-label="search"
-                        viewBox="0 0 32 32"
-                        preserveAspectRatio="xMidYMid meet"
-                        fill="currentColor"
-                        class="size-6"
-                    >
-                        <path
-                            d="M14,9c-2.761,0 -5,2.239 -5,5c0,2.761 2.239,5 5,5c1.387,0 2.641,-0.564 3.548,-1.477c0.899,-0.905 1.452,-2.148 1.452,-3.523c0,-2.761 -2.239,-5 -5,-5Zm-7,5c0,-3.866 3.134,-7 7,-7c3.866,0 7,3.134 7,7c0,1.257 -0.332,2.436 -0.912,3.456c-0.244,0.431 -0.212,0.981 0.137,1.332l3.984,4.007c0.389,0.391 0.388,1.025 -0.004,1.414c-0.392,0.389 -1.025,0.388 -1.414,-0.004l-3.97,-3.992c-0.352,-0.354 -0.908,-0.387 -1.341,-0.138c-1.025,0.588 -2.214,0.925 -3.48,0.925c-3.866,0 -7,-3.134 -7,-7Z"
-                        />
+                    <svg fill-rule="evenodd"
+                         clip-rule="evenodd"
+                         stroke-linejoin="round"
+                         stroke-miterlimit="1.414"
+                         xmlns="http://www.w3.org/2000/svg"
+                         aria-label="search"
+                         viewBox="0 0 32 32"
+                         preserveAspectRatio="xMidYMid meet"
+                         fill="currentColor"
+                         class="size-6">
+                        <path d="M14,9c-2.761,0 -5,2.239 -5,5c0,2.761 2.239,5 5,5c1.387,0 2.641,-0.564 3.548,-1.477c0.899,-0.905 1.452,-2.148 1.452,-3.523c0,-2.761 -2.239,-5 -5,-5Zm-7,5c0,-3.866 3.134,-7 7,-7c3.866,0 7,3.134 7,7c0,1.257 -0.332,2.436 -0.912,3.456c-0.244,0.431 -0.212,0.981 0.137,1.332l3.984,4.007c0.389,0.391 0.388,1.025 -0.004,1.414c-0.392,0.389 -1.025,0.388 -1.414,-0.004l-3.97,-3.992c-0.352,-0.354 -0.908,-0.387 -1.341,-0.138c-1.025,0.588 -2.214,0.925 -3.48,0.925c-3.866,0 -7,-3.134 -7,-7Z" />
                     </svg>
                 </c-slot>
             </c-ui.input>
@@ -40,7 +34,8 @@
         </div>
     </div>
     <div id="container">
-        <div id="search-results" class="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div id="search-results"
+             class="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {% for user in users %}
                 <c-ui.card class="bg-ink-900">
                     <a href="{% url 'admin.users.detail' user.id %}">
@@ -49,30 +44,37 @@
                             <div>
                                 <h3 class="text-lg font-semibold mb-1">
                                     @{{ user.profile.slack_username }}
-                                    <c-ui.badge size="sm">{{ user.profile.slack_id|default:"user not found" }}</c-ui.badge>
+                                    <c-ui.badge size="sm">
+                                        {{ user.profile.slack_id|default:"user not found" }}
+                                    </c-ui.badge>
                                 </h3>
                                 {% if user.profile %}
-                                <div>
-                                    {% if user.profile.is_staff %}
-                                    <c-ui.badge size="sm" color="purple">Staff</c-ui.badge>
-                                    {% endif %}
-                                    {% if user.profile.is_allowed %}
-                                    <c-ui.badge size="sm" color="purple">Allowed</c-ui.badge>
-                                    {% endif %}
-                                    <c-ui.badge size="sm" color="{{ user.profile.ysws_eligible|yesno:'green,red' }}"
-                                        >{{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}</c-ui.badge
-                                    >
-                                </div>
-                                <div class="text-sm">
                                     <div>
-                                        <p>{{ user.projects.count }} projects created</p>
-                                        <p>{{ user.profile.shipped_projects|length }} projects shipped</p>
+                                        {% if user.profile.is_staff %}
+                                            <c-ui.badge size="sm" color="purple">
+                                                Staff
+                                            </c-ui.badge>
+                                        {% endif %}
+                                        {% if user.profile.is_allowed %}
+                                            <c-ui.badge size="sm" color="purple">
+                                                Allowed
+                                            </c-ui.badge>
+                                        {% endif %}
+                                        <c-ui.badge size="sm"
+                                                    color="{{ user.profile.ysws_eligible|yesno:'green,red' }}">
+                                            {{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}
+                                        </c-ui.badge>
                                     </div>
-                                    <div class="mt-2">
-                                        <p>{{ user.profile.time_logged|divide:60|floatformat:2 }}h logged</p>
-                                        <p>{{ user.profile.time_shipped|divide:60|floatformat:2 }}h shipped</p>
+                                    <div class="text-sm">
+                                        <div>
+                                            <p>{{ user.projects.count }} projects created</p>
+                                            <p>{{ user.profile.shipped_projects|length }} projects shipped</p>
+                                        </div>
+                                        <div class="mt-2">
+                                            <p>{{ user.profile.time_logged|divide:60|floatformat:2 }}h logged</p>
+                                            <p>{{ user.profile.time_shipped|divide:60|floatformat:2 }}h shipped</p>
+                                        </div>
                                     </div>
-                                </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -82,11 +84,14 @@
         </div>
     </div>
     <div class="mt-100">
-        <form method="post" onsubmit="return confirm('This will immediately log out every user on the site. Are you sure?');">
+        <form method="post"
+              onsubmit="return confirm('This will immediately log out every user on the site. Are you sure?');">
             {% csrf_token %}
             <input type="hidden" name="action" value="logoutall">
             hehe click this funny button to log everyone out:
-            <c-ui.button type="submit" variant="danger">Log everyone out</c-ui.button>
+            <c-ui.button type="submit" variant="danger">
+                Log everyone out
+            </c-ui.button>
         </form>
     </div>
 </c-base>

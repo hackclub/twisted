@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from django.shortcuts import resolve_url
+from django.shortcuts import redirect, resolve_url
 from django.views import View
 
 from ...models import AuditLog, ProfileStaffPermissions
@@ -82,9 +82,9 @@ class AdminView(View):
             additional_context={},
         )
 
-        perms = self.request.user.profile.staff_permissions
+        perms = self.request.user.profile.staff_permissions  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         if perms is None:
-            profile = self.request.user.profile
+            profile = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             profile.staff_permissions = ProfileStaffPermissions.objects.create()
             profile.save()
 
