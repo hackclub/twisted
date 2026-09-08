@@ -9,12 +9,14 @@ from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views import View
+import secrets
+import hmac
+from django.conf import settings
 
 from ... import hackatime
 from ...models import Profile
-from ...slack import slack_bot
-
-logger = logging.getLogger(__name__)
+from ... import hackatime
+from ...slack import slack_bot, SLACK_LOG_CHANNEL, log_to_channel
 
 oauth = OAuth()
 
@@ -135,6 +137,8 @@ class AuthCallbackView(View):
                 f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}"
             )
 
+        log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
+        
         return redirect("dashboard")
 
 

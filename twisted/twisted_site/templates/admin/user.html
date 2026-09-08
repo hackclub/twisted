@@ -14,7 +14,7 @@
                 {% if user.profile %}
                 <div>
                     {% if user.profile.is_staff %}
-                    <c-ui.badge size="sm" color="purple">Staff</c-ui.badge>
+                    <c-ui.badge size="sm" color="purple">{{ user.profile.staff_permissions.superuser|yesno:"Admin,Staff" }}</c-ui.badge>
                     {% endif %}
                     {% if login_maybe %}
                     <c-ui.badge size="sm" color="{{ user.profile.is_allowed|yesno:'green,red' }}">{{ user.profile.is_allowed|yesno:"Login allowed,Login disallowed" }}</c-ui.badge>
@@ -109,6 +109,47 @@
                     {% endfor %}
                 </tbody>
             </c-ui.table>
+        </c-ui.card>
+        {% else %}
+        <c-ui.card class="bg-ink-900">
+            <h1 class="text-lg font-bold">
+                No referrals found :(
+            </h1>
+            <p>
+                This user hasn't referred anyone yet!
+            </p>
+        </c-ui.card>
+        {% endif %}
+    </div>
+    <div class="mt-4">
+        <h1 class="text-2xl font-black">Admin<span class="ml-1 text-sm opacity-75 font-normal italic">proceed with caution!</span></h1>
+        {% if user.profile.referrals.all %}
+        <c-ui.card class="bg-ink-900 p-0">
+            <c-ui.table>
+                <thead>
+                    <tr>
+                        <th>Permission</th>
+                        <th>Value</th>
+                        <th>Override Value</th>
+                        <th>Save</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        
+                        {% with user.profile.staff_permissions.superuser as val %}
+                            <td>Superuser</td>
+                            <td>
+                                <c-ui.badge color="{{ val|yesno:'green,red' }}">
+                                    {{ val }}
+                                </c-ui.badge>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        {% endwith %}
+                    </tr>
+                </tbody>
+            </c-ui.badge>
         </c-ui.card>
         {% else %}
         <c-ui.card class="bg-ink-900">
