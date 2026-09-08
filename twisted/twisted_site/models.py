@@ -9,6 +9,7 @@ from . import hackatime
 
 User = get_user_model()
 
+
 class UploadedFile(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT)
     link = models.CharField(max_length=500)
@@ -33,11 +34,16 @@ class Profile(models.Model):
     hackatime_state = models.CharField(max_length=100, blank=True, default="")
 
     hca_access_token = models.CharField(max_length=2000, blank=True, default="")
-    
+
     is_allowed = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    staff_permissions = models.OneToOneField('twisted_site.ProfileStaffPermissions', on_delete=models.PROTECT, default=None, null=True)
-    
+    staff_permissions = models.OneToOneField(
+        "twisted_site.ProfileStaffPermissions",
+        on_delete=models.PROTECT,
+        default=None,
+        null=True,
+    )
+
     twists = models.IntegerField(default=0)
 
     referred_by = models.ForeignKey(
@@ -76,17 +82,17 @@ class ProfileStaffPermissions(models.Model):
     superuser = models.BooleanField(default=False)
 
     view_users = models.BooleanField(default=False)
-    
+
     view_pathways = models.BooleanField(default=False)
     manage_pathways = models.BooleanField(default=False)
-    
+
     manage_fulfillments = models.BooleanField(default=False)
-    
+
     manage_shop = models.BooleanField(default=False)
-    
+
     view_review = models.BooleanField(default=False)
     manage_review = models.BooleanField(default=False)
-    
+
     manage_announcements = models.BooleanField(default=False)
 
     view_auditlogs = models.BooleanField(default=False)
@@ -170,11 +176,13 @@ class Project(models.Model):
             return False
         return latest_ship.status == "approved"
 
+
 JOURNAL_TYPES = {
     "hackatime": "Hackatime",
     "lookout": "Lookout",
     "untracked": "Untracked",
 }
+
 
 class Journal(models.Model):
     project = models.ForeignKey(

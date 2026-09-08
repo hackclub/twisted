@@ -4,55 +4,54 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0031_profilestaffpermissions_profile_staff_permissions'),
+        ("twisted_site", "0031_profilestaffpermissions_profile_staff_permissions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='manage_announcements',
+            model_name="profilestaffpermissions",
+            name="manage_announcements",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='manage_fulfillments',
+            model_name="profilestaffpermissions",
+            name="manage_fulfillments",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='manage_pathways',
+            model_name="profilestaffpermissions",
+            name="manage_pathways",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='manage_review',
+            model_name="profilestaffpermissions",
+            name="manage_review",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='manage_shop',
+            model_name="profilestaffpermissions",
+            name="manage_shop",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='view_auditlogs',
+            model_name="profilestaffpermissions",
+            name="view_auditlogs",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='view_pathways',
+            model_name="profilestaffpermissions",
+            name="view_pathways",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='view_review',
+            model_name="profilestaffpermissions",
+            name="view_review",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='profilestaffpermissions',
-            name='view_users',
+            model_name="profilestaffpermissions",
+            name="view_users",
             field=models.BooleanField(default=False),
         ),
     ]

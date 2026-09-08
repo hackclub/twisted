@@ -137,8 +137,10 @@ class AuthCallbackView(View):
                 f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}"
             )
 
-        log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
-        
+        log_to_channel(
+            f":ms-arrow-up-right: *{profile.slack_username}* just logged in!"
+        )
+
         return redirect("dashboard")
 
 

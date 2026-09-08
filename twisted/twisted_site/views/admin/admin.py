@@ -6,6 +6,7 @@ from typing import Literal
 from django_htmx.http import trigger_client_event
 from ...models import AuditLog, ProfileStaffPermissions
 
+
 @dataclass
 class SidebarLink:
     name: str
@@ -81,13 +82,13 @@ class AdminView(View):
             post=((request.method or "").lower() == "post"),
             additional_context={},
         )
-        
+
         perms = self.request.user.profile.staff_permissions
         if perms is None:
             profile = self.request.user.profile
             profile.staff_permissions = ProfileStaffPermissions.objects.create()
             profile.save()
-        
+
         self.perms = perms
         response = super().dispatch(request, *args, **kwargs)
         self.audit_log.save()

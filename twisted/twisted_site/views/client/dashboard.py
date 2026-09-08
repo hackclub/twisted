@@ -26,8 +26,10 @@ class DashboardView(View):
                 }
             )
 
-        if request.GET.get('discover') is not None:
-            startup_windows.append({"href": resolve_url('fr.discover'), "title": "discover"})
+        if request.GET.get("discover") is not None:
+            startup_windows.append(
+                {"href": resolve_url("fr.discover"), "title": "discover"}
+            )
 
         context["startup_windows"] = startup_windows
 
