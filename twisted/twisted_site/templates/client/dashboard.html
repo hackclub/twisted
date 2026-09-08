@@ -193,9 +193,22 @@
     let windowCounter = 0;
     let currentMaximisedWindow = null;
 
+    function getSafeInternalUrl(urlValue) {
+        try {
+            const parsed = new URL(urlValue, window.location.origin);
+            const allowedProtocols = ["http:", "https:"];
+            if (!allowedProtocols.includes(parsed.protocol)) return null;
+            if (parsed.origin !== window.location.origin) return null;
+            return parsed.href;
+        } catch (_) {
+            return null;
+        }
+    }
+
     window.addEventListener( // newWindow from iframe events 
         "message",
         (event) => {
+            if (event.origin !== window.location.origin) return;
             const data = event.data;
             if (data.type != "internal") return;
             if (data.action == "open") {
@@ -203,7 +216,9 @@
                     h = 600;
                 if (data.width) w = data.width;
                 if (data.height) h = data.height;
-                newWindow(data.title, data.src, w, h);
+                const safeSrc = getSafeInternalUrl(data.src);
+                if (!safeSrc) return;
+                newWindow(data.title, safeSrc, w, h);
             }
         },
         false,
@@ -218,7 +233,9 @@
         win.dataset.winId = id;
 
         win.querySelector(".title-bar-text").textContent = title;
-        win.querySelector(".src-frame").src = src;
+        const safeSrc = getSafeInternalUrl(src);
+        if (!safeSrc) return;
+        win.querySelector(".src-frame").src = safeSrc;
         console.log(x, y);
         
         if (x === null) x = Math.random() * (window.innerWidth - w);
