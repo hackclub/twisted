@@ -7,7 +7,7 @@
                 <legend class="text-left px-2">Referred By</legend>
                 <div class="flex align-middle gap-2">
                     <img class="size-8 rounded-md"
-                         src="{{ profile.referred_by.slack_pfp_url }}">
+                         src="{{ profile.referred_by.slack_pfp_url }}" alt="{{ profile.referred_by.slack_username }}">
                     <div class="my-auto font-bold">{{ profile.referred_by.slack_username }}</div>
                 </div>
             </fieldset>
@@ -33,7 +33,7 @@
                     {% for referral in profile.referrals.all %}
                         <div class="border border-border m-1 p-2">
                             <div class="flex align-middle gap-2">
-                                <img class="size-8 rounded-md" src="{{ referral.slack_pfp_url }}">
+                                <img class="size-8 rounded-md" src="{{ referral.slack_pfp_url }}" alt="{{ referral.slack_username }}">
                                 <div class="my-auto">
                                     <div class="font-bold">{{ referral.slack_username }}</div>
                                     <div class="flex align-middle gap-2">

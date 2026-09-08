@@ -3,7 +3,8 @@
 {% block body %}
     <div class="flex h-full w-full flex-col bg-surface text-foreground font-vintage">
         <div class="flex shrink-0 items-center gap-2 border-b border-border bg-card px-2 py-1">
-            <button onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'New project...', 'src': '{% url 'fr.projects.create' %}'}, '*')"
+            <button type="button"
+                    onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'New project...', 'src': '{% url 'fr.projects.create' %}'}, '*')"
                     class="flex items-center gap-1 border border-border bg-secondary px-3 py-1 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px">
                 <span class="font-bold">+</span>
                 <span>New project...</span>
@@ -44,7 +45,8 @@
                              class="mx-auto mb-3 h-16 w-16 opacity-70">
                         <div class="text-lg font-bold">No projects yet</div>
                         <div class="mt-1 text-sm text-muted-foreground">Create a project to get started.</div>
-                        <button onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'New project...', 'src': '{% url 'fr.projects.create' %}'}, '*')"
+                        <button type="button"
+                                onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'New project...', 'src': '{% url 'fr.projects.create' %}'}, '*')"
                                 class="mt-4 border border-border bg-primary px-4 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                             New project
                         </button>

@@ -598,6 +598,7 @@
             {% for window in startup_windows %}
                 <iframe data-href="{{ window.href }}"
                         data-title="{{ window.title }}"
+                        title="{{ window.title }}"
                         onload="console.log('loading...'); newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50)"></iframe>
             {% endfor %}
         </div>
