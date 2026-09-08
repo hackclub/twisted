@@ -67,7 +67,7 @@ class AdminView(View):
                 href=resolve_url("admin.logs") + "?page=1",
             ),
         ]
-        context["profile"] = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        context["profile"] = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return context
 
     def dispatch(self, request, *args, **kwargs):

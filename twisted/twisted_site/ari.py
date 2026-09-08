@@ -83,13 +83,13 @@ def send_ship(ship: ProjectShip):
 
     untracked_time = 0
     if ship.project.project_type == "hardware":
-        for journal in ship.project.journals.filter(type="untracked"):
+        for journal in ship.project.journals.filter(type="untracked"):  # pyrefly: ignore[missing-attribute]
             untracked_time += journal.reduced_minutes
 
     maker = {
-        "email": ship.project.user.email,
-        "name": ship.project.user.profile.slack_username,
-        "slack_id": ship.project.user.profile.slack_id,
+        "email": ship.project.user.email,  # pyrefly: ignore[missing-attribute]
+        "name": ship.project.user.profile.slack_username,  # pyrefly: ignore[missing-attribute]
+        "slack_id": ship.project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
         "program_hours": untracked_time / 60,
     }
 
@@ -112,7 +112,7 @@ def send_ship(ship: ProjectShip):
     }
 
     journals = []
-    orm_journals: Iterable[Journal] = ship.project.journals.all()
+    orm_journals: Iterable[Journal] = ship.project.journals.all()  # pyrefly: ignore[missing-attribute]
     for journal in orm_journals:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(

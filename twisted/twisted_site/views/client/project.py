@@ -23,8 +23,8 @@ class ProjectDetail(View):
         project = get_object_or_404(Project, id=id)
         context["project"] = project
 
-        journals = project.journals.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
-        ships = project.ships.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        journals = project.journals.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        ships = project.ships.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context["journals"] = list(chain(journals, ships))
         context["journals"].sort(key=lambda x: x.created_at, reverse=True)
@@ -129,7 +129,7 @@ class SubmitProject(View):
         if not project.screenshot_url:
             return redirect("fr.projects.detail", id)
 
-        if not project.user.profile.ysws_eligible:
+        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
             context["info"] = (
                 "You are not YSWS eligible yet! Please get IDVd! Get help with it at #identity-help! (if you think this is a mistake, please ask in #twisted-help)"
             )
@@ -159,7 +159,7 @@ class SubmitProject(View):
         if not project.screenshot_url:
             return redirect("fr.projects.detail", id)
 
-        if not project.user.profile.ysws_eligible:
+        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
             return self.get(request, id)
 
         ship = ProjectShip(project=project)

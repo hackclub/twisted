@@ -60,7 +60,7 @@ class UserDetailView(AdminView):
         self.audit_log.additional_context["user"] = user.profile.slack_username  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         if request.POST.get("action") == "toggle_is_allowed":
-            prof = user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+            prof = user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             prof.is_allowed = not prof.is_allowed
             self.audit_log.additional_context["is_allowed"] = (
                 f"Set to {prof.is_allowed}"

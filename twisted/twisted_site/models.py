@@ -24,7 +24,7 @@ class UploadedFile(models.Model):
     filesize = models.IntegerField()
 
     def __str__(self):
-        return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"
+        return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
 
 
 # Create your models here.
@@ -57,14 +57,14 @@ class Profile(models.Model):
 
     def shipped_projects(self):
         shipped_projects = []
-        for project in self.user.projects.all():
+        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
             if project.is_shipped():
                 shipped_projects.append(project)
         return shipped_projects
 
     def time_logged(self):
         time_logged = 0
-        for project in self.user.projects.all():
+        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
             time_logged += project.time_logged()
         return time_logged
 
@@ -75,7 +75,7 @@ class Profile(models.Model):
         return time_shipped
 
     def __str__(self):
-        return self.user.username
+        return self.user.username  # pyrefly: ignore[missing-attribute]
 
 
 PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}
@@ -103,7 +103,7 @@ class Project(models.Model):
     def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
         if not self.hackatime_project_name:
             return
-        projects = hackatime.projects(self.user.profile.hackatime_access_token)
+        projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[missing-attribute]
         for project in projects:
             if project.name == self.hackatime_project_name:
                 return project
@@ -111,7 +111,7 @@ class Project(models.Model):
 
     def time_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
                 minutes += journal.minutes_worked
@@ -121,7 +121,7 @@ class Project(models.Model):
 
     def hackatime_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if journal.type != "hackatime":
                 continue
             if include_all_minutes:
@@ -141,7 +141,7 @@ class Project(models.Model):
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
     def latest_ship(self):
-        ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return ship
 
     def is_shipped(self):
@@ -357,4 +357,4 @@ class AuditLog(models.Model):
     additional_context = models.JSONField(null=True, default=None)
 
     def __str__(self):
-        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"
+        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[missing-attribute]
