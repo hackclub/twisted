@@ -19,7 +19,7 @@ class ReviewView(AdminView):
         if settings.DEBUG_REVIEW:
             return self.debug_post(request)
 
-        context = self.get_context_data(page="review")
+        self.get_context_data(page="review")
         return redirect(self.request.path_info)
 
     def debug_get(self, request):

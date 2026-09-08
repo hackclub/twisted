@@ -142,7 +142,6 @@ def send_ship(ship: ProjectShip):
             "meta": meta,
         },
     )
-    resp = r.content
     r.raise_for_status()
 
 

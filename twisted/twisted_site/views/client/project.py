@@ -166,7 +166,7 @@ class SubmitProject(View):
         ship.save()
         try:
             ari.send_ship(ship)
-        except Exception as e:
+        except Exception:
             ship.delete()
-            raise e
+            raise
         return redirect("fr.projects.detail", project.id)
