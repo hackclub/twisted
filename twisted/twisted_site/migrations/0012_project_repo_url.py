@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0011_journal_type'),
+        ("twisted_site", "0011_journal_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='repo_url',
-            field=models.CharField(blank=True, default='', max_length=200),
+            model_name="project",
+            name="repo_url",
+            field=models.CharField(blank=True, default="", max_length=200),
         ),
     ]

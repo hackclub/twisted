@@ -1,7 +1,6 @@
-from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
+from django.shortcuts import redirect, render
 from django.views import View
-from django.shortcuts import render, redirect
+
 from ...models import Pathway
 
 

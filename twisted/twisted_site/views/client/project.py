@@ -1,9 +1,11 @@
-from requests import HTTPError, RequestException
 from itertools import chain
-from markdown_it.rules_inline import image
-from django.http import JsonResponse, HttpResponse
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, resolve_url
+
+from ...slack import log_to_channel
 from ...models import Profile, Project, Journal, ProjectShip, PROJECT_TYPE_CHOICES
 from ... import hackatime
 from ... import ari
@@ -30,6 +32,7 @@ class ProjectDetail(View):
 
         context["first_pass_status"] = "pending"
         context["second_pass_status"] = "pending"
+        
         if project.latest_ship() is not None:
             try:
                 status = ari.get_project_status(project)
@@ -107,11 +110,19 @@ class ProjectSettings(View):
         project.playable_url = request.POST.get("playable_url", "")
         project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
+        
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
+        log_to_channel(f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {project.hackatime_project_name or 'None'}\n- *Repo*: {project.repo_url or 'None'}\n- *Demo*: {project.playable_url or 'None'}\n- *Screenshot*: {project.screenshot_url}")
+        
+        
         return redirect("fr.projects.detail", project.id)
 
 
 class SubmitProject(View):
-    def get(self, request, id, context={}):
+    def get(self, request, id, context=None):
+        if context is None:
+            context = {}
+
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -133,13 +144,16 @@ class SubmitProject(View):
         context["project"] = project
         return render(request, "client/projects/ship.html", context)
 
-    def post(self, request, id, context={}):
+    def post(self, request, id, context=None):
+        if context is None:
+            context = {}
+
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
         project = get_object_or_404(Project, id=id)
         if project.user != request.user:
-            return redirect('fr.projects.detail', project.id)
+            return redirect("fr.projects.detail", project.id)
 
         if project.is_shipped():
             return self.get(
@@ -154,12 +168,17 @@ class SubmitProject(View):
 
         if not project.user.profile.ysws_eligible:
             return self.get(request, id)
+        
 
         ship = ProjectShip(project=project)
         ship.save()
         try:
             ari.send_ship(ship)
-        except Exception as e:
+        except Exception:
             ship.delete()
-            raise e
+            raise
+        
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
+        log_to_channel(f":shipitparrot: Project *<{project_url}|{project.name}> shipped with *{project.time_logged} minutes*")
+        
         return redirect('fr.projects.detail', project.id)

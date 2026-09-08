@@ -1,6 +1,7 @@
-from django.views import View
-from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
+from django.shortcuts import redirect, render
+from django.views import View
+
 from ...models import Project
 
 PROJECTS_PER_PAGE = 120

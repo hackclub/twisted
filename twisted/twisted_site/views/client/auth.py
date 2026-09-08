@@ -1,16 +1,22 @@
-import requests
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model, login, logout
-from django.shortcuts import redirect
+import hmac
+import logging
 import os
+import secrets
+
+import requests
 from authlib.integrations.django_client import OAuth
+from django.contrib.auth import get_user_model, login, logout
+from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views import View
 import secrets
 import hmac
+from django.conf import settings
 
+from ... import hackatime
 from ...models import Profile
 from ... import hackatime
-from ...slack import slack_bot
+from ...slack import slack_bot, SLACK_LOG_CHANNEL, log_to_channel
 
 oauth = OAuth()
 
@@ -86,8 +92,8 @@ class AuthCallbackView(View):
             )
             avatar_url = slack_profile.get("image_512")
 
-        except Exception as e:
-            print("Slack profile fetch failed", e)
+        except Exception:
+            logger.exception("Slack profile fetch failed")
             display_name = name
             avatar_url = os.environ["DEFAULT_PFP"]
 
@@ -97,22 +103,21 @@ class AuthCallbackView(View):
         profile.slack_username = display_name
         profile.slack_pfp_url = avatar_url
         profile.ysws_eligible = ysws_eligible
-        profile.hca_access_token = token['access_token']
-        
-        referral_code = self.request.COOKIES.get('referral')
+        profile.hca_access_token = token["access_token"]
+
+        referral_code = self.request.COOKIES.get("referral")
         if created and referral_code:
             referral_profiles = Profile.objects.filter(my_referral_code=referral_code)
             if referral_profiles:
                 referral_profile = referral_profiles.get()
                 profile.referred_by = referral_profile
-        
+
         profile.save()
 
-        if os.environ.get("LOGIN_ENABLED") == "maybe":
-            if not profile.is_allowed:
-                return JsonResponse(
-                    {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
-                )
+        if os.environ.get("LOGIN_ENABLED") == "maybe" and not profile.is_allowed:
+            return JsonResponse(
+                {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
+            )
 
         login(request, user)
 
@@ -128,6 +133,8 @@ class AuthCallbackView(View):
                 f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}"
             )
 
+        log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
+        
         return redirect("dashboard")
 
 

@@ -5,20 +5,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0029_projectship_final_audit_note_and_more'),
+        ("twisted_site", "0029_projectship_final_audit_note_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='journal',
-            name='minutes_worked',
-            field=models.IntegerField(validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="journal",
+            name="minutes_worked",
+            field=models.IntegerField(
+                validators=[django.core.validators.MinValueValidator(0)]
+            ),
         ),
         migrations.AlterField(
-            model_name='journal',
-            name='reduced_minutes',
-            field=models.IntegerField(validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="journal",
+            name="reduced_minutes",
+            field=models.IntegerField(
+                validators=[django.core.validators.MinValueValidator(0)]
+            ),
         ),
     ]

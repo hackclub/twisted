@@ -4,83 +4,91 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0027_profile_hca_access_token_project_screenshot_url'),
+        ("twisted_site", "0027_profile_hca_access_token_project_screenshot_url"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='projectship',
-            name='final_message',
+            model_name="projectship",
+            name="final_message",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='final_status',
+            model_name="projectship",
+            name="final_status",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='final_updated_at',
+            model_name="projectship",
+            name="final_updated_at",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='fraud_message',
+            model_name="projectship",
+            name="fraud_message",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='fraud_status',
+            model_name="projectship",
+            name="fraud_status",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='fraud_updated_at',
+            model_name="projectship",
+            name="fraud_updated_at",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='t1_message',
+            model_name="projectship",
+            name="t1_message",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='t1_status',
+            model_name="projectship",
+            name="t1_status",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='t1_updated_at',
+            model_name="projectship",
+            name="t1_updated_at",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='t2_message',
+            model_name="projectship",
+            name="t2_message",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='t2_status',
+            model_name="projectship",
+            name="t2_status",
         ),
         migrations.RemoveField(
-            model_name='projectship',
-            name='t2_updated_at',
+            model_name="projectship",
+            name="t2_updated_at",
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='audit_note',
-            field=models.TextField(blank=True, default=''),
+            model_name="projectship",
+            name="audit_note",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='deflation_reason',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="projectship",
+            name="deflation_reason",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='note_to_maker',
-            field=models.TextField(blank=True, default=''),
+            model_name="projectship",
+            name="note_to_maker",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Awaiting review'), ('requested_changes', 'Changes Requested'), ('rejected', 'Rejected'), ('approved', 'Approved')], default='pending', max_length=200),
+            model_name="projectship",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Awaiting review"),
+                    ("requested_changes", "Changes Requested"),
+                    ("rejected", "Rejected"),
+                    ("approved", "Approved"),
+                ],
+                default="pending",
+                max_length=200,
+            ),
         ),
         migrations.AddField(
-            model_name='projectship',
-            name='technical_features',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="projectship",
+            name="technical_features",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
     ]

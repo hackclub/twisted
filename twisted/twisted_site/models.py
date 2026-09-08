@@ -1,19 +1,12 @@
-from django.db.models import TextField
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import TextField
 from django.utils import timezone
+
 from . import hackatime
-from .slack import slack_bot
 
 User = get_user_model()
-
-JOURNAL_TYPES = {
-    "hackatime": "Hackatime",
-    "lookout": "Lookout",
-    "untracked": "Untracked",
-}
-
 
 class UploadedFile(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -40,12 +33,19 @@ class Profile(models.Model):
 
     hca_access_token = models.CharField(max_length=2000, blank=True, default="")
     
-    is_staff = models.BooleanField(default=False)
     is_allowed = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    staff_permissions = models.OneToOneField('twisted_site.ProfileStaffPermissions', on_delete=models.PROTECT, default=None, null=True)
     
     twists = models.IntegerField(default=0)
-    
-    referred_by = models.ForeignKey('twisted_site.Profile', on_delete=models.PROTECT, null=True, default=None, related_name="referrals")
+
+    referred_by = models.ForeignKey(
+        "twisted_site.Profile",
+        on_delete=models.PROTECT,
+        null=True,
+        default=None,
+        related_name="referrals",
+    )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
     def shipped_projects(self):
@@ -69,6 +69,26 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username  # ty:ignore[unresolved-attribute]
+
+
+class ProfileStaffPermissions(models.Model):
+    superuser = models.BooleanField(default=False)
+
+    view_users = models.BooleanField(default=False)
+    
+    view_pathways = models.BooleanField(default=False)
+    manage_pathways = models.BooleanField(default=False)
+    
+    manage_fulfillments = models.BooleanField(default=False)
+    
+    manage_shop = models.BooleanField(default=False)
+    
+    view_review = models.BooleanField(default=False)
+    manage_review = models.BooleanField(default=False)
+    
+    manage_announcements = models.BooleanField(default=False)
+
+    view_auditlogs = models.BooleanField(default=False)
 
 
 PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}
@@ -134,21 +154,26 @@ class Project(models.Model):
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
     def latest_ship(self):
-        ship = self.ships.order_by('-created_at').first()
+        ship = self.ships.order_by("-created_at").first()
         return ship
-    
+
     def is_shipped(self):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status != 'requested_changes'
+        return latest_ship.status != "requested_changes"
 
     def is_approved(self):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status == 'approved'
+        return latest_ship.status == "approved"
 
+JOURNAL_TYPES = {
+    "hackatime": "Hackatime",
+    "lookout": "Lookout",
+    "untracked": "Untracked",
+}
 
 class Journal(models.Model):
     project = models.ForeignKey(
@@ -182,14 +207,18 @@ class ProjectShip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
+    status = models.CharField(
+        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
+    )
 
     note_to_maker = models.TextField(blank=True, default="")
     audit_note = models.TextField(blank=True, default="")
     technical_features = models.CharField(blank=True, default="", max_length=255)
     deflation_reason = models.CharField(blank=True, default="", max_length=255)
 
-    final_status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
+    final_status = models.CharField(
+        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
+    )
     final_note_to_maker = models.TextField(blank=True, default="")
     final_audit_note = models.TextField(blank=True, default="")
 
@@ -218,36 +247,40 @@ class Pathway(models.Model):
 
     def status(self):
         if self.ended():
-            return 'ended'
+            return "ended"
         if self.didnt_start():
-            return 'awaiting'
+            return "awaiting"
         if self.in_progress():
-            return 'in progress'
-    
+            return "in progress"
+
     def mins_spent(self, user: User):
-        pathways = Pathway.objects.order_by('start').values('id', 'start', 'end', 'min_mins')
+        pathways = Pathway.objects.order_by("start").values(
+            "id", "start", "end", "min_mins"
+        )
         if not pathways:
             return 0
-        
-        pathway_totals = {p['id']: 0 for p in pathways}
 
-        journals = Journal.objects.filter(
-            project__user=user
-        ).order_by('created_at').values_list('created_at', 'reduced_minutes')
+        pathway_totals = {p["id"]: 0 for p in pathways}
+
+        journals = (
+            Journal.objects.filter(project__user=user)
+            .order_by("created_at")
+            .values_list("created_at", "reduced_minutes")
+        )
 
         for j_created, j_mins in journals:
             mins_remaining = j_mins
             for pathway in pathways:
                 if mins_remaining <= 0:
                     break
-                
+
                 # Check if journal falls within the pathway window
-                if pathway['start'] > j_created or pathway['end'] < j_created:
+                if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
-                
-                p_id = pathway['id']
+
+                p_id = pathway["id"]
                 mins_completed = pathway_totals.get(p_id, 0)
-                mins_required = pathway['min_mins']
+                mins_required = pathway["min_mins"]
 
                 if mins_completed >= mins_required:
                     continue
@@ -259,7 +292,7 @@ class Pathway(models.Model):
                 pathway_totals[p_id] = mins_completed + mins_donated
 
         return pathway_totals[self.id]
-    
+
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
         Calculates the minutes spent on this specific pathway for all participants.
@@ -268,24 +301,28 @@ class Pathway(models.Model):
             dict: {user_id: mins_spent}
         """
         # Fetch all pathways to accurately model the sequential time donation
-        pathways = list(Pathway.objects.order_by('start').values('id', 'start', 'end', 'min_mins'))
+        pathways = list(
+            Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
+        )
         if not pathways:
             return {}
 
         # Fetch journals from all users that fit within this pathway's active time frame
-        journals = Journal.objects.filter(
-            created_at__gte=self.start,
-            created_at__lte=self.end,
-            reduced_minutes__gt=0
-        ).order_by('project__user_id', 'created_at').values_list(
-            'project__user_id', 'created_at', 'reduced_minutes'
+        journals = (
+            Journal.objects.filter(
+                created_at__gte=self.start,
+                created_at__lte=self.end,
+                reduced_minutes__gt=0,
+            )
+            .order_by("project__user_id", "created_at")
+            .values_list("project__user_id", "created_at", "reduced_minutes")
         )
 
         user_pathway_totals = {}
 
         for user_id, j_created, j_mins in journals:
             if user_id not in user_pathway_totals:
-                user_pathway_totals[user_id] = {p['id']: 0 for p in pathways}
+                user_pathway_totals[user_id] = {p["id"]: 0 for p in pathways}
 
             pathway_totals = user_pathway_totals[user_id]
             mins_remaining = j_mins
@@ -294,12 +331,12 @@ class Pathway(models.Model):
                 if mins_remaining <= 0:
                     break
 
-                if pathway['start'] > j_created or pathway['end'] < j_created:
+                if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = pathway['id']
+                p_id = pathway["id"]
                 mins_completed = pathway_totals[p_id]
-                mins_required = pathway['min_mins']
+                mins_required = pathway["min_mins"]
 
                 if mins_completed >= mins_required:
                     continue
@@ -315,7 +352,7 @@ class Pathway(models.Model):
             user_id: totals.get(self.id, 0)
             for user_id, totals in user_pathway_totals.items()
         }
-    
+
     def qualified_participants(self):
         per_part = self.mins_spent_per_participant()
         qualified = []
@@ -323,18 +360,19 @@ class Pathway(models.Model):
             if mins >= self.min_mins:
                 qualified.append(User.objects.get(id=userid))
         return qualified
-    
+
     def __str__(self):
         return self.name
 
+
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='audit_logs')
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="audit_logs")
     path = models.CharField(max_length=400)
     post = models.BooleanField()
     pii = models.BooleanField(default=False)
 
     additional_context = models.JSONField(null=True, default=None)
-    
+
     def __str__(self):
         return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"

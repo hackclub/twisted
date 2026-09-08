@@ -1,18 +1,23 @@
-from markdown_it.rules_inline import image
-from django.http import JsonResponse
+import math
+import re
+
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 from ...models import Profile, Project, Journal
 from ... import hackatime
 import re
 import math
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
-IMAGE_REGEX = r'!\[([^\]]*)\]\([^)]+\)'
+IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
 
 
 class NewProjectHackatimeJournal(View):
-    def get(self, request, id, info=None, context={}):
+    def get(self, request, id, info=None, context=None):
+        if context is None:
+            context = {}
+
         context["info"] = info
         if self.request.user.is_anonymous:
             return redirect("homepage")
@@ -24,8 +29,7 @@ class NewProjectHackatimeJournal(View):
         context["project"] = project
 
         if project.is_shipped():
-            return redirect('fr.projects.detail', id)
-
+            return redirect("fr.projects.detail", id)
 
         log_minutes = project.hackatime_time_unjournaled()
 
@@ -47,15 +51,15 @@ class NewProjectHackatimeJournal(View):
         )
 
         if project.is_shipped():
-            return redirect('fr.projects.detail', id)
+            return redirect("fr.projects.detail", id)
 
         content = request.POST["content"]
-        
+
         image_count = len(re.findall(IMAGE_REGEX, content))
         required_image_count = math.ceil(max(1, reduced_minutes / 180))
-        
-        content_no_images = re.sub(IMAGE_REGEX, '', content)
-        content_length = len(' '.join(content_no_images.split()))
+
+        content_no_images = re.sub(IMAGE_REGEX, "", content)
+        content_length = len(" ".join(content_no_images.split()))
 
         if image_count < required_image_count:
             return self.get(
@@ -87,19 +91,23 @@ class NewProjectHackatimeJournal(View):
 
 UNTRACKED_MAX_LOGGABLE_MINUTES = 60
 
+
 class NewProjectUntrackedJournal(View):
-    def get(self, request, id, info=None, context={}):
+    def get(self, request, id, info=None, context=None):
+        if context is None:
+            context = {}
+
         context["info"] = info
         if self.request.user.is_anonymous:
             return redirect("homepage")
-        
+
         project = get_object_or_404(Project, id=id)
 
         if project.user != request.user:
             return redirect("dashboard")
 
-        if project.project_type == 'software':
-            return redirect('fr.projects.journals.new.hackatime')
+        if project.project_type == "software":
+            return redirect("fr.projects.journals.new.hackatime")
 
         context["project"] = project
 
@@ -123,16 +131,15 @@ class NewProjectUntrackedJournal(View):
         project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
-        
-        if project.project_type == 'software':
-            return redirect('fr.projects.journals.new.hackatime')
+
+        if project.project_type == "software":
+            return redirect("fr.projects.journals.new.hackatime")
 
         content = request.POST["content"]
         time_logged = int(request.POST["time_logged"])
 
-        
-        content_no_images = re.sub(IMAGE_REGEX, '', content)
-        content_length = len(' '.join(content_no_images.split()))
+        content_no_images = re.sub(IMAGE_REGEX, "", content)
+        content_length = len(" ".join(content_no_images.split()))
 
         if time_logged > UNTRACKED_MAX_LOGGABLE_MINUTES:
             return self.get(
@@ -149,7 +156,7 @@ class NewProjectUntrackedJournal(View):
                 info="I dont understand, why do you wanna lose time :hs:",
                 context={"content": content},
             )
-        
+
         if content_length < min(100, time_logged * 2):
             return self.get(
                 request,
@@ -169,46 +176,45 @@ class NewProjectUntrackedJournal(View):
 
         return self.get(request, id, context={"success": True})
 
+
 class DeleteJournal(View):
-    def get(self, request, id, context={'success': False}):
+    def get(self, request, id, context=None):
+        if context is None:
+            context = {"success": False}
+
         if request.user.is_anonymous:
-            return redirect('homepage')
-        
+            return redirect("homepage")
+
         if id is not None:
             journal = get_object_or_404(Journal, id=id)
             if journal.project.is_shipped():
-                return redirect('fr.projects.detail', journal.project.id)
+                return redirect("fr.projects.detail", journal.project.id)
 
             if journal.project.user != request.user:
-                return redirect('dashboard')
-            
-            if journal.type != 'untracked':
-                return redirect('dashboard')
-            
-            
-            context['journal'] = journal
-        
-        
-        return render(
-            request, "client/projects/journal/delete.html", context=context
-        )
+                return redirect("dashboard")
+
+            if journal.type != "untracked":
+                return redirect("dashboard")
+
+            context["journal"] = journal
+
+        return render(request, "client/projects/journal/delete.html", context=context)
 
     def post(self, request, id):
         if request.user.is_anonymous:
-            return redirect('homepage')
+            return redirect("homepage")
 
         journal = get_object_or_404(Journal, id=id)
 
         if journal.project.is_shipped():
-            return redirect('fr.projects.detail', journal.project.id)
+            return redirect("fr.projects.detail", journal.project.id)
 
         if journal.project.user != request.user:
-            return redirect('dashboard')
-        
-        if journal.type != 'untracked':
-            return redirect('dashboard')
-        
+            return redirect("dashboard")
+
+        if journal.type != "untracked":
+            return redirect("dashboard")
+
         journal.delete()
-        
-        
+
         return self.get(request, id=None, context={"success": True})
