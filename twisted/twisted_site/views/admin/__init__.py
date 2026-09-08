@@ -6,3 +6,17 @@ from .pathways import PathwayCreateView, PathwayDetailView, PathwayListView
 from .review import ReviewView
 from .shop import ShopView
 from .users import UserDetailView, UsersView
+
+__all__ = [
+    "AnnouncementsView",
+    "AuditLogsView",
+    "DashboardView",
+    "FulfillmentView",
+    "PathwayCreateView",
+    "PathwayDetailView",
+    "PathwayListView",
+    "ReviewView",
+    "ShopView",
+    "UserDetailView",
+    "UsersView",
+]

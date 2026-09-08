@@ -10,3 +10,20 @@ from .pathways import PathwaysView
 from .project import ProjectDetail, ProjectSettings, SubmitProject
 from .projects import CreateProject, ListProjects
 from .referrals import ReferralsView
+
+__all__ = [
+    "CreateProject",
+    "DashboardView",
+    "DeleteJournal",
+    "DiscoverView",
+    "FaqsView",
+    "HomepageView",
+    "ListProjects",
+    "NewProjectHackatimeJournal",
+    "NewProjectUntrackedJournal",
+    "PathwaysView",
+    "ProjectDetail",
+    "ProjectSettings",
+    "ReferralsView",
+    "SubmitProject",
+]
