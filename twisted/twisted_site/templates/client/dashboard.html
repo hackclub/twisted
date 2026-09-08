@@ -1,6 +1,5 @@
 {% extends "client/osbase.html" %}
 {% load static %}
-
 {% block body %}
     <main class="h-full w-full bg-gradbg text-foreground overflow-clip">
         <img src="{% static 'images/twisted_logo.png' %}"
@@ -11,9 +10,7 @@
                 {% if user.profile.is_staff %}
                     <div class="font-vintage w-fit cursor-pointer select-none">
                         <a href="{% url 'admin.dash' %}">
-                            <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
-🛡️
-                            </div>
+                            <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🛡️</div>
                             <span class="text-white block text-center text-sm">Admin</span>
                         </a>
                     </div>
@@ -51,10 +48,7 @@
             </div>
                 {% endcomment %}
             </div>
-
-            <div id="windows-container">
-            </div>
-
+            <div id="windows-container"></div>
             <nav id="taskbar"
                  class="fixed bottom-0 left-0 right-0 z-50 flex h-12 items-center justify-between gap-2 border-t border-border bg-card px-2 sm:px-3">
                 <div class="relative">
@@ -63,9 +57,8 @@
                         <img src="{% static 'images/twisted_logo.png' %}"
                              class="h-4 w-6 object-contain"
                              alt="">
-                    Twisted
+                        Twisted
                     </button>
-
                     <div id="start-menu"
                          style="display: none"
                          class="z-10000 fixed bottom-13 left-5 border-2 border-border shadow-[2px_2px_0px_0px] shadow-accent rounded-md">
@@ -76,13 +69,10 @@
                                          alt=""
                                          class="w-16 h-16 rounded-lg object-cover mx-auto mb-1 -mt-12 border-2 border-border shadow-lg" />
                                     <div class="text-absolute-white font-bold text-sm font-vintage">
-                                    {{ profile.slack_username|default:user.username }}
+                                        {{ profile.slack_username|default:user.username }}
                                     </div>
-                                    <div class="text-absolute-white text-sm font-vintage">
-                                    {{ profile.twists }} twists
-                                    </div>
+                                    <div class="text-absolute-white text-sm font-vintage">{{ profile.twists }} twists</div>
                                 </div>
-
                                 <div class="font-vintage space-y-1 text-absolute-white text-sm border-t border-twisted-800 pt-2">
                                     {% if user.is_staff %}
                                         <a href="/admin/"
@@ -102,33 +92,29 @@
                                              fill="currentColor"
                                              width="24"
                                              height="24">
-<path d="M10 14C10 13.448 10.448 13 11 13H22C22.552 13 23 13.448 23 14C23 14.552 22.552 15 22 15H11C10.448 15 10 14.552 10 14Z" />
-<path d="M10 18C10 17.448 10.448 17 11 17H22C22.552 17 23 17.448 23 18C23 18.552 22.552 19 22 19H11C10.448 19 10 18.552 10 18Z" />
-<path d="M10 22C10 21.448 10.448 21 11 21H19C19.552 21 20 21.448 20 22C20 22.552 19.552 23 19 23H11C10.448 23 10 22.552 10 22Z" />
-<path d="M17.96 3.93119C17.9648 3.95466 17.9674 3.97763 17.9679 4H20C20.552 4 21 4.448 21 5V5.25323V7C21 7.09511 20.9867 7.18713 20.9619 7.27431C20.8425 7.69308 20.4569 8 20 8H12C11.5431 8 11.1575 7.69308 11.0381 7.27431C11.0381 7.27409 11.038 7.27388 11.038 7.27366C11.0132 7.18668 11 7.09487 11 7V5.25323V5C11 4.448 11.448 4 12 4H14.0321C14.0326 3.97763 14.0352 3.95466 14.04 3.93119C14.224 3.02719 15.034 2.31519 16 2.31519C16.965 2.31519 17.776 3.02719 17.96 3.93119ZM6 17C6 9.14915 6.42432 6.39217 10 5.45705V7C10 7.18211 10.0244 7.35854 10.07 7.52622C9.563 7.71106 9.28679 7.92979 9.099 8.155C8.779 8.539 8.458 9.249 8.255 10.752C8.046 12.283 8 14.274 8 17C8 19.725 8.046 21.717 8.255 23.248C8.458 24.751 8.779 25.461 9.099 25.845C9.375 26.176 9.842 26.493 10.952 26.709C12.164 26.95 13.744 27 16 27C18.256 27 19.836 26.95 21.048 26.709C22.158 26.493 22.625 26.176 22.901 25.845C23.221 25.461 23.542 24.751 23.744 23.248C23.954 21.717 24 19.725 24 17C24 14.274 23.954 12.283 23.744 10.752C23.542 9.249 23.221 8.539 22.901 8.155C22.7132 7.92979 22.437 7.71106 21.93 7.52622C21.9756 7.35854 22 7.18211 22 7V5.45705C25.5757 6.39217 26 9.14915 26 17C26 28 25.167 29 16 29C6.833 29 6 28 6 17Z" />
+                                            <path d="M10 14C10 13.448 10.448 13 11 13H22C22.552 13 23 13.448 23 14C23 14.552 22.552 15 22 15H11C10.448 15 10 14.552 10 14Z" />
+                                            <path d="M10 18C10 17.448 10.448 17 11 17H22C22.552 17 23 17.448 23 18C23 18.552 22.552 19 22 19H11C10.448 19 10 18.552 10 18Z" />
+                                            <path d="M10 22C10 21.448 10.448 21 11 21H19C19.552 21 20 21.448 20 22C20 22.552 19.552 23 19 23H11C10.448 23 10 22.552 10 22Z" />
+                                            <path d="M17.96 3.93119C17.9648 3.95466 17.9674 3.97763 17.9679 4H20C20.552 4 21 4.448 21 5V5.25323V7C21 7.09511 20.9867 7.18713 20.9619 7.27431C20.8425 7.69308 20.4569 8 20 8H12C11.5431 8 11.1575 7.69308 11.0381 7.27431C11.0381 7.27409 11.038 7.27388 11.038 7.27366C11.0132 7.18668 11 7.09487 11 7V5.25323V5C11 4.448 11.448 4 12 4H14.0321C14.0326 3.97763 14.0352 3.95466 14.04 3.93119C14.224 3.02719 15.034 2.31519 16 2.31519C16.965 2.31519 17.776 3.02719 17.96 3.93119ZM6 17C6 9.14915 6.42432 6.39217 10 5.45705V7C10 7.18211 10.0244 7.35854 10.07 7.52622C9.563 7.71106 9.28679 7.92979 9.099 8.155C8.779 8.539 8.458 9.249 8.255 10.752C8.046 12.283 8 14.274 8 17C8 19.725 8.046 21.717 8.255 23.248C8.458 24.751 8.779 25.461 9.099 25.845C9.375 26.176 9.842 26.493 10.952 26.709C12.164 26.95 13.744 27 16 27C18.256 27 19.836 26.95 21.048 26.709C22.158 26.493 22.625 26.176 22.901 25.845C23.221 25.461 23.542 24.751 23.744 23.248C23.954 21.717 24 19.725 24 17C24 14.274 23.954 12.283 23.744 10.752C23.542 9.249 23.221 8.539 22.901 8.155C22.7132 7.92979 22.437 7.71106 21.93 7.52622C21.9756 7.35854 22 7.18211 22 7V5.45705C25.5757 6.39217 26 9.14915 26 17C26 28 25.167 29 16 29C6.833 29 6 28 6 17Z" />
                                         </svg>
-                                    Docs
+                                        Docs
                                     </a>
                                 </div>
                             </div>
                         </div>
-
                         <div class="flex items-center justify-between p-2 bg-card rounded-b-md">
                             <form method="post" action="{% url 'logout' %}" class="w-full">
                                 {% csrf_token %}
                                 <button type="submit"
                                         class="border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground w-full transition hover:bg-accent/60 hover:text-primary-foreground text-center">
-                                Logout
+                                    Logout
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
-
                 <div id="taskbar-windows"
-                     class="flex-1 flex items-center gap-1 px-2 overflow-x-auto">
-                </div>
-
+                     class="flex-1 flex items-center gap-1 px-2 overflow-x-auto"></div>
                 <div class="flex items-center gap-2">
                     <button id="speaker-btn"
                             type="button"
@@ -141,33 +127,28 @@
                              viewBox="0 0 20 16"
                              shape-rendering="crispEdges"
                              xmlns="http://www.w3.org/2000/svg">
-<rect x="2" y="6" width="2" height="4" fill="#E0A7FF" />
-<rect x="4" y="5" width="2" height="6" fill="#E0A7FF" />
-<rect x="6" y="4" width="2" height="8" fill="#E0A7FF" />
-<rect x="8" y="2" width="2" height="12" fill="#E0A7FF" />
-
-<g id="sound-waves">
-<rect x="12" y="5" width="2" height="6" fill="#B96CFF" />
-<rect x="15" y="3" width="2" height="10" fill="#B96CFF" />
-</g>
+                            <rect x="2" y="6" width="2" height="4" fill="#E0A7FF" />
+                            <rect x="4" y="5" width="2" height="6" fill="#E0A7FF" />
+                            <rect x="6" y="4" width="2" height="8" fill="#E0A7FF" />
+                            <rect x="8" y="2" width="2" height="12" fill="#E0A7FF" />
+                            <g id="sound-waves">
+                            <rect x="12" y="5" width="2" height="6" fill="#B96CFF" />
+                            <rect x="15" y="3" width="2" height="10" fill="#B96CFF" />
+                            </g>
                         </svg>
                     </button>
-
                     <canvas id="spectrum"
                             width="100"
                             height="24"
                             class="hidden border border-border sm:block"></canvas>
-
                     <div id="taskbar-clock"
                          class="min-w-20 border border-border bg-background px-3 py-1.5 text-center font-mono text-xs text-foreground">
-                    00:00 AM
+                        00:00 AM
                     </div>
                 </div>
-
             </nav>
         </div>
     </main>
-
     <template id="window-template">
         <div class="absolute window resize flex flex-col overflow-hidden bg-card border-2 border-dark-black shadow-lg"
              style="min-width: 40vw;
@@ -180,57 +161,37 @@
                 <div class="flex gap-2">
                     <button class="reload-button h-5 w-5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary"
                             type="button"
-                            aria-label="Reload">
-                    ↻
-                    </button>
+                            aria-label="Reload">↻</button>
                     <label class="title-bar-text font-bold truncate">[ title card ]</label>
                 </div>
-
                 <div class="title-bar-controls flex items-center gap-1">
-
                     <button id="max-button"
                             class="max-button h-5 w-5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary"
                             type="button"
-                            aria-label="Maximize">
-                    □
-                    </button>
-
+                            aria-label="Maximize">□</button>
                     <button class="close-button h-5 w-5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-destructive hover:text-destructive-foreground"
                             type="button"
-                            aria-label="Close">
-                    ×
-                    </button>
+                            aria-label="Close">×</button>
                 </div>
             </div>
-
             <div class="window-body min-h-0 flex-1 overflow-hidden">
                 <iframe class="w-full h-full block src-frame select-none border-0"
                         src="about:blank"
                         frameborder="0"></iframe>
             </div>
-            <div class="resize-handle resize-n">
-            </div>
-            <div class="resize-handle resize-s">
-            </div>
-            <div class="resize-handle resize-e">
-            </div>
-            <div class="resize-handle resize-w">
-            </div>
-            <div class="resize-handle resize-ne">
-            </div>
-            <div class="resize-handle resize-nw">
-            </div>
-            <div class="resize-handle resize-se">
-            </div>
-            <div class="resize-handle resize-sw">
-            </div>
+            <div class="resize-handle resize-n"></div>
+            <div class="resize-handle resize-s"></div>
+            <div class="resize-handle resize-e"></div>
+            <div class="resize-handle resize-w"></div>
+            <div class="resize-handle resize-ne"></div>
+            <div class="resize-handle resize-nw"></div>
+            <div class="resize-handle resize-se"></div>
+            <div class="resize-handle resize-sw"></div>
         </div>
     </template>
-
     <audio id="bg-music" loop>
         <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
     </audio>
-
     <template id="taskbutton-template">
         <button onclick="focusWindow(this.dataset.winId)"
                 class="flex items-center gap-1 !bg-twisted-600 !text-absolute-white text-sm !px-2 !py-1 !border-2 !border-t-twisted-200 !border-l-twisted-200 !border-r-dark-black !border-b-dark-black max-w-40">
@@ -239,7 +200,6 @@
             <span class="truncate taskbtn-title"></span>
         </button>
     </template>
-
     <script>
     let windowCounter = 0;
     let currentMaximisedWindow = null;
@@ -633,7 +593,6 @@
         console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
     }, 500)
     </script>
-
     {% if startup_windows %}
         <div id="_startup" class="hidden">
             {% for window in startup_windows %}
@@ -643,5 +602,4 @@
             {% endfor %}
         </div>
     {% endif %}
-
 {% endblock body %}

@@ -8,20 +8,19 @@
                 </div>
                 <label class="text-lg my-auto">
                     Twisted
-                    <label class="my-auto text-xs text-gray-500"> ADMIN </label>
+                    <label class="my-auto text-xs text-gray-500">ADMIN</label>
                 </label>
             </div>
         </c-slot>
         <div class="flex">
-            <div class="flex-1">
-            </div>
+            <div class="flex-1"></div>
             <c-ui.button size="xs" variant="ghost" @click="drawerOpen = true">
                 <img src="https://icons.hackclub.com/api/icons/white/align-left"
                      class="size-10" />
             </c-ui.button>
         </div>
         <c-slot name="content">
-{{ slot }}
+            {{ slot }}
         </c-slot>
         <c-slot name="footer">
             <div class="flex p-2">
@@ -42,12 +41,10 @@
                 <label class="text-xs text-gray-500">ADMIN</label>
             </div>
         </div>
-        <div class="mx-auto w-full border-gray-700 border-t">
-        </div>
+        <div class="mx-auto w-full border-gray-700 border-t"></div>
         <div class="flex-1 my-2">{{ slot }}</div>
         <div>
-            <div class="mx-auto w-full border-gray-700 border-t">
-            </div>
+            <div class="mx-auto w-full border-gray-700 border-t"></div>
             <c-sidebar.item icon="back" href="{% url 'dashboard' %}">Back to Twisted</c-sidebar.item>
             <div class="flex p-2">
                 <img class="size-8 rounded-full"
@@ -57,6 +54,5 @@
             </div>
         </div>
     </div>
-    <div>
-    </div>
+    <div></div>
 </div>

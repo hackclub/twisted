@@ -1,110 +1,62 @@
 {% extends "client/osbase.html" %}
 {% load static time_filters humanize %}
 {% block body %}
-
     <div class="w-full h-full flex flex-col bg-surface text-foreground font-vintage">
-
         {% if info %}
-            <div class="shrink-0 mx-2 mt-2 border border-border bg-twisted-400 p-2">
-        {{ info|safe }}
-            </div>
+            <div class="shrink-0 mx-2 mt-2 border border-border bg-twisted-400 p-2">{{ info|safe }}</div>
         {% endif %}
-
         {% if not success %}
-
             <div class="shrink-0 flex items-center gap-2 bg-card px-3 py-2 border-b border-border">
                 <span class="font-bold text-lg">Submit project</span>
             </div>
-
             <div class="flex-1 min-h-0 overflow-y-auto p-4">
-
                 <div class="max-w-xl mx-auto">
-
                     <div class="border-2 border-border bg-twisted-600 p-4 text-center">
-
-                        <div class="text-3xl font-bold mb-3">
-                    READ THE GUIDELINES VRO!
-                        </div>
-
+                        <div class="text-3xl font-bold mb-3">READ THE GUIDELINES VRO!</div>
                         <div class="text-base">
-                    Please read through our
+                            Please read through our
                             <a href="https://docs.twisted.hackclub.com/shipping/"
                                class="underline font-bold hover:text-primary"
-                               target="_blank">
-                            submission guidelines</a>
-                    before continuing.
+                               target="_blank">submission guidelines</a>
+                            before continuing.
                         </div>
-
                     </div>
-
                     <div class="mt-4 border border-border bg-card text-card-foreground p-4 text-center">
-
-                        <div class="text-2xl font-bold">
-                    Did yk 90% of rejections could have taken 5 minutes to fix?
-                        </div>
-
-                        <div class="mt-4 text-sm text-muted-foreground">
-                    Our reviewers will manually check your project.
-                        </div>
-
+                        <div class="text-2xl font-bold">Did yk 90% of rejections could have taken 5 minutes to fix?</div>
+                        <div class="mt-4 text-sm text-muted-foreground">Our reviewers will manually check your project.</div>
                         <div class="mt-2 text-sm">
                             {% if project.type == "software" %}
-                    Make sure your project works before shipping it.
+                                Make sure your project works before shipping it.
                             {% else %}
-                    Make sure your design is shipped and looks like it will work.
+                                Make sure your design is shipped and looks like it will work.
                             {% endif %}
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
             <div class="shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-border bg-card p-2">
-
                 <a href="{% url 'fr.projects.detail' project.id %}">
                     <button type="button"
                             class="px-3 py-1 border border-border bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground">
-                Nevermind
+                        Nevermind
                     </button>
                 </a>
-
                 <form method="post">
                     {% csrf_token %}
                     <button type="submit"
                             class="px-4 py-2 text-lg border-2 border-border bg-twisted-400 text-absolute-white hover:bg-twisted-600">
-                I have read the guidelines
+                        I have read the guidelines
                     </button>
                 </form>
-
             </div>
-
         {% else %}
-
-
             <div class="flex-1 flex items-center justify-center p-6">
-
                 <div class="w-full max-w-md border border-success bg-success/30 p-6 text-center">
-
-                    <div class="text-3xl font-bold text-success">
-                Success!
-                    </div>
-
-                    <div class="mt-2 text-foreground">
-                Your project has been submitted for review by the twistwrights!
-                    </div>
-
-                    <div class="mt-4 text-sm text-foreground">
-                you can now close this window.
-                    </div>
-
+                    <div class="text-3xl font-bold text-success">Success!</div>
+                    <div class="mt-2 text-foreground">Your project has been submitted for review by the twistwrights!</div>
+                    <div class="mt-4 text-sm text-foreground">you can now close this window.</div>
                 </div>
-
             </div>
-
         {% endif %}
-
     </div>
-
 {% endblock body %}

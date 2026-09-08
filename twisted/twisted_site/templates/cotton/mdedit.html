@@ -1,5 +1,4 @@
 <div class="flex flex-col flex-1 min-h-0 min-w-0 {{ class }} font-vintage">
-
     <div class="shrink-0 flex items-center gap-1 bg-card border-b border-border p-1">
         <button id="editbutton"
                 type="button"
@@ -8,7 +7,6 @@
                 class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
             Edit
         </button>
-
         <button id="previewbutton"
                 type="button"
                 onclick="switchpreview()"
@@ -16,9 +14,7 @@
             Preview
         </button>
     </div>
-
     <div class="flex-1 min-h-0 min-w-0 overflow-hidden">
-
         <div id="edittab" class="flex w-full h-full min-h-0">
             <textarea name="content"
                       id="content"
@@ -26,7 +22,6 @@
                       placeholder="Write your journal entry here..."
                       oninput="renderpreview()">{{ content }}</textarea>
         </div>
-
         <div id="previewtab" class="hidden w-full h-full min-h-0">
             <div class="w-full h-full overflow-y-auto bg-background p-4">
                 <div id="preview"
@@ -34,10 +29,8 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
-
 <script>
     const textbox = document.querySelector("#content");
     const csrfToken = "{{ csrf_token }}";

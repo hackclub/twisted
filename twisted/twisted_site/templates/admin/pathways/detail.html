@@ -5,24 +5,23 @@
             <c-ui.breadcrumbs.item href="{% url 'admin.dash' %}">Admin</c-ui.breadcrumbs.item>
             <c-ui.breadcrumbs.item href="{% url 'admin.pathways' %}">Pathways</c-ui.breadcrumbs.item>
             <c-ui.breadcrumbs.item :current="True">
-{{ pathway.name }}
+                {{ pathway.name }}
             </c-ui.breadcrumbs.item>
         </c-ui.breadcrumbs>
-
         <c-ui.card class="mt-2 bg-ink-900">
             <div class="flex items-center gap-2 flex-wrap">
                 <h1 class="text-2xl font-bold">{{ pathway.name }}</h1>
                 {% if pathway.in_progress %}
                     <c-ui.badge color="orange">
-In progress
+                        In progress
                     </c-ui.badge>
                 {% elif pathway.didnt_start %}
                     <c-ui.badge color="green">
-Not started
+                        Not started
                     </c-ui.badge>
                 {% elif pathway.ended %}
                     <c-ui.badge color="ink">
-Ended
+                        Ended
                     </c-ui.badge>
                 {% endif %}
             </div>
@@ -45,7 +44,6 @@ Ended
                 </div>
             </div>
         </c-ui.card>
-
         <div class="mt-4">
             <h2 class="text-lg font-semibold mb-2">Participants</h2>
             {% if participants %}
@@ -66,7 +64,7 @@ Ended
                                         <a href="{% url 'admin.users.detail' participant.user.id %}"
                                            class="flex items-center gap-2">
                                             <c-ui.avatar size="sm" src="{{ participant.user.profile.slack_pfp_url }}" />
-                                    @{{ participant.user.profile.slack_username }}
+                                            @{{ participant.user.profile.slack_username }}
                                         </a>
                                     </td>
                                     <td>{{ participant.mins|minutes_to_hours_minutes }}</td>
@@ -78,11 +76,11 @@ Ended
                                     <td>
                                         {% if participant.qualified %}
                                             <c-ui.badge color="green">
-Qualified
+                                                Qualified
                                             </c-ui.badge>
                                         {% else %}
                                             <c-ui.badge color="ink">
-In progress
+                                                In progress
                                             </c-ui.badge>
                                         {% endif %}
                                     </td>

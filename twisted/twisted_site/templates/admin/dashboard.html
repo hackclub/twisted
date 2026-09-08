@@ -6,27 +6,27 @@
         <h3 class="text-lg font-semibold mb-2">Welcome back, {{ user.profile.slack_username }}!</h3>
         <p class="text-ink-400">
             <c-ui.button onclick="alert('weh, you are looking at them right now >:(')">
-See statistics
+                See statistics
             </c-ui.button>
             <a href="{% url 'admin.users' %}">
                 <c-ui.button>
-Manage Users
+                    Manage Users
                 </c-ui.button>
             </a>
             <c-ui.button>
-Edit Pathways
+                Edit Pathways
             </c-ui.button>
             <c-ui.button>
-Fulfill orders
+                Fulfill orders
             </c-ui.button>
             <c-ui.button>
-Edit shop
+                Edit shop
             </c-ui.button>
             <c-ui.button>
-Review projects
+                Review projects
             </c-ui.button>
             <c-ui.button>
-Announce stuff
+                Announce stuff
             </c-ui.button>
         </p>
     </c-ui.card>
@@ -36,16 +36,10 @@ Announce stuff
                 <div class="flex flex-col md:flex-row text-center md:text-left gap-4">
                     <div class="md:w-fit">
                         <div>
-                            <div class="text-center">
-                                Hours logged
-                            </div>
-                            <div class="text-center text-lg font-bold">
-                                {{ hours_logged }}h
-                            </div>
+                            <div class="text-center">Hours logged</div>
+                            <div class="text-center text-lg font-bold">{{ hours_logged }}h</div>
                             <div id="hours_logged_chart" class="mx-auto md:mx-0">
-                                <div class="text-center py-4">
-                                    Loading chart...
-                                </div>
+                                <div class="text-center py-4">Loading chart...</div>
                             </div>
                         </div>
                         <script>
@@ -71,13 +65,9 @@ Announce stuff
                     </div>
                     <div class="md:w-fit flex flex-row">
                         <div>
-                            <div class="text-center">
-                                Project type
-                            </div>
+                            <div class="text-center">Project type</div>
                             <div id="logged_project_type" class="mx-auto md:mx-0 mt-6">
-                                <div class="text-center py-4">
-                                    Loading chart...
-                                </div>
+                                <div class="text-center py-4">Loading chart...</div>
                             </div>
                         </div>
                         <script>
@@ -108,16 +98,10 @@ Announce stuff
             <c-ui.card class="bg-zinc-900">
                 <div class="flex flex-col md:flex-row text-center md:text-left gap-4">
                     <div class="md:w-fit">
-                        <div class="text-center">
-                            Hours shipped
-                        </div>
-                        <div class="text-center text-lg font-bold">
-                            {{ hours_shipped }}h
-                        </div>
+                        <div class="text-center">Hours shipped</div>
+                        <div class="text-center text-lg font-bold">{{ hours_shipped }}h</div>
                         <div id="hours_shipped_chart" class="mx-auto md:mx-0">
-                            <div class="text-center py-4">
-                                Loading chart...
-                            </div>
+                            <div class="text-center py-4">Loading chart...</div>
                         </div>
                         <script>
                             google.charts.load('current', {'packages':['corechart']});
@@ -142,13 +126,9 @@ Announce stuff
                     </div>
                     <div class="md:w-fit flex flex-row">
                         <div>
-                            <div class="text-center">
-                                Project type
-                            </div>
+                            <div class="text-center">Project type</div>
                             <div id="shipped_project_type" class="mx-auto md:mx-0 mt-6">
-                                <div class="text-center py-4">
-                                    Loading chart...
-                                </div>
+                                <div class="text-center py-4">Loading chart...</div>
                             </div>
                         </div>
                         <script>

@@ -1,29 +1,16 @@
 {% extends "client/osbase.html" %}
-
 {% block body %}
     <div class="flex h-full w-full flex-col bg-surface font-vintage text-foreground">
-
         <form method="post" class="flex min-h-0 flex-1 flex-col">
             {% csrf_token %}
-
             <div class="shrink-0 border-b border-border bg-card px-4 py-2">
-                <div class="text-lg font-bold">
-                Create a new project
-                </div>
-                <div class="mt-0.5 text-xs text-muted-foreground">
-                Enter the details for your project below.
-                </div>
+                <div class="text-lg font-bold">Create a new project</div>
+                <div class="mt-0.5 text-xs text-muted-foreground">Enter the details for your project below.</div>
             </div>
-
             <div class="min-h-0 flex-1 overflow-y-auto bg-background p-3 pt-1">
-
                 <div class="space-y-2 flex flex-col h-full">
-
                     <div class="space-y-1">
-                        <label for="name" class="block text-sm font-bold">
-                        Project name
-                        </label>
-
+                        <label for="name" class="block text-sm font-bold">Project name</label>
                         <input id="name"
                                name="name"
                                type="text"
@@ -31,12 +18,8 @@
                                placeholder="My awesome project"
                                class="w-full border border-border bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/30">
                     </div>
-
                     <div class="space-y-1 flex-1">
-                        <label for="description" class="block text-sm font-bold">
-                        Project description
-                        </label>
-
+                        <label for="description" class="block text-sm font-bold">Project description</label>
                         <textarea id="description"
                                   name="description"
                                   rows="1"
@@ -44,43 +27,27 @@
                                   placeholder="What are you building?"
                                   class="w-full h-full resize-none border border-border bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/30"></textarea>
                     </div>
-
                     <div class="space-y-1 mt-6">
-                        <label for="type" class="block text-sm font-bold">
-                        Project type
-                        </label>
-
+                        <label for="type" class="block text-sm font-bold">Project type</label>
                         <select id="type"
                                 name="type"
                                 required
                                 class="w-full border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
-                            <option value="" disabled selected hidden>
-                            Select an option
-                            </option>
-                            <option value="software">
-                            Software
-                            </option>
-                            <option value="hardware">
-                            Hardware
-                            </option>
+                            <option value="" disabled selected hidden>Select an option</option>
+                            <option value="software">Software</option>
+                            <option value="hardware">Hardware</option>
                         </select>
                     </div>
-
                 </div>
-
             </div>
-
             <div class="flex shrink-0 items-center justify-end border-t border-border bg-card px-3 py-2">
                 <div class="flex gap-2">
                     <button type="submit"
                             class="border border-primary bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
-                    Create project
+                        Create project
                     </button>
                 </div>
-
             </div>
-
         </form>
-
     </div>
 {% endblock body %}

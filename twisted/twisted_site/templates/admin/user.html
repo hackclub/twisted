@@ -2,7 +2,7 @@
 <c-base>
     <a href="{% url 'admin.users' %}">
         <c-ui.button>
-Back
+            Back
         </c-ui.button>
     </a>
     <c-ui.card class="mt-4 bg-ink-900">
@@ -12,23 +12,23 @@ Back
                 <h3 class="text-lg font-semibold mb-1">
                     @{{ user.profile.slack_username }}
                     <c-ui.badge size="sm">
-{{ user.profile.slack_id|default:"user not found" }}
+                        {{ user.profile.slack_id|default:"user not found" }}
                     </c-ui.badge>
                 </h3>
                 {% if user.profile %}
                     <div>
                         {% if user.profile.is_staff %}
                             <c-ui.badge size="sm" color="purple">
-{{ user.profile.staff_permissions.superuser|yesno:"Admin,Staff" }}
+                                {{ user.profile.staff_permissions.superuser|yesno:"Admin,Staff" }}
                             </c-ui.badge>
                         {% endif %}
                         {% if login_maybe %}
                             <c-ui.badge size="sm" color="{{ user.profile.is_allowed|yesno:'green,red' }}">
-{{ user.profile.is_allowed|yesno:"Login allowed,Login disallowed" }}
+                                {{ user.profile.is_allowed|yesno:"Login allowed,Login disallowed" }}
                             </c-ui.badge>
                         {% endif %}
                         <c-ui.badge size="sm" color="{{ user.profile.ysws_eligible|yesno:'green,red' }}">
-{{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}
+                            {{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}
                         </c-ui.badge>
                         {% if user.profile.referred_by %}
                             <c-ui.badge size="sm"
@@ -51,30 +51,24 @@ Back
                         </div>
                         <div>
                             <c-ui.badge>
-{{ project.get_project_type_display }}
+                                {{ project.get_project_type_display }}
                             </c-ui.badge>
                             {% if project.latest_ship %}
                                 <c-ui.badge>
-{{ project.latest_ship.get_status_display }}
+                                    {{ project.latest_ship.get_status_display }}
                                 </c-ui.badge>
                             {% endif %}
                         </div>
                         <div>
-                            <p>
-                        {{ project.time_logged|minutes_to_hours_minutes }} logged
-                            </p>
+                            <p>{{ project.time_logged|minutes_to_hours_minutes }} logged</p>
                         </div>
                     </c-ui.card>
                 {% endfor %}
             </div>
         {% else %}
             <c-ui.card class="bg-ink-900">
-                <h1 class="text-lg font-bold">
-                No projects found :(
-                </h1>
-                <p>
-                This user has not created any projects!
-                </p>
+                <h1 class="text-lg font-bold">No projects found :(</h1>
+                <p>This user has not created any projects!</p>
             </c-ui.card>
         {% endif %}
     </div>
@@ -98,7 +92,7 @@ Back
                                     <a href="{% url 'admin.users.detail' id=referral.user.id %}"
                                        class="flex items-center gap-2">
                                         <c-ui.avatar size="sm" src="{{ referral.slack_pfp_url }}" />
-                                @{{ referral.slack_username }}
+                                        @{{ referral.slack_username }}
                                     </a>
                                 </td>
                                 <td>{{ referral.time_logged|minutes_to_hours_minutes }} / 1h</td>
@@ -127,12 +121,8 @@ Back
             </c-ui.card>
         {% else %}
             <c-ui.card class="bg-ink-900">
-                <h1 class="text-lg font-bold">
-                No referrals found :(
-                </h1>
-                <p>
-                This user hasn't referred anyone yet!
-                </p>
+                <h1 class="text-lg font-bold">No referrals found :(</h1>
+                <p>This user hasn't referred anyone yet!</p>
             </c-ui.card>
         {% endif %}
     </div>
@@ -151,18 +141,15 @@ Back
                     </thead>
                     <tbody>
                         <tr>
-
                             {% with user.profile.staff_permissions.superuser as val %}
                                 <td>Superuser</td>
                                 <td>
                                     <c-ui.badge color="{{ val|yesno:'green,red' }}">
-                                    {{ val }}
+                                        {{ val }}
                                     </c-ui.badge>
                                 </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
+                                <td></td>
+                                <td></td>
                             {% endwith %}
                         </tr>
                     </tbody>
@@ -170,12 +157,8 @@ Back
             </c-ui.card>
         {% else %}
             <c-ui.card class="bg-ink-900">
-                <h1 class="text-lg font-bold">
-                No referrals found :(
-                </h1>
-                <p>
-                This user hasn't referred anyone yet!
-                </p>
+                <h1 class="text-lg font-bold">No referrals found :(</h1>
+                <p>This user hasn't referred anyone yet!</p>
             </c-ui.card>
         {% endif %}
     </div>
@@ -186,7 +169,7 @@ Back
                 {% csrf_token %}
                 <input type="hidden" name="action" value="toggle_is_allowed">
                 <c-ui.button type="submit">
-Toggle allowed state
+                    Toggle allowed state
                 </c-ui.button>
             </form>
         </div>

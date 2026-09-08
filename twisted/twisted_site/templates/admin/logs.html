@@ -1,19 +1,14 @@
 <c-base>
     <div>
         <div class="mb-4">
-            <h1 class="text-center md:text-left me-4 font-semibold text-3xl mt-auto">
-            Audit Logs ({{ log_count }})
-            </h1>
-            <p class="italic">
-            are others doing something naughty..?
-            </p>
+            <h1 class="text-center md:text-left me-4 font-semibold text-3xl mt-auto">Audit Logs ({{ log_count }})</h1>
+            <p class="italic">are others doing something naughty..?</p>
             <div class="mt-2">
                 <c-ui.pagination :page_obj="logs" />
             </div>
         </div>
         <div class="mb-4">
             <form action="">
-
             </form>
         </div>
         <div>
@@ -23,56 +18,49 @@
                         <div class="flex gap-4 mb-1">
                             <div class="flex gap-2">
                                 <img class="size-6 rounded-md" src="{{ log.user.profile.slack_pfp_url }}">
-                                <span class="font-bold">
-                            {{ log.user.profile.slack_username }}
-                                </span>
+                                <span class="font-bold">{{ log.user.profile.slack_username }}</span>
                             </div>
                             <div>
                                 {% if log.pii %}
                                     <c-ui.badge color="red">
-PII: Yes
+                                        PII: Yes
                                     </c-ui.badge>
                                 {% else %}
                                     <c-ui.badge>
-PII: No
+                                        PII: No
                                     </c-ui.badge>
                                 {% endif %}
                             </div>
                             <div title="your local time">
                                 <c-ui.badge>
-                            {{ log.timestamp }}
+                                    {{ log.timestamp }}
                                 </c-ui.badge>
                             </div>
                         </div>
                         <div class="flex gap-2">
                             <c-ui.badge>
-                        {{ log.post|yesno:"POST,GET" }}
+                                {{ log.post|yesno:"POST,GET" }}
                             </c-ui.badge>
-                            <span>
-                        {{ log.path }}
-                            </span>
+                            <span>{{ log.path }}</span>
                         </div>
                         {% if log.additional_context %}
                             <div>
                                 <label class="text-white/40 uppercase text-xs">Additional info</label>
                                 <div>
-
                                     {% for key, val in log.additional_context.items %}
                                         <div class="flex gap-1">
                                             {% if key|slice:"-5:" == "__img" %}
                                                 <c-ui.badge>
-                                {{ key|slice:":-5" }}
+                                                    {{ key|slice:":-5" }}
                                                 </c-ui.badge>
                                                 <span>
                                                     <img src="{{ val }}" alt="{{ key }}" class="size-6 rounded-md">
                                                 </span>
                                             {% else %}
                                                 <c-ui.badge>
-                                {{ key }}
+                                                    {{ key }}
                                                 </c-ui.badge>
-                                                <span>
-                                {{ val }}
-                                                </span>
+                                                <span>{{ val }}</span>
                                             {% endif %}
                                         </div>
                                     {% endfor %}
