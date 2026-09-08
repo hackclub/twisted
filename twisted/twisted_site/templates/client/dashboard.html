@@ -61,8 +61,7 @@
                         Twisted
                     </button>
                     <div id="start-menu"
-                         style="display: none"
-                         class="z-10000 fixed bottom-13 left-5 border-2 border-border shadow-[2px_2px_0px_0px] shadow-accent rounded-md">
+                         class="z-10000 fixed bottom-13 left-5 hidden border-2 border-border shadow-[2px_2px_0px_0px] shadow-accent rounded-md">
                         <div class="flex h-80">
                             <div class="w-44 bg-card p-3 pt-10 flex flex-col rounded-md">
                                 <div class="text-center mb-3 rounded-lg">
@@ -490,13 +489,13 @@
     function toggleStartMenu(event) {
         event.stopPropagation();
         const menu = document.getElementById("start-menu");
-        menu.style.display = menu.style.display === "none" ? "block" : "none";
+        menu.classList.toggle("hidden");
     }
 
     document.addEventListener("click", (e) => {
         const menu = document.getElementById("start-menu");
-        if (menu.style.display !== "none" && !menu.contains(e.target)) {
-            menu.style.display = "none";
+        if (!menu.classList.contains("hidden") && !menu.contains(e.target)) {
+            menu.classList.add("hidden");
         }
     });
 
