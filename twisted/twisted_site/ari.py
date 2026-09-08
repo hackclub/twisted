@@ -114,7 +114,7 @@ def send_ship(ship: ProjectShip):
     journals = []
     orm_journals: Iterable[Journal] = ship.project.journals.all()
     for journal in orm_journals:
-        content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"
+        content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
             {
                 "at": journal.created_at.isoformat(),
@@ -146,7 +146,7 @@ def send_ship(ship: ProjectShip):
 
 
 def get_project_status(project: Project):
-    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")
+    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
     _resp = r.content
     r.raise_for_status()
     return r.json()

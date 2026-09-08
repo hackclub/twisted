@@ -67,13 +67,13 @@ class AdminView(View):
                 href=resolve_url("admin.logs") + "?page=1",
             ),
         ]
-        context["profile"] = self.request.user.profile
+        context["profile"] = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         return context
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:
+        if not request.user.profile.is_staff:  # pyright: ignore[reportAttributeAccessIssue]
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,

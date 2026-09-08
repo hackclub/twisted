@@ -111,7 +111,7 @@ class Project(models.Model):
 
     def time_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
                 minutes += journal.minutes_worked
@@ -121,7 +121,7 @@ class Project(models.Model):
 
     def hackatime_logged(self, include_all_minutes=False):
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             if journal.type != "hackatime":
                 continue
             if include_all_minutes:
@@ -141,7 +141,7 @@ class Project(models.Model):
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
     def latest_ship(self):
-        ship = self.ships.order_by("-created_at").first()
+        ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         return ship
 
     def is_shipped(self):
@@ -205,7 +205,7 @@ class ProjectShip(models.Model):
     final_audit_note = models.TextField(blank=True, default="")
 
     def __str__(self):
-        return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute]
+        return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
 
 class Pathway(models.Model):
@@ -273,7 +273,7 @@ class Pathway(models.Model):
                 mins_remaining -= mins_donated
                 pathway_totals[p_id] = mins_completed + mins_donated
 
-        return pathway_totals[self.id]
+        return pathway_totals[self.id]  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
@@ -331,7 +331,7 @@ class Pathway(models.Model):
 
         # Extract only this pathway's result for each participant
         return {
-            user_id: totals.get(self.id, 0)
+            user_id: totals.get(self.id, 0)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             for user_id, totals in user_pathway_totals.items()
         }
 

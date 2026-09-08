@@ -35,7 +35,7 @@ class SlackBot:
         if blocks is not None:
             payload["blocks"] = blocks
 
-        return self.client.chat_postMessage(**payload)
+        return self.client.chat_postMessage(**payload)  # ty:ignore[invalid-argument-type] # pyright: ignore[reportArgumentType, reportCallIssue]
 
     def send_message(
         self,

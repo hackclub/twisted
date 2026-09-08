@@ -125,13 +125,14 @@ class PathwayDetailView(AdminView):
         participants: list[dict[str, Any]] = [
             {
                 "user": user,
-                "mins": mins_per_participant[user.id],
+                "mins": mins_per_participant[user.id],  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 "percent": min(
-                    100, round(mins_per_participant[user.id] / pathway.min_mins * 100)
+                    100,
+                    round(mins_per_participant[user.id] / pathway.min_mins * 100),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 )
                 if pathway.min_mins
                 else 0,
-                "qualified": mins_per_participant[user.id] >= pathway.min_mins,
+                "qualified": mins_per_participant[user.id] >= pathway.min_mins,  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             }
             for user in users
         ]
