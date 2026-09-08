@@ -95,7 +95,7 @@ class AuthCallbackView(View):
             display_name = name
             avatar_url = os.environ["DEFAULT_PFP"]
 
-        profile, created = Profile.objects.get_or_create(user=user)  # ty:ignore[unresolved-attribute]
+        profile, created = Profile.objects.get_or_create(user=user)
         profile.verification_status = verification_status
         profile.slack_id = slack_id
         profile.slack_username = display_name
