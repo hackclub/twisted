@@ -55,11 +55,9 @@
                     <div id="rsvp">
                         {% if login_enabled != "false" %}
                             {% if user.is_authenticated %}
-                                <a href="{% url 'dashboard' %}">
-                                    <button type="button"
-                                            class="w-full sm:w-auto border border-primary bg-primary px-6 sm:px-10 py-3 font-vintage text-xl sm:text-2xl font-bold text-primary-foreground shadow-xs shadow-white transition hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-sm active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">
-                                        enter twisted →
-                                    </button>
+                                <a href="{% url 'dashboard' %}"
+                                   class="inline-block w-full sm:w-auto border border-primary bg-primary px-6 sm:px-10 py-3 font-vintage text-xl sm:text-2xl font-bold text-primary-foreground text-center shadow-xs shadow-white transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-sm active:translate-x-1 active:translate-y-1 active:shadow-none">
+                                    enter twisted →
                                 </a>
                             {% else %}
                                 <form method="post" action="{% url 'login' %}">

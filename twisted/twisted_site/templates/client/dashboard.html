@@ -193,8 +193,9 @@
         <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
     </audio>
     <template id="taskbutton-template">
-        <button onclick="focusWindow(this.dataset.winId)"
-                class="flex items-center gap-1 !bg-twisted-600 !text-absolute-white text-sm !px-2 !py-1 !border-2 !border-t-twisted-200 !border-l-twisted-200 !border-r-dark-black !border-b-dark-black max-w-40">
+        <button type="button"
+                onclick="focusWindow(this.dataset.winId)"
+                class="flex items-center gap-1 bg-twisted-600! text-absolute-white! text-sm px-2! py-1! border-2! border-t-twisted-200! border-l-twisted-200! border-r-dark-black! border-b-dark-black! max-w-40">
             <img src="{% static 'images/round-square.jpg' %}"
                  class="size-4 object-cover shrink-0">
             <span class="truncate taskbtn-title"></span>

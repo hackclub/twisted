@@ -25,23 +25,22 @@
                     {% if project.user == request.user %}
                         {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged > 60 %}
                             {% if not project.is_shipped %}
-                                <a href="{% url 'fr.projects.ship' project.id %}">
-                                    <button class="border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
-                                        ship project
-                                    </button>
+                                <a href="{% url 'fr.projects.ship' project.id %}"
+                                   class="inline-block border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
+                                    ship project
                                 </a>
                             {% endif %}
                         {% endif %}
                         {% if not project.is_shipped %}
-                            <a href="{% url 'fr.projects.settings' project.id %}">
-                                <button class="border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px">
-                                    Settings
-                                </button>
+                            <a href="{% url 'fr.projects.settings' project.id %}"
+                               class="inline-block border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px">
+                                Settings
                             </a>
                         {% endif %}
                     {% endif %}
                     <div class="group relative pb-1">
-                        <button class="inline-flex items-center justify-center border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
+                        <button type="button"
+                                class="inline-flex items-center justify-center border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
                                 data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
                                 onclick="copyShareLink(this, true)">Copy share link</button>
                         <div class="absolute right-0 top-full z-10 hidden w-max max-w-sm cursor-pointer break-all border border-border bg-card px-2 py-1 text-xs text-muted-foreground group-hover:block"
