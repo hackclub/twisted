@@ -278,7 +278,6 @@
             });
             realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
                 frame = realWin.querySelector(".src-frame");
-                frame.src = frame.src;
             });
             realWin.querySelector(".close-button").addEventListener("mouseup", () => {
                 realWin.remove();
@@ -334,18 +333,24 @@
         }
 
         function focusWindow(id) {
-            document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("bg-twisted-999!"));
-            const win = document.querySelector('.window[data-win-id="' + id + '"]');
+            document.querySelectorAll("#taskbar-windows button").forEach((b) => {
+                b.classList.remove("bg-twisted-999!")
+            });
+            const win = document.querySelector(`window[data-win-id="${id}"]`);
 
             container = document.getElementById("windows-container");
             container.moveBefore(win, null);
 
             document.querySelectorAll(".window").forEach((w) => {
                 w.style.zIndex = "";
-                w.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "none"));
+                w.querySelectorAll(".resize-handle").forEach((h) => {
+                    h.style.pointerEvents = "none"
+                });
             });
             win.style.zIndex = "100";
-            win.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "auto"));
+            win.querySelectorAll(".resize-handle").forEach((h) => {
+                h.style.pointerEvents = "auto"
+            });
 
             const btn = document.querySelector(`#taskbar-windows button[data-win-id="${id}"]`);
             if (btn) btn.classList.add("bg-twisted-999!");
@@ -369,7 +374,7 @@
             }
 
             function onMove(e) {
-                if (currentMaximisedWindow != null && currentMaximisedWindow.win == mywindow) {
+                if (currentMaximisedWindow != null && currentMaximisedWindow.win === mywindow) {
                     return;
                 }
                 if (!dragging) return;
@@ -451,10 +456,10 @@
                             newTop = startTop + (startHeight - newHeight);
                         }
 
-                        mywindow.style.left = newLeft + "px";
-                        mywindow.style.top = newTop + "px";
-                        mywindow.style.width = newWidth + "px";
-                        mywindow.style.height = newHeight + "px";
+                        mywindow.style.left = `${newLeft}px`;
+                        mywindow.style.top = `${newTop}px`;
+                        mywindow.style.width = `${newWidth}px`;
+                        mywindow.style.height = `${newHeight}px`;
                     }
 
                     function onUp() {
@@ -477,7 +482,7 @@
             const m = now.getMinutes().toString().padStart(2, "0");
             const ampm = h >= 12 ? "PM" : "AM";
             h = h % 12 || 12;
-            document.getElementById("taskbar-clock").textContent = h + ":" + m + " " + ampm;
+            document.getElementById("taskbar-clock").textContent = `${h}:${m} ${ampm}`;
         }
 
         function toggleStartMenu(event) {
