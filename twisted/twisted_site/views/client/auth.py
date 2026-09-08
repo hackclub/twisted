@@ -4,6 +4,7 @@ import os
 import secrets
 
 import requests
+from authlib.integrations.base_client import MismatchingStateError
 from authlib.integrations.django_client import OAuth
 from django.contrib.auth import get_user_model, login, logout
 from django.http import JsonResponse
@@ -50,7 +51,14 @@ class AuthCallbackView(View):
                 {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
             )
 
-        token = oauth.hca.authorize_access_token(request)
+        try:
+            token = oauth.hca.authorize_access_token(request)
+        except MismatchingStateError:
+            return JsonResponse(
+                {
+                    "error": "State mismatch; Auth failed. This may be due to a timeout, try again!"
+                }
+            )
 
         userinfo = token.get("userinfo")
         if not userinfo:
