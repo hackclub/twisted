@@ -1,3 +1,5 @@
+from typing import cast, override
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
@@ -160,9 +162,9 @@ class Project(models.Model):
     def hackatime_time_unjournaled(self):
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
-    def latest_ship(self):
+    def latest_ship(self) -> "ProjectShip | None":
         ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-        return ship
+        return cast("ProjectShip | None", ship)
 
     def is_shipped(self):
         latest_ship = self.latest_ship()

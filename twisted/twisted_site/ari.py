@@ -3,7 +3,7 @@ import hmac
 import json
 import time
 from collections.abc import Iterable
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import requests
 from django.conf import settings
@@ -112,7 +112,7 @@ def send_ship(ship: ProjectShip):
     }
 
     journals = []
-    orm_journals: Iterable[Journal] = ship.project.journals.all()  # pyrefly: ignore[missing-attribute]
+    orm_journals = cast(Iterable[Journal], ship.project.journals.all())  # pyrefly: ignore[missing-attribute]
     for journal in orm_journals:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(

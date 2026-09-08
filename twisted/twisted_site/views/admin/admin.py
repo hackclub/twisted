@@ -16,7 +16,7 @@ class SidebarLink:
 
 # Create your views here.
 class AdminView(View):
-    def get_context_data(self, page, subpage=None) -> dict:
+    def get_context_data(self, page, subpage=None) -> dict[str, Any]:
         context = {}
         context["page"] = page
         context["subpage"] = subpage
