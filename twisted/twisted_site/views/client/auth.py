@@ -7,7 +7,7 @@ import requests
 from authlib.integrations.base_client import MismatchingStateError
 from authlib.integrations.django_client import OAuth
 from django.contrib.auth import get_user_model, login, logout
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.views import View
 
@@ -31,7 +31,7 @@ oauth.register(
 
 
 class LoginView(View):
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         if (
             request.user.is_authenticated
             and request.user.profile.hackatime_access_token
@@ -45,7 +45,7 @@ class LoginView(View):
 
 
 class AuthCallbackView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if os.environ.get("LOGIN_ENABLED") == "false":
             return JsonResponse(
                 {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
@@ -153,7 +153,7 @@ class AuthCallbackView(View):
 
 
 class HackatimeCallbackView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if os.environ.get("LOGIN_ENABLED") == "false":
             return JsonResponse("not allowed!")
 
@@ -203,6 +203,6 @@ class HackatimeCallbackView(View):
 
 
 class LogoutView(View):
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         logout(request)
         return redirect("homepage")

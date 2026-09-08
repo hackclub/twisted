@@ -1,3 +1,6 @@
+from typing import Any, cast
+
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 
@@ -6,7 +9,7 @@ from ...models import Project
 
 # Create your views here.
 class DashboardView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
         profile = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]

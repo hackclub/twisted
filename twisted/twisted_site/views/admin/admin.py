@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, override
 
+from django.http import HttpRequest, HttpResponseBase
 from django.shortcuts import redirect, resolve_url
 from django.views import View
 
@@ -72,7 +73,9 @@ class AdminView(View):
         return context
 
     @override
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(
+        self, request: HttpRequest, *args: object, **kwargs: object
+    ) -> HttpResponseBase:
         if request.user.is_anonymous:
             return redirect("homepage")
         if not request.user.profile.is_staff:  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]

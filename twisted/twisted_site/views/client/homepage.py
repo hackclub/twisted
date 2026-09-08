@@ -1,12 +1,13 @@
 import os
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views import View
 
 
 # Create your views here.
 class HomepageView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if os.environ.get("LOGIN_ENABLED") == "false":
             login_enabled = False
         else:

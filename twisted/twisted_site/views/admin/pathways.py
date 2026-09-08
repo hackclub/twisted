@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 from django.contrib import messages
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -11,7 +12,7 @@ from .admin import AdminView
 
 # Create your views here.
 class PathwayListView(AdminView):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="pathways")
         context["pathways"] = Pathway.objects.all().order_by("start")
 
@@ -38,7 +39,12 @@ class PathwayListView(AdminView):
 
 
 class PathwayCreateView(AdminView):
-    def get(self, request, error=None, extracontext=None):
+    def get(
+        self,
+        request: HttpRequest,
+        error: str | None = None,
+        extracontext: dict[str, Any] | None = None,  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         if extracontext is None:
             extracontext = {}
 
@@ -110,7 +116,7 @@ class PathwayCreateView(AdminView):
 
 
 class PathwayDetailView(AdminView):
-    def get(self, request, id):
+    def get(self, request: HttpRequest, id: int) -> HttpResponse:
         context = self.get_context_data(page="pathways", subpage="detail")
         pathway = get_object_or_404(Pathway, id=id)
         context["pathway"] = pathway

@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator
 from django.db.models.query_utils import Q
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
@@ -9,8 +10,8 @@ from .admin import AdminView
 
 # Create your views here.
 class AuditLogsView(AdminView):
-    def get(self, request):
-        page_number = request.GET.get("page")
+    def get(self, request: HttpRequest) -> HttpResponse:
+        page_number: str | None = request.GET.get("page")
         if page_number is None:
             return redirect(self.request.get_full_path() + "?page=1")
 

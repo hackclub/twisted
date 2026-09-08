@@ -1,5 +1,6 @@
 import json
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
@@ -9,7 +10,7 @@ from .admin import AdminView
 
 # Create your views here.
 class DashboardView(AdminView):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="dashboard")
         if self.request.user.is_anonymous:
             return redirect("homepage")

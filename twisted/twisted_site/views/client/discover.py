@@ -1,4 +1,5 @@
 from django.core.paginator import Paginator
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
@@ -8,7 +9,7 @@ PROJECTS_PER_PAGE = 120
 
 
 class DiscoverView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
