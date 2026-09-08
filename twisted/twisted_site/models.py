@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import TextField

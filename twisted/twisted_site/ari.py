@@ -3,7 +3,7 @@ import hmac
 import json
 import time
 from collections.abc import Iterable
-from typing import Literal
+from typing import Any, Literal
 
 import requests
 from django.conf import settings
@@ -163,7 +163,7 @@ _ARI_DECISION_TO_SHIP_STATUS = {
 }
 
 
-def ship_passes_from_status(status: dict | None) -> tuple[str, str]:
+def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:
     """Maps an ARI /status response into (first_pass_status, second_pass_status),
     using the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes)."""
     if not status:
