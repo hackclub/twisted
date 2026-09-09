@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponseBase
 from django.shortcuts import redirect, resolve_url
 from django.views import View
 
-from ...models import AuditLog, ProfileStaffPermissions
+from twisted_site.models import AuditLog, ProfileStaffPermissions
 
 
 @dataclass

@@ -11,7 +11,7 @@ from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
 from django.http import HttpRequest, JsonResponse
 from django.utils.text import slugify
 
-from ..models import UploadedFile
+from twisted_site.models import UploadedFile
 
 logger = logging.getLogger(__name__)
 

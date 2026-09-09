@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
-from ...models import Project
+from twisted_site.models import Project
 
 PROJECTS_PER_PAGE = 120
 

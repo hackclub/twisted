@@ -7,15 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 from requests import HTTPError, RequestException
 
-from ... import ari, hackatime
-from ...models import (
-    PROJECT_TYPE_CHOICES,
-    Profile,
-    Project,
-    ProjectShip,
-    TemplateContext,
-)
-from ...slack import log_to_channel
+from twisted_site import ari, hackatime
+from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip, TemplateContext
+from twisted_site.slack import log_to_channel
 
 
 def _or_none(value: str) -> str:

@@ -6,9 +6,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from ..ari import verify_webhook_signature
-from ..models import Project
-from ..slack import send_blocks
+from twisted_site.ari import verify_webhook_signature
+from twisted_site.models import Project
+from twisted_site.slack import send_blocks
 
 
 def _escape_mrkdwn(text: str) -> str:

@@ -5,8 +5,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
-from ...models import PROJECT_TYPE_CHOICES, Profile, Project
-from ...slack import log_to_channel
+from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project
+from twisted_site.slack import log_to_channel
 
 
 # Create your views here.

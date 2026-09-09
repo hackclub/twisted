@@ -14,9 +14,9 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.views import View
 
-from ... import hackatime
-from ...models import Profile
-from ...slack import log_to_channel, slack_bot
+from twisted_site import hackatime
+from twisted_site.models import Profile
+from twisted_site.slack import log_to_channel, slack_bot
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ...models import Journal
+from twisted_site.models import Journal
 from .admin import AdminView
 
 

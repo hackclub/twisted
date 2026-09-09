@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ...models import ProjectShip
+from twisted_site.models import ProjectShip
 from .admin import AdminView
 
 

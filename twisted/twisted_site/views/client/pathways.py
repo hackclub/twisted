@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
-from ...models import Pathway, Profile
+from twisted_site.models import Pathway, Profile
 
 
 # Create your views here.
