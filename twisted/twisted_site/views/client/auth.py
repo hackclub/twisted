@@ -2,7 +2,7 @@ import hmac
 import logging
 import os
 import secrets
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 import requests
 from authlib.integrations.base_client import (  # pyrefly: ignore[untyped-import]
