@@ -18,9 +18,7 @@ ARI_WEBHOOK_SECRET = cast(str, settings.ARI_WEBHOOK_SECRET)
 WEBHOOK_MAX_AGE_SECONDS = 5 * 60
 
 
-def verify_webhook_signature(
-    body: bytes, timestamp: str, delivery_id: str, signature: str
-) -> bool:
+def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, signature: str) -> bool:
     """Verifies an outbound delivery from Ari (the X-Ari-Signature/-Timestamp/-Delivery-Id
     headers on review.* and ship.updated webhooks). Signed with ARI_WEBHOOK_SECRET, which is
     separate from ARI_SIGNING_SECRET (that one signs requests we send to Ari)."""

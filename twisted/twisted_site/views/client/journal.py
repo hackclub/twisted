@@ -41,18 +41,14 @@ class NewProjectHackatimeJournal(View):
 
         context["log_minutes"] = log_minutes
 
-        return render(
-            request, "client/projects/journal/new_hackatime.html", context=context
-        )
+        return render(request, "client/projects/journal/new_hackatime.html", context=context)
 
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         project = get_object_or_404(Project, id=id)
         if project.user != request.user:
             return redirect("dashboard")
 
-        reduced_minutes = min(
-            project.hackatime_time_unjournaled(), HACKATIME_MAX_LOGGABLE_MINUTES
-        )
+        reduced_minutes = min(project.hackatime_time_unjournaled(), HACKATIME_MAX_LOGGABLE_MINUTES)
 
         if project.is_shipped():
             return redirect("fr.projects.detail", id)
@@ -133,9 +129,7 @@ class NewProjectUntrackedJournal(View):
             "logging untracked journals may lead to heavy time deflation. for hardware projects, consider using lapse and sync to hackatime."
         )
 
-        return render(
-            request, "client/projects/journal/new_untracked.html", context=context
-        )
+        return render(request, "client/projects/journal/new_untracked.html", context=context)
 
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         project = get_object_or_404(Project, id=id)

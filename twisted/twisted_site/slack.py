@@ -21,9 +21,7 @@ def send_blocks(
     text: str = " ",
     **kwargs: Any,  # pyrefly: ignore[explicit-any]
 ) -> SlackResponse:
-    return slack_bot.chat_postMessage(
-        channel=channel, text=text, blocks=blocks, **kwargs
-    )
+    return slack_bot.chat_postMessage(channel=channel, text=text, blocks=blocks, **kwargs)
 
 
 def log_to_channel(message: str) -> None:

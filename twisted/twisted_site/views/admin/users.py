@@ -63,9 +63,7 @@ class UserDetailView(AdminView):
         if request.POST.get("action") == "toggle_is_allowed":
             prof = user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             prof.is_allowed = not prof.is_allowed
-            self.audit_log.additional_context["is_allowed"] = (
-                f"Set to {prof.is_allowed}"
-            )
+            self.audit_log.additional_context["is_allowed"] = f"Set to {prof.is_allowed}"
             prof.save()
             resp = redirect(self.request.path)
             resp["HX-Trigger"] = json.dumps(

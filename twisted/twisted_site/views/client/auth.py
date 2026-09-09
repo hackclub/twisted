@@ -36,33 +36,26 @@ oauth.register(
 class LoginView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         if (
-            request.user.is_authenticated
-            and request.user.profile.hackatime_access_token  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            request.user.is_authenticated and request.user.profile.hackatime_access_token  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         ):
             return redirect("dashboard")
 
         redirect_uri = os.environ["HCA_REDIRECT_URI"]
 
-        response = cast(
-            HttpResponse, oauth.hca.authorize_redirect(request, redirect_uri)
-        )
+        response = cast(HttpResponse, oauth.hca.authorize_redirect(request, redirect_uri))
         return response
 
 
 class AuthCallbackView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         if os.environ.get("LOGIN_ENABLED") == "false":
-            return JsonResponse(
-                {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
-            )
+            return JsonResponse({"error": "Not allowed! DM @kavyansh. if this is a mistake!"})
 
         try:
             token = cast(dict[str, Any], oauth.hca.authorize_access_token(request))
         except MismatchingStateError:
             return JsonResponse(
-                {
-                    "error": "State mismatch; Auth failed. This may be due to a timeout, try again!"
-                }
+                {"error": "State mismatch; Auth failed. This may be due to a timeout, try again!"}
             )
 
         userinfo = cast(dict[str, Any] | None, token.get("userinfo"))
@@ -95,9 +88,7 @@ class AuthCallbackView(View):
         )
 
         try:
-            slack_user = cast(
-                dict[str, Any], slack_bot.users_info(user=slack_id)["user"]
-            )
+            slack_user = cast(dict[str, Any], slack_bot.users_info(user=slack_id)["user"])
             assert isinstance(slack_user, dict), "Slack users_info missing user"
             slack_profile = slack_user["profile"]
             assert isinstance(slack_profile, dict), "Slack user missing profile"
@@ -134,9 +125,7 @@ class AuthCallbackView(View):
         profile.save()
 
         if os.environ.get("LOGIN_ENABLED") == "maybe" and not profile.is_allowed:
-            return JsonResponse(
-                {"error": "Not allowed! DM @kavyansh. if this is a mistake!"}
-            )
+            return JsonResponse({"error": "Not allowed! DM @kavyansh. if this is a mistake!"})
 
         login(request, user)
 
@@ -152,9 +141,7 @@ class AuthCallbackView(View):
                 f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}"
             )
 
-        log_to_channel(
-            f":ms-arrow-up-right: *{profile.slack_username}* just logged in!"
-        )
+        log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
 
         return redirect("dashboard")
 

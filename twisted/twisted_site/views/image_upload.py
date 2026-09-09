@@ -29,14 +29,10 @@ s3 = boto3.client(
 @login_required
 def upload_file(request: HttpRequest) -> JsonResponse:
     if request.method != "POST":
-        return JsonResponse(
-            {"status": "error", "reason": "Invalid request: method not POST"}
-        )
+        return JsonResponse({"status": "error", "reason": "Invalid request: method not POST"})
 
     if "file" not in request.FILES:
-        return JsonResponse(
-            {"status": "error", "reason": "Invalid request: No file found"}
-        )
+        return JsonResponse({"status": "error", "reason": "Invalid request: No file found"})
 
     file = request.FILES["file"]
     assert isinstance(file, DjangoUploadedFile)
@@ -55,9 +51,7 @@ def upload_file(request: HttpRequest) -> JsonResponse:
     assert file.size is not None
     file_size_mb = file.size / (1024 * 1024)
     if file_size_mb > max_file_mb:
-        return JsonResponse(
-            {"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"}
-        )
+        return JsonResponse({"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"})
 
     response_data = file_uploader(request, file)
     # Handle upload errors

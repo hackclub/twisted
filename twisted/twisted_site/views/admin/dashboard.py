@@ -32,9 +32,7 @@ class DashboardView(AdminView):
             if journal.project.is_shipped():
                 hours_shipped += hours
                 hours_shipped_chart[date] = hours_shipped_chart.get(date, 0) + hours
-                shipped_project_type[journal.project.get_project_type_display()] += (
-                    hours
-                )
+                shipped_project_type[journal.project.get_project_type_display()] += hours
 
         context["hours_logged"] = round(hours_logged, 2)
         context["hours_logged_chart"] = json.dumps(

@@ -47,14 +47,10 @@ SECURE_HSTS_PRELOAD = not DEBUG
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 allowed_hosts_raw = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost")
-ALLOWED_HOSTS = [
-    host.strip() for host in allowed_hosts_raw.split(",") if host.strip() != ""
-]
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_raw.split(",") if host.strip() != ""]
 
 
-csrf_origins_raw = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000"
-)
+csrf_origins_raw = os.getenv("CSRF_TRUSTED_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000")
 CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in csrf_origins_raw.split(",") if origin.strip() != ""
 ]

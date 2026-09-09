@@ -26,7 +26,9 @@ class UploadedFile(models.Model):
 
     @override
     def __str__(self) -> str:
-        return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
+        return (
+            f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
+        )
 
 
 # Create your models here.
@@ -195,9 +197,7 @@ JOURNAL_TYPES = {
 
 
 class Journal(models.Model):
-    project = models.ForeignKey(
-        Project, on_delete=models.PROTECT, related_name="journals"
-    )
+    project = models.ForeignKey(Project, on_delete=models.PROTECT, related_name="journals")
     type = models.CharField(max_length=100, choices=JOURNAL_TYPES)
 
     content = TextField()
@@ -227,9 +227,7 @@ class ProjectShip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    status = models.CharField(
-        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
-    )
+    status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
 
     note_to_maker = models.TextField(blank=True, default="")
     audit_note = models.TextField(blank=True, default="")
@@ -275,9 +273,7 @@ class Pathway(models.Model):
             return "in progress"
 
     def mins_spent(self, user: AbstractBaseUser) -> int:
-        pathways = Pathway.objects.order_by("start").values(
-            "id", "start", "end", "min_mins"
-        )
+        pathways = Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
         if not pathways.exists():
             return 0
 
@@ -322,9 +318,7 @@ class Pathway(models.Model):
             dict: {user_id: mins_spent}
         """
         # Fetch all pathways to accurately model the sequential time donation
-        pathways = list(
-            Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
-        )
+        pathways = list(Pathway.objects.order_by("start").values("id", "start", "end", "min_mins"))
         if len(pathways) == 0:
             return {}
 

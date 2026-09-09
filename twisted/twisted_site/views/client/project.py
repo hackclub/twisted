@@ -88,9 +88,7 @@ class ProjectSettings(View):
         context["profile"] = profile
 
         try:
-            context["hackatime_projects"] = hackatime.projects(
-                profile.hackatime_access_token
-            )
+            context["hackatime_projects"] = hackatime.projects(profile.hackatime_access_token)
         except HTTPError:
             no_projects: list[hackatime.HackatimeProject] = []
             context["hackatime_projects"] = no_projects
@@ -181,9 +179,7 @@ class SubmitProject(View):
             return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
         if project.is_shipped():
-            return self.get(
-                request, id, context={"info": "silly! you have already shipped."}
-            )
+            return self.get(request, id, context={"info": "silly! you have already shipped."})
 
         if project.playable_url == "":
             return redirect("fr.projects.detail", id)

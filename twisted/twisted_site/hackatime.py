@@ -25,9 +25,7 @@ class HackatimeProject:
     languages: list[str]
 
 
-def authhelper(
-    access_token: str, headers: dict[str, str] | None = None
-) -> dict[str, str]:
+def authhelper(access_token: str, headers: dict[str, str] | None = None) -> dict[str, str]:
     if headers is None:
         headers = {}
 

@@ -92,9 +92,7 @@ class PathwayCreateView(AdminView):
             return self.get(request, "No end time selected!", errcontext)
 
         if min_mins <= 0:
-            return self.get(
-                request, "Minimum minutes must be greater than zero!", errcontext
-            )
+            return self.get(request, "Minimum minutes must be greater than zero!", errcontext)
 
         current_tz_offset = datetime.now(timezone.get_current_timezone()).strftime("%z")
 
@@ -102,13 +100,9 @@ class PathwayCreateView(AdminView):
             f"{start_date} {start_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
 
-        end = datetime.strptime(
-            f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
-        )
+        end = datetime.strptime(f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z")
 
-        _ = Pathway.objects.create(
-            start=start, end=end, name=pathway_name, min_mins=min_mins
-        )
+        _ = Pathway.objects.create(start=start, end=end, name=pathway_name, min_mins=min_mins)
 
         messages.success(request, f'Successfully created Pathway for "{pathway_name}"!')
 
@@ -125,9 +119,7 @@ class PathwayDetailView(AdminView):
         self.audit_log.additional_context["pathway_name"] = pathway.name
 
         mins_per_participant = pathway.mins_spent_per_participant()
-        users = User.objects.filter(id__in=mins_per_participant.keys()).select_related(
-            "profile"
-        )
+        users = User.objects.filter(id__in=mins_per_participant.keys()).select_related("profile")
 
         participants: list[dict[str, Any]] = [  # pyrefly: ignore[explicit-any]
             {

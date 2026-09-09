@@ -24,9 +24,7 @@ urlpatterns = [
     ),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("dashboard/", client.DashboardView.as_view(), name="dashboard"),
-    path(
-        "dashboard/frame/projects/", client.ListProjects.as_view(), name="fr.projects"
-    ),
+    path("dashboard/frame/projects/", client.ListProjects.as_view(), name="fr.projects"),
     path(
         "dashboard/frame/projects/create/",
         client.CreateProject.as_view(),
@@ -62,17 +60,13 @@ urlpatterns = [
         client.DeleteJournal.as_view(),
         name="fr.projects.journals.delete",
     ),
-    path(
-        "dashboard/frame/pathways/", client.PathwaysView.as_view(), name="fr.pathways"
-    ),
+    path("dashboard/frame/pathways/", client.PathwaysView.as_view(), name="fr.pathways"),
     path(
         "dashboard/frame/referrals/",
         client.ReferralsView.as_view(),
         name="fr.referrals",
     ),
-    path(
-        "dashboard/frame/discover/", client.DiscoverView.as_view(), name="fr.discover"
-    ),
+    path("dashboard/frame/discover/", client.DiscoverView.as_view(), name="fr.discover"),
     path("admin/", admin.DashboardView.as_view(), name="admin.dash"),
     path("admin/users/", admin.UsersView.as_view(), name="admin.users"),
     path(
@@ -91,9 +85,7 @@ urlpatterns = [
         admin.PathwayCreateView.as_view(),
         name="admin.pathways.create",
     ),
-    path(
-        "admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"
-    ),
+    path("admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"),
     path("admin/shop/", admin.ShopView.as_view(), name="admin.shop"),
     path("admin/review/", admin.ReviewView.as_view(), name="admin.review"),
     path(

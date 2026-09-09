@@ -13,9 +13,7 @@ class DiscoverView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        projects = Project.objects.select_related("user", "user__profile").order_by(
-            "-created_at"
-        )
+        projects = Project.objects.select_related("user", "user__profile").order_by("-created_at")
 
         paginator = Paginator(projects, PROJECTS_PER_PAGE)
         page_obj = paginator.get_page(request.GET.get("page"))

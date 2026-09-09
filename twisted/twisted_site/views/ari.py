@@ -259,9 +259,7 @@ class AriView(View):
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
             if isinstance(raw_justification, dict):
-                ship.technical_features = raw_justification.get(
-                    "technical_features", ""
-                )
+                ship.technical_features = raw_justification.get("technical_features", "")
                 ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 
@@ -286,9 +284,7 @@ class AriView(View):
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
             if isinstance(raw_justification, dict):
-                ship.technical_features = raw_justification.get(
-                    "technical_features", ""
-                )
+                ship.technical_features = raw_justification.get("technical_features", "")
                 ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 
