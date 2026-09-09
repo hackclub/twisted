@@ -35,4 +35,4 @@ def log_to_channel(message: str) -> None:
         else:
             _ = slack_bot.chat_postMessage(channel=SLACK_LOG_CHANNEL, text=message)
     except SlackApiError:
-        logger.exception(f"Failed to log to Slack channel, message {message}")
+        logger.exception("Failed to log to Slack channel, message %s", message)
