@@ -82,7 +82,6 @@ def send_request(
     )
 
 
-# external_id = "twisted-{project.id}"
 def send_ship(ship: ProjectShip) -> None:
     if settings.DEBUG_REVIEW:
         return

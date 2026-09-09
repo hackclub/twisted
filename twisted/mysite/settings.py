@@ -197,7 +197,7 @@ LOGGING = {
     },
 }
 
-# Ari (Review)
+# Ari review integration
 # https://ari.hackclub.com/docs/webhooks
 ARI_INGEST_ENDPOINT = os.environ.get("ARI_INGEST_ENDPOINT")
 ARI_SIGNING_SECRET = os.environ.get("ARI_SIGNING_SECRET")
