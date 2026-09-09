@@ -282,9 +282,11 @@
             realWin.querySelector(".max-button").addEventListener("click", () => {
                 fullscreenWindow(realWin);
             });
-            realWin.querySelector(".title-bar-controls").addEventListener("mousedown", (event) => {
+            const stopDragStart = (event) => {
                 event.stopPropagation();
-            });
+            };
+            realWin.querySelector(".title-bar-controls").addEventListener("mousedown", stopDragStart);
+            realWin.querySelector(".title-bar-controls").addEventListener("pointerdown", stopDragStart);
             realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
                 frame = realWin.querySelector(".src-frame");
                 frame.contentWindow.location.reload();
@@ -368,6 +370,9 @@
 
         function dragWindow(mywindow) {
             const titleBar = mywindow.getElementsByClassName("title-bar")[0];
+            const frame = mywindow.querySelector(".src-frame");
+            // Required for reliable touch dragging; also stops the browser from hijacking the gesture (scrolling/zooming) mid-drag.
+            titleBar.style.touchAction = "none";
             let dragging = false,
                 startX = 0,
                 startY = 0,
@@ -375,7 +380,9 @@
                 origY = 0,
                 pendingX = 0,
                 pendingY = 0,
-                rafId = null;
+                rafId = null,
+                oldFramePointerEvents = "",
+                oldCursor = "";
 
             function apply() {
                 rafId = null;
@@ -388,7 +395,6 @@
                     return;
                 }
                 if (!dragging) return;
-                e.preventDefault();
                 const rect = mywindow.getBoundingClientRect();
                 let x = origX + (e.clientX - startX);
                 let y = origY + (e.clientY - startY);
@@ -404,27 +410,68 @@
                 if (rafId === null) rafId = requestAnimationFrame(apply);
             }
 
-            function onUp() {
+            function endDrag(e) {
+                if (!dragging) return;
                 dragging = false;
-                document.body.style.userSelect = "";
-                document.removeEventListener("mousemove", onMove);
-                document.removeEventListener("mouseup", onUp);
+                // Flush the last pending position so a fast flick doesn't drop its final move.
                 if (rafId !== null) {
                     cancelAnimationFrame(rafId);
                     rafId = null;
+                    mywindow.style.left = `${pendingX}px`;
+                    mywindow.style.top = `${pendingY}px`;
+                }
+                if (frame) frame.style.pointerEvents = oldFramePointerEvents;
+                document.body.style.userSelect = "";
+                document.body.style.cursor = oldCursor;
+                document.removeEventListener("pointermove", onMove);
+                document.removeEventListener("pointerup", endDrag);
+                document.removeEventListener("pointercancel", endDrag);
+                window.removeEventListener("blur", endDrag);
+                if (e && e.pointerId !== undefined && titleBar.hasPointerCapture && titleBar.hasPointerCapture(e.pointerId)) {
+                    try {
+                        titleBar.releasePointerCapture(e.pointerId);
+                    } catch {
+                        // ignore - capture may already be released
+                    }
                 }
             }
 
-            titleBar.addEventListener("mousedown", (e) => {
+            titleBar.addEventListener("pointerdown", (e) => {
+                // Only drag with the primary (left / touch) button.
+                if (e.button !== undefined && e.button !== 0) return;
+                if (e.isPrimary === false) return;
+                if (currentMaximisedWindow != null && currentMaximisedWindow.win === mywindow) return;
+                // Don't start a drag from the title-bar buttons (controls also stopPropagation).
+                if (e.target.closest?.("button")) return;
                 e.preventDefault();
+                if (mywindow.dataset.winId) focusWindow(mywindow.dataset.winId);
                 dragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
                 origX = mywindow.offsetLeft;
                 origY = mywindow.offsetTop;
+                pendingX = origX;
+                pendingY = origY;
+                // Keep receiving pointermove even when the cursor outruns the
+                // title bar or passes over the iframe (which would otherwise
+                // swallow mouse events and stall the drag).
+                try {
+                    titleBar.setPointerCapture(e.pointerId);
+                } catch (_) {
+                    // Fall back to document listeners below.
+                }
+                // Belt-and-braces: suppress iframe hit-testing so document still sees the pointer.
+                if (frame) {
+                    oldFramePointerEvents = frame.style.pointerEvents;
+                    frame.style.pointerEvents = "none";
+                }
+                oldCursor = document.body.style.cursor;
+                document.body.style.cursor = "grabbing";
                 document.body.style.userSelect = "none";
-                document.addEventListener("mousemove", onMove);
-                document.addEventListener("mouseup", onUp);
+                document.addEventListener("pointermove", onMove);
+                document.addEventListener("pointerup", endDrag);
+                document.addEventListener("pointercancel", endDrag);
+                window.addEventListener("blur", endDrag);
             });
         }
 
