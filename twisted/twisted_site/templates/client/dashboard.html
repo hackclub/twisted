@@ -226,8 +226,8 @@
         (event) => {
             if (event.origin !== window.location.origin) return;
             const data = event.data;
-            if (data.type != "internal") return;
-            if (data.action == "open") {
+            if (data.type !== "internal") return;
+            if (data.action === "open") {
                 let w = 600,
                     h = 600;
                 if (data.width) w = data.width;
@@ -258,13 +258,13 @@
         if (y === null) y = Math.random() * (window.innerHeight - w);
 
 
-        win.style.left = x + "px";
-        win.style.top = y + "px";
-        win.style.width = w + "px";
-        win.style.height = h + "px";
+        win.style.left = `${x}px`;
+        win.style.top = `${y}px`;
+        win.style.width = `${w}px`;
+        win.style.height = `${h}px`;
         container.appendChild(clone);
 
-        const realWin = container.querySelector('[data-win-id="' + id + '"]');
+        const realWin = container.querySelector(`[data-win-id="${id}"]`);
 
         // Taskbar button with round png icon
         const taskbutton_template = document.getElementById("taskbutton-template");
@@ -286,7 +286,7 @@
         });
         realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
             frame = realWin.querySelector(".src-frame");
-            frame.src = frame.src;
+            frame.src = frame.src; // TODO: better solution wen
         });
         realWin.querySelector(".close-button").addEventListener("mouseup", () => {
             realWin.remove();
@@ -342,21 +342,21 @@
     }
 
     function focusWindow(id) {
-        document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
-        const win = document.querySelector('.window[data-win-id="' + id + '"]');
+        document.querySelectorAll("#taskbar-windows button").forEach((b) => {b.classList.remove("bg-twisted-999!")});
+        const win = document.querySelector(`.window[data-win-id="${id}"]`);
 
         container = document.getElementById("windows-container");
         container.moveBefore(win, null);
 
         document.querySelectorAll(".window").forEach((w) => {
             w.style.zIndex = "";
-            w.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "none"));
+            w.querySelectorAll(".resize-handle").forEach((h) => {h.style.pointerEvents = "none"});
         });
         win.style.zIndex = "100";
-        win.querySelectorAll(".resize-handle").forEach((h) => (h.style.pointerEvents = "auto"));
+        win.querySelectorAll(".resize-handle").forEach((h) => {h.style.pointerEvents = "auto"});
 
-        const btn = document.querySelector('#taskbar-windows button[data-win-id="' + id + '"]');
-        if (btn) btn.classList.add("!bg-twisted-999");
+        const btn = document.querySelector(`#taskbar-windows button[data-win-id="${id}"]`);
+        if (btn) btn.classList.add("bg-twisted-999!");
     }
 
     function dragWindow(mywindow) {
@@ -372,12 +372,12 @@
 
         function apply() {
             rafId = null;
-            mywindow.style.left = pendingX + "px";
-            mywindow.style.top = pendingY + "px";
+            mywindow.style.left = `${pendingX}px`;
+            mywindow.style.top = `${pendingY}px`;
         }
 
         function onMove(e) {
-            if (currentMaximisedWindow != null && currentMaximisedWindow.win == mywindow) {
+            if (currentMaximisedWindow != null && currentMaximisedWindow.win === mywindow) {
                 return;
             }
             if (!dragging) return;
@@ -459,10 +459,10 @@
                         newTop = startTop + (startHeight - newHeight);
                     }
 
-                    mywindow.style.left = newLeft + "px";
-                    mywindow.style.top = newTop + "px";
-                    mywindow.style.width = newWidth + "px";
-                    mywindow.style.height = newHeight + "px";
+                    mywindow.style.left = `${newLeft}px`;
+					mywindow.style.top = `${newTop}px`;
+					mywindow.style.width = `${newWidth}px`;
+					mywindow.style.height = `${newHeight}px`;
                 }
 
                 function onUp() {
@@ -485,7 +485,7 @@
         const m = now.getMinutes().toString().padStart(2, "0");
         const ampm = h >= 12 ? "PM" : "AM";
         h = h % 12 || 12;
-        document.getElementById("taskbar-clock").textContent = h + ":" + m + " " + ampm;
+        document.getElementById("taskbar-clock").textContent = `${h}:${m} ${ampm}`;
     }
 
     function toggleStartMenu(event) {
