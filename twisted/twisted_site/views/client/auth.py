@@ -20,6 +20,11 @@ from twisted_site.slack import log_to_channel, slack_bot
 
 logger = logging.getLogger(__name__)
 
+
+def _raise_type_error(msg: str) -> NoReturn:
+    raise TypeError(msg)
+
+
 oauth = OAuth()
 
 oauth.register(
