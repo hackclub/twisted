@@ -1,18 +1,19 @@
 import os
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views import View
 
 
 # Create your views here.
 class HomepageView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if os.environ.get("LOGIN_ENABLED") == "false":
             login_enabled = False
         else:
             login_enabled = True
 
-        referral_code = request.GET.get("ref")
+        referral_code: str | None = request.GET.get("ref")
 
         response = render(
             request,
@@ -20,7 +21,7 @@ class HomepageView(View):
             {"login_enabled": login_enabled},
         )
 
-        if referral_code:
+        if referral_code not in (None, ""):
             response.set_cookie(
                 "referral",
                 referral_code,
@@ -33,5 +34,5 @@ class HomepageView(View):
 
 
 class FaqsView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         return render(request, "client/faqs.html")

@@ -1,105 +1,82 @@
 {% extends "client/osbase.html" %}
 {% load static time_filters humanizelib maths mathfilters %}
-
 {% block body %}
-<div class="bg-card text-card-foreground flex flex-col w-full h-full min-h-0">
-
-    {% if profile.referred_by %}
-    <fieldset class="m-2 p-4 pt-2 border border-border">
-        <legend class="text-left px-2">Referred By</legend>
-        
-        <div class="flex align-middle gap-2 ">
-            <img class="size-8 rounded-md" src="{{ profile.referred_by.slack_pfp_url }}">
-    
-            <div class="my-auto font-bold">
-                {{ profile.referred_by.slack_username }}
-            </div>
-        </div>
-
-    </fieldset>
-    {% endif %}
-
-    <div class="border border-border m-4 p-2">
-        <div>
-            <h1 class="text-center font-bold">
-                Your referral URL (case sensitive!)
-            </h1>
-            <div class="text-center">
-                <a class="text-accent" href="{{ request.scheme }}://{{ request.get_host }}{% url 'homepage' %}?ref={{ profile.my_referral_code }}">{{ request.scheme }}://{{ request.get_host }}{% url 'homepage' %}?ref={{ profile.my_referral_code|default:"error!" }}</a>
-                <div>
-                    For someone to be considered a referral, they must be ID verified and log atleast an hour.
+    <div class="bg-card text-card-foreground flex flex-col w-full h-full min-h-0">
+        {% if profile.referred_by %}
+            <fieldset class="m-2 p-4 pt-2 border border-border">
+                <legend class="text-left px-2">Referred By</legend>
+                <div class="flex align-middle gap-2">
+                    <img class="size-8 rounded-md"
+                         src="{{ profile.referred_by.slack_pfp_url }}"
+                         alt="{{ profile.referred_by.slack_username }}">
+                    <div class="my-auto font-bold">{{ profile.referred_by.slack_username }}</div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="flex-1 min-h-0 overflow-y-auto sunken-panel p-3 sm:p-4 font-vintage">
-
-        <div class="flex items-center gap-2 mb-3">
-            <div class="h-px bg-border flex-1"></div>
-            <h1 class="text-lg sm:text-xl font-bold whitespace-nowrap">
-                Past Referrals ({{ profile.referrals.count }})
-            </h1>
-            <div class="h-px bg-border flex-1"></div>
-        </div>
-        {% if profile.referrals.count %}
-        <div class="flex flex-col">
-            {% for referral in profile.referrals.all %}
-            <div class="border border-border m-1 p-2">
-                <div class="flex align-middle gap-2 ">
-                    <img class="size-8 rounded-md" src="{{ referral.slack_pfp_url }}">
-            
-                    <div class="my-auto">
-                        <div class="font-bold">
-                            {{ referral.slack_username }}
-                        </div>
-                        <div class="flex align-middle gap-2">
-                            {% if referral.ysws_eligible %}
-                            <div class="bg-success-foreground border border-success text-success aspect-square h-4 my-auto text-center text-sm">
-                                ✓
-                            </div>
-                            {% else %}
-                            <div class="bg-warning-foreground border border-warning text-warning aspect-square h-4 my-auto text-center text-sm">
-                                ✗
-                            </div>
-                            {% endif %}
-                            <span>
-                                YSWS eligible: {{ referral.ysws_eligible|yesno }}
-                            </span>
-                        </div>
-                        <div class="flex align-middle gap-2">
-                            {% if referral.time_logged > 60 %}
-                            <div class="bg-success-foreground border border-success text-success aspect-square h-4 my-auto text-center text-sm">
-                                ✓
-                            </div>
-                            {% else %}
-                            <div class="bg-warning-foreground border border-warning text-warning aspect-square h-4 my-auto text-center text-sm">
-                                ✗
-                            </div>
-                            {% endif %}
-                            <span>
-                                Time logged: {{ referral.time_logged|minutes_to_hours_minutes }}/1h
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="text-center">No referrals yet!</div>
+            </fieldset>
         {% endif %}
-
-
-    </div>
-
-
-    <div class="status-field-border font-vintage shrink-0 border-t p-1 border-border">
-        <div class="mx-1 text-sm">
-            {{ profile.referrals.count }}
-            referral{{ profile.referrals.count|pluralize }}
+        <div class="border border-border m-4 p-2">
+            <div>
+                <h1 class="text-center font-bold">Your referral URL (case sensitive!)</h1>
+                <div class="text-center">
+                    <a class="text-accent"
+                       href="{{ request.scheme }}://{{ request.get_host }}{% url 'homepage' %}?ref={{ profile.my_referral_code }}">{{ request.scheme }}://{{ request.get_host }}{% url 'homepage' %}?ref={{ profile.my_referral_code|default:"error!" }}</a>
+                    <div>For someone to be considered a referral, they must be ID verified and log atleast an hour.</div>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1 min-h-0 overflow-y-auto sunken-panel p-3 sm:p-4 font-vintage">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="h-px bg-border flex-1"></div>
+                <h1 class="text-lg sm:text-xl font-bold whitespace-nowrap">Past Referrals ({{ profile.referrals.count }})</h1>
+                <div class="h-px bg-border flex-1"></div>
+            </div>
+            {% if profile.referrals.count %}
+                <div class="flex flex-col">
+                    {% for referral in profile.referrals.all %}
+                        <div class="border border-border m-1 p-2">
+                            <div class="flex align-middle gap-2">
+                                <img class="size-8 rounded-md"
+                                     src="{{ referral.slack_pfp_url }}"
+                                     alt="{{ referral.slack_username }}">
+                                <div class="my-auto">
+                                    <div class="font-bold">{{ referral.slack_username }}</div>
+                                    <div class="flex align-middle gap-2">
+                                        {% if referral.ysws_eligible %}
+                                            <div class="bg-success-foreground border border-success text-success aspect-square h-4 my-auto text-center text-sm">
+                                                ✓
+                                            </div>
+                                        {% else %}
+                                            <div class="bg-warning-foreground border border-warning text-warning aspect-square h-4 my-auto text-center text-sm">
+                                                ✗
+                                            </div>
+                                        {% endif %}
+                                        <span>YSWS eligible: {{ referral.ysws_eligible|yesno }}</span>
+                                    </div>
+                                    <div class="flex align-middle gap-2">
+                                        {% if referral.time_logged > 60 %}
+                                            <div class="bg-success-foreground border border-success text-success aspect-square h-4 my-auto text-center text-sm">
+                                                ✓
+                                            </div>
+                                        {% else %}
+                                            <div class="bg-warning-foreground border border-warning text-warning aspect-square h-4 my-auto text-center text-sm">
+                                                ✗
+                                            </div>
+                                        {% endif %}
+                                        <span>Time logged: {{ referral.time_logged|minutes_to_hours_minutes }}/1h</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center">No referrals yet!</div>
+            {% endif %}
+        </div>
+        <div class="status-field-border font-vintage shrink-0 border-t p-1 border-border">
+            <div class="mx-1 text-sm">
+                {{ profile.referrals.count }}
+                referral{{ profile.referrals.count|pluralize }}
+            </div>
         </div>
     </div>
-
-</div>
 {% endblock body %}

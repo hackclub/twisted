@@ -1,5 +1,6 @@
 import json
 
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
@@ -9,16 +10,16 @@ from .admin import AdminView
 
 # Create your views here.
 class DashboardView(AdminView):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="dashboard")
         if self.request.user.is_anonymous:
             return redirect("homepage")
         hours_logged = 0
-        hours_logged_chart = {}
+        hours_logged_chart: dict[str, float] = {}
         logged_project_type: dict[str, float] = {"Software": 0, "Hardware": 0}
         shipped_project_type: dict[str, float] = {"Software": 0, "Hardware": 0}
         hours_shipped = 0
-        hours_shipped_chart = {}
+        hours_shipped_chart: dict[str, float] = {}
         for journal in Journal.objects.all().prefetch_related("project"):
             hours = journal.reduced_minutes / 60
             hours_logged += hours

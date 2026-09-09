@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ...models import ProjectShip
@@ -8,37 +9,37 @@ from .admin import AdminView
 
 # Create your views here.
 class ReviewView(AdminView):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if settings.DEBUG_REVIEW:
             return self.debug_get(request)
 
         context = self.get_context_data(page="review")
         return render(request, "admin/review.html", context=context)
 
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         if settings.DEBUG_REVIEW:
             return self.debug_post(request)
 
-        self.get_context_data(page="review")
+        _ = self.get_context_data(page="review")
         return redirect(self.request.path_info)
 
-    def debug_get(self, request):
+    def debug_get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="review")
         context["ships"] = ProjectShip.objects.all().order_by("-created_at")
         return render(request, "admin/debug/review.html", context=context)
 
-    def debug_post(self, request):
-        id = request.POST["id"]
+    def debug_post(self, request: HttpRequest) -> HttpResponse:
+        id: str = request.POST["id"]
 
-        status = request.POST["status"]
-        note_to_maker = request.POST["note_to_maker"]
-        audit_note = request.POST["audit_note"]
-        technical_features = request.POST["technical_features"]
-        deflation_reason = request.POST["deflation_reason"]
+        status: str = request.POST["status"]
+        note_to_maker: str = request.POST["note_to_maker"]
+        audit_note: str = request.POST["audit_note"]
+        technical_features: str = request.POST["technical_features"]
+        deflation_reason: str = request.POST["deflation_reason"]
 
-        final_status = request.POST["final_status"]
-        final_note_to_maker = request.POST["final_note_to_maker"]
-        final_audit_note = request.POST["final_audit_note"]
+        final_status: str = request.POST["final_status"]
+        final_note_to_maker: str = request.POST["final_note_to_maker"]
+        final_audit_note: str = request.POST["final_audit_note"]
 
         ship = get_object_or_404(ProjectShip, id=id)
 

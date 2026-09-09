@@ -1,12 +1,14 @@
 import logging
 import os
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
+from django.http import HttpRequest, JsonResponse
 from django.utils.text import slugify
 
 from ..models import UploadedFile
@@ -25,10 +27,11 @@ s3 = boto3.client(
 
 
 @login_required
-def upload_file(request):
+def upload_file(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         if "file" in request.FILES:
             file = request.FILES["file"]
+            assert isinstance(file, DjangoUploadedFile)
 
             if file.content_type not in ALLOWED_CONTENT_TYPES:
                 return JsonResponse(
@@ -41,6 +44,7 @@ def upload_file(request):
             # The size limit is a server-side policy; never let the client raise it.
             max_file_mb = 10
 
+            assert file.size is not None
             file_size_mb = file.size / (1024 * 1024)
             if file_size_mb > max_file_mb:
                 return JsonResponse(
@@ -54,7 +58,7 @@ def upload_file(request):
 
             url = response_data["link"]
             filename = response_data["name"]
-            UploadedFile.objects.create(
+            _ = UploadedFile.objects.create(
                 uploaded_by=request.user,
                 link=url,
                 cdn_response=response_data,
@@ -78,7 +82,9 @@ def upload_file(request):
     )
 
 
-def _upload_fileobj(fileobj, filename, content_type, size):
+def _upload_fileobj(
+    fileobj: object, filename: str, content_type: str | None, size: int | None
+) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     try:
         ext = Path(filename).suffix.lower()
         stored_name = f"{uuid4()!s}-{size}/{slugify(Path(filename).stem)}{ext}"
@@ -110,8 +116,9 @@ def _upload_fileobj(fileobj, filename, content_type, size):
         }
 
 
-def file_uploader(request, image):
+def file_uploader(request: HttpRequest, image: "DjangoUploadedFile[Any]") -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     """
     Basic imgur uploader return as json data.
     """
+    assert image.name is not None
     return _upload_fileobj(image, image.name, image.content_type, image.size)

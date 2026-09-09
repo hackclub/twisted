@@ -3,6 +3,7 @@ import os
 
 from django.contrib.sessions.models import Session
 from django.db.models import Q
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 
@@ -12,10 +13,10 @@ from .admin import AdminView
 
 # Create your views here.
 class UsersView(AdminView):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="users")
-        if request.GET.get("search"):
-            query = request.GET["search"]
+        if request.GET.get("search") not in (None, ""):
+            query: str = request.GET["search"]
             context["users"] = User.objects.all()
             context["users"] = User.objects.filter(
                 Q(profile__slack_username__icontains=query)
@@ -28,10 +29,10 @@ class UsersView(AdminView):
             context["users"] = User.objects.all().order_by("profile__slack_username")
         return TemplateResponse(request, "admin/users.html", context)
 
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         if request.POST.get("action") == "logoutall":
             session_count = Session.objects.count()
-            Session.objects.all().delete()
+            _ = Session.objects.all().delete()
             assert isinstance(self.audit_log.additional_context, dict)
             self.audit_log.additional_context["action"] = "logoutall"
             self.audit_log.additional_context["sessions_deleted"] = session_count
@@ -40,7 +41,7 @@ class UsersView(AdminView):
 
 
 class UserDetailView(AdminView):
-    def get(self, request, id):
+    def get(self, request: HttpRequest, id: int) -> HttpResponse:
         context = self.get_context_data(page="users", subpage="detail")
         user = get_object_or_404(User, id=id)
 
@@ -52,7 +53,7 @@ class UserDetailView(AdminView):
         context["login_maybe"] = os.environ.get("LOGIN_ENABLED") == "maybe"
         return TemplateResponse(request, "admin/user.html", context)
 
-    def post(self, request, id):
+    def post(self, request: HttpRequest, id: int) -> HttpResponse | None:
         user = get_object_or_404(User, id=id)
 
         assert isinstance(self.audit_log.additional_context, dict)

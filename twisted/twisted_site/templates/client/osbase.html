@@ -1,38 +1,35 @@
 {% load static tailwind_tags static %}
 <!DOCTYPE html>
-<html style="background: #1E072F;" class="os w-full h-full">
-
-<head>
-    {% tailwind_css %}
-    <link rel="icon" href="{% static 'favicon.png' %}" />
-    <link rel="stylesheet" href="/twisted/tailwindcsstheme/static/css/dist/styles.css">
-    <title>Twisted</title>
-    {% block css %} {% endblock css %}
-    {% block js %}{% endblock js %}
-    <script>
-        function createWindow(title, src) {
-            window.parent.postMessage({
-                'type': 'internal',
-                'action': 'open',
-                'title': title,
-                'src': src
-            }, '*')
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-    <script src="
+<html lang="en" class="os w-full h-full bg-[#1E072F]">
+    <head>
+        {% tailwind_css %}
+        <link rel="icon" href="{% static 'favicon.png' %}">
+        <link rel="stylesheet"
+              href="/twisted/tailwindcsstheme/static/css/dist/styles.css">
+        <title>Twisted</title>
+        {% block css %}
+        {% endblock css %}
+        {% block js %}
+        {% endblock js %}
+        <script>
+            function createWindow(title, src) {
+                window.parent.postMessage({
+                    'type': 'internal',
+                    'action': 'open',
+                    'title': title,
+                    'src': src
+                }, '*')
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+        <script src="
         https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js
         "></script>
-
-</head>
-
-<body class="font-vintage h-full">
-    {% block body %} meow :3 {% endblock body %}
-</body>
-<script>
-    // Timezone settings
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
-    document.cookie = "django_timezone=" + timezone;
-</script>
-
+    </head>
+    <body class="font-vintage h-full">{% block body %} meow :3 {% endblock body %}</body>
+    <script>
+        // Timezone settings
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
+        document.cookie = `django_timezone=${timezone}`;
+    </script>
 </html>

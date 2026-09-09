@@ -6,7 +6,7 @@ register = template.Library()
 
 
 @register.filter
-def minutes_to_hours_minutes(minutes):
+def minutes_to_hours_minutes(minutes: int | str) -> str | int:
     try:
         total_minutes = int(minutes)
     except (ValueError, TypeError):
@@ -23,6 +23,6 @@ def minutes_to_hours_minutes(minutes):
 
 
 @register.filter
-def rounddelta(delta: timedelta, to=1):
+def rounddelta(delta: timedelta, to: int = 1) -> timedelta:
     delta = timedelta(seconds=round(delta.total_seconds(), to))
     return delta

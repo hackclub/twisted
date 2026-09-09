@@ -1,80 +1,72 @@
 {% extends "base.html" %}
 {% load static %}
 {% block body %}
-
-<a href="https://hackclub.com" target="_blank" rel="noopener" class="fixed top-0 left-4 z-50">
-  <img src="https://assets.hackclub.com/flag-orpheus-top.svg" alt="Hack Club" class="w-30 flag-wave">
-</a>
-
-<div class="min-h-screen bg-gradbg text-foreground px-3 py-4 sm:px-6 sm:py-8 md:px-8 md:py-10 pb-20">
-  <main
-    class="flex flex-col shadow-sm shadow-primary mx-auto w-full max-w-4xl overflow-hidden border border-border bg-card max-h-[85%]">
-    <header class="flex items-center justify-between border-b border-border bg-secondary px-2 py-1.5 sm:px-3 sm:py-2">
-      <div class="flex items-center gap-2">
-        <a href="{% url 'homepage' %}">
-          <div class="flex h-5 w-5 items-center justify-center bg-primary text-[10px] font-bold text-primary-foreground">
-            ←
-          </div>
-        </a>
-
-        <span class="font-mono text-sm font-semibold tracking-wide">
-          faqs.exe
-        </span>
-      </div>
-
-      <div class="flex gap-1">
-        <button type="button" aria-label="Minimize"
-          class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:bg-muted">
-          −
-        </button>
-
-        <button type="button" aria-label="Maximize"
-          class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:bg-muted">
-          □
-        </button>
-        <a href="{% url 'homepage' %}">
-          <button type="button" aria-label="Close"
-            class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:border-destructive hover:bg-destructive hover:text-destructive-foreground">
-            ×
-          </button>
-        </a>
-      </div>
-    </header>
-
-    <div class="p-6 space-y-5 overflow-y-auto grow">
-      <div>
-        <p class="font-bold text-twisted-200">Q: What is Twisted?</p>
-        <p>A: Twisted is a YSWS where you complete 7 pathways of challenges, keep up your streak for bonus rewards, and earn a laptop and PC at the end!</p>
-      </div>
-      <div>
-        <p class="font-bold text-twisted-200">Q: What is a YSWS?</p>
-        <p>A: YSWS stands for "You Ship, We Ship" — a Hack Club program where you build and ship cool projects, and in return you get real rewards.</p>
-      </div>
-      <div>
-        <p class="font-bold text-twisted-200">Q: Is it free?</p>
-        <p>A: Yes! Twisted is completely free to participate in.</p>
-      </div>
-      <div>
-        <p class="font-bold text-twisted-200">Q: What is Hack Club?</p>
-        <p>A: Hack Club is a global nonprofit network of teen hackers, makers, and coders who build projects together and support each other.</p>
-      </div>
-      <div>
-        <p class="font-bold text-twisted-200">Q: When does it start?</p>
-        <p>A: Twisted kicks off in the first week of September!</p>
-      </div>
-      <div>
-        <p class="font-bold text-twisted-200">Q: When does the beta launch?</p>
-        <p>A: The beta launches 10 days before the main start — so late August!</p>
-      </div>
+    <a href="https://hackclub.com"
+       target="_blank"
+       rel="noopener"
+       class="fixed top-0 left-4 z-50">
+        <img src="https://assets.hackclub.com/flag-orpheus-top.svg"
+             alt="Hack Club"
+             class="w-30 flag-wave">
+    </a>
+    <div class="min-h-screen bg-gradbg text-foreground px-3 py-4 sm:px-6 sm:py-8 md:px-8 md:py-10 pb-20">
+        <main class="flex flex-col shadow-sm shadow-primary mx-auto w-full max-w-4xl overflow-hidden border border-border bg-card max-h-[85%]">
+            <header class="flex items-center justify-between border-b border-border bg-secondary px-2 py-1.5 sm:px-3 sm:py-2">
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'homepage' %}">
+                        <div class="flex h-5 w-5 items-center justify-center bg-primary text-[10px] font-bold text-primary-foreground">←</div>
+                    </a>
+                    <span class="font-mono text-sm font-semibold tracking-wide">faqs.exe</span>
+                </div>
+                <div class="flex gap-1">
+                    <button type="button"
+                            aria-label="Minimize"
+                            class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:bg-muted">
+                        −
+                    </button>
+                    <button type="button"
+                            aria-label="Maximize"
+                            class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:bg-muted">
+                        □
+                    </button>
+                    <a href="{% url 'homepage' %}"
+                       aria-label="Close"
+                       class="flex h-7 w-8 items-center justify-center border border-border bg-card text-card-foreground transition hover:border-destructive hover:bg-destructive hover:text-destructive-foreground">
+                        ×
+                    </a>
+                </div>
+            </header>
+            <div class="p-6 space-y-5 overflow-y-auto grow">
+                <div>
+                    <p class="font-bold text-twisted-200">Q: What is Twisted?</p>
+                    <p>A: Twisted is a YSWS where you complete 7 pathways of challenges, keep up your streak for bonus rewards, and earn a laptop and PC at the end!</p>
+                </div>
+                <div>
+                    <p class="font-bold text-twisted-200">Q: What is a YSWS?</p>
+                    <p>A: YSWS stands for "You Ship, We Ship" — a Hack Club program where you build and ship cool projects, and in return you get real rewards.</p>
+                </div>
+                <div>
+                    <p class="font-bold text-twisted-200">Q: Is it free?</p>
+                    <p>A: Yes! Twisted is completely free to participate in.</p>
+                </div>
+                <div>
+                    <p class="font-bold text-twisted-200">Q: What is Hack Club?</p>
+                    <p>A: Hack Club is a global nonprofit network of teen hackers, makers, and coders who build projects together and support each other.</p>
+                </div>
+                <div>
+                    <p class="font-bold text-twisted-200">Q: When does it start?</p>
+                    <p>A: Twisted kicks off in the first week of September!</p>
+                </div>
+                <div>
+                    <p class="font-bold text-twisted-200">Q: When does the beta launch?</p>
+                    <p>A: The beta launches 10 days before the main start — so late August!</p>
+                </div>
+            </div>
+        </main>
     </div>
-  </main>
-</div>
-
-
-{% comment %}
+    {% comment %}
 Check out twisted_site/templates/cotton/homepage_taskbar.html
 to change the taskbar :p                           - Kavyansh
-{% endcomment %}
-<c-homepage_taskbar />
-
+    {% endcomment %}
+    <c-homepage_taskbar />
 {% endblock body %}

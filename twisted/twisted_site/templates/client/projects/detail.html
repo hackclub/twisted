@@ -1,340 +1,267 @@
-{% extends "client/osbase.html" %} {% load static time_filters humanize %} {% block body %}
-<div class="flex h-full w-full flex-col bg-surface font-vintage text-foreground">
-    <input type="hidden" value="{{ project.project_name }}" id="project-title" />
-
-    <div class="shrink-0 border-b border-border bg-card p-3">
-        <div class="flex flex-wrap items-start gap-3">
-            <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                    <h1 class="wrap-break-word text-xl font-bold">{{ project.project_name }}</h1>
-
-                    <span class="border border-border bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
-                        {{ project.get_project_type_display }}
-                    </span>
-
-                    {% if project.is_shipped %}
-                    {% if project.latest_ship.status == 'rejected' %}
-                    <span class="border border-red-600 bg-red-600/20 px-2 py-0.5 text-xs text-red-600"> permanently rejected </span>
-                    {% else %}
-                    <span class="border border-success bg-success/20 px-2 py-0.5 text-xs text-success"> shipped </span>
-                    {% endif %}
-                    {% endif %}
-                </div>
-
-                <p class="mt-1 max-w-2xl break-words text-sm text-muted-foreground">
-                    {{ project.project_description }}
-                </p>
-            </div>
-            
-            <div class="flex shrink-0 flex-wrap gap-1">
-                {% if project.user == request.user %}
-                {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged > 60 %} {% if not project.is_shipped %}
-                <a href="{% url 'fr.projects.ship' project.id %}">
-                    <button
-                        class="border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px"
-                    >
-                        ship project
-                    </button>
-                </a>
-                {% endif %} {% endif %}
-                {% if not project.is_shipped %}
-                <a href="{% url 'fr.projects.settings' project.id %}">
-                    <button
-                        class="border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
-                    >
-                        Settings
-                    </button>
-                </a>
-                {% endif %}
-                {% endif %}
-                <div class="group relative pb-1">
-                    <button
-                        class="inline-flex items-center justify-center border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
-                        data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
-                        onclick="copyShareLink(this, true)"
-                    >
-                        Copy share link
-                    </button>
-                    <div
-                        class="absolute right-0 top-full z-10 hidden w-max max-w-sm cursor-pointer break-all border border-border bg-card px-2 py-1 text-xs text-muted-foreground group-hover:block"
-                        data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
-                        onclick="copyShareLink(this)"
-                    >
-                        {{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}
-                    </div>
-                </div>
-                <script>
-                    function copyShareLink(el, styled) {
-                        if (el.dataset.originalText === undefined) {
-                            el.dataset.originalText = el.textContent
-                        }
-                        if (styled && !el.style.width) {
-                            el.style.width = el.offsetWidth + "px"
-                        }
-                        navigator.clipboard.writeText(el.dataset.url).then(() => {
-                            clearTimeout(el._copyRevertTimeout)
-                            el.textContent = "Copied!"
-                            if (styled) {
-                                el.classList.remove("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
-                                el.classList.add("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
-                            }
-                            el._copyRevertTimeout = setTimeout(() => {
-                                el.textContent = el.dataset.originalText
-                                if (styled) {
-                                    el.classList.remove("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
-                                    el.classList.add("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
-                                }
-                            }, 1500)
-                        }).catch(() => alert("Failed to copy link"))
-                    }
-                </script>
-
-            </div>
-        </div>
-    </div>
-
-    <div class="min-h-0 flex-1 overflow-y-auto bg-background p-3">
-        <div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-2">
-            <div class="border border-border bg-card p-3">
-                <div class="text-xs uppercase text-muted-foreground">Time logged</div>
-
-                <div class="mt-1 text-2xl font-bold text-primary">
-                    {{ project.time_logged|minutes_to_hours_minutes }}
-                </div>
-            </div>
-
-            <div class="border border-border bg-card p-3">
-                <div class="text-xs uppercase text-muted-foreground">Journals</div>
-
-                <div class="mt-1 text-2xl font-bold">{{ project.journals.count }}</div>
-            </div>
-        </div>
-
-        {% if project.is_shipped %}
-        {% endif %}
-
-        {% if not project.hackatime_project_name and project.project_type != 'hardware' %}
-        <div class="mb-3 border border-warning bg-warning/10 p-3">
-            <div class="font-bold text-warning">Hackatime project not linked bru...</div>
-
-            <div class="mt-1 text-sm text-muted-foreground">
-                Vro link a Hackatime project to start tracking time on ts project.
-            </div>
-
-            <a
-                href="{% url 'fr.projects.settings' project.pk %}"
-                class="mt-2 inline-block text-sm text-primary underline hover:text-accent"
-            >
-                Open project settings
-            </a>
-        </div>
-        {% elif not project.repo_url %}
-        <div class="mb-3 border border-warning bg-warning/10 p-3">
-            <div class="font-bold text-warning">VRO repository not linked</div>
-
-            <div class="mt-1 text-sm text-muted-foreground">Link a repository before shipping your project.</div>
-
-            <a
-                href="{% url 'fr.projects.settings' project.pk %}"
-                class="mt-2 inline-block text-sm text-primary underline hover:text-accent"
-            >
-                Open project settings
-            </a>
-        </div>
-        {% elif not project.playable_url %}
-        <div class="mb-3 border border-warning bg-warning/10 p-3">
-            <div class="font-bold text-warning">Playable URL not set</div>
-
-            <div class="mt-1 text-sm text-muted-foreground">Add a playable URL before shipping your project.</div>
-
-            <a
-                href="{% url 'fr.projects.settings' project.pk %}"
-                class="mt-2 inline-block text-sm text-primary underline hover:text-accent"
-            >
-                Open project settings
-            </a>
-        </div>
-        {% elif not project.screenshot_url %}
-        <div class="mb-3 border border-warning bg-warning/10 p-3">
-            <div class="font-bold text-warning">Screenshot not set</div>
-
-            <div class="mt-1 text-sm text-muted-foreground">Add a screenshot before shipping your project.</div>
-
-            <a
-                href="{% url 'fr.projects.settings' project.pk %}"
-                class="mt-2 inline-block text-sm text-primary underline hover:text-accent"
-            >
-                Open project settings
-            </a>
-        </div>
-        {% elif project.time_logged < 60 %}
-        <div class="mb-3 border border-warning bg-warning/10 p-3">
-            <div class="font-bold text-warning">log more time!</div>
-
-            <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
-
-            <button
-                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
-                class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80"
-            >
-                + New journal
-            </button>
-        </div>
-        {% endif %}
-
-        <div class="border border-border bg-card">
-            <div
-                class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary px-3 py-2"
-            >
-                <div>
-                    <div class="font-bold">Project activity</div>
-
-                    <div class="text-xs text-muted-foreground">Devlogs and progress....</div>
-                </div>
-
-                {% if not project.is_shipped %}
-                <button
-                    onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
-                    class="border border-border bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px"
-                >
-                    + New journal
-                </button>
-                {% endif %}
-            </div>
-
-            <div class="p-2">
-                {% for activity_item in journals %}
-                {% if activity_item.content %} {# bad way to check if activity item is a journal #}
-                {% with activity_item as journal %}
-                <article class="mb-2 border border-border bg-background last:mb-0">
-                    <div class="flex flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2">
-                        <div class="min-w-0 flex-1 text-sm">
-                            <span class="font-bold"> {{ journal.reduced_minutes|minutes_to_hours_minutes }} </span>
-
-                            <span class="text-muted-foreground"> logged via {{ journal.get_type_display }} </span>
-
-                            <span class="mx-1 text-subtle"> • </span>
-
-                            <span class="text-muted-foreground" title="{{ journal.created_at }}">
-                                {{ journal.created_at|naturaltime }}
-                            </span>
-                        </div>
-
-                        {% if project.user == request.user %} {% if not project.is_shipped %}
-
-                        <div class="flex shrink-0 gap-1">
-                            {% if journal.type == "untracked" %}
-                            <button
-                                title="Delete"
-                                onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'Delete journal', 'src': '{% url 'fr.projects.journals.delete' journal.pk %}'}, '*')"
-                                class="flex h-7 w-7 items-center justify-center border border-border bg-secondary p-1 hover:bg-destructive hover:text-destructive-foreground"
-                            >
-                                <img
-                                    draggable="false"
-                                    class="image-render-pixelated h-full w-full"
-                                    src="{% static 'icons/delete.png' %}"
-                                    alt="Delete"
-                                />
-                            </button>
-                            {% endif %}
-
-                            <button
-                                title="Edit"
-                                class="flex h-7 w-7 items-center justify-center border border-border bg-secondary p-1 hover:bg-primary hover:text-primary-foreground"
-                            >
-                                <img
-                                    draggable="false"
-                                    class="image-render-pixelated h-full w-full"
-                                    src="{% static 'icons/edit.png' %}"
-                                    alt="Edit"
-                                />
-                            </button>
-                        </div>
-
-                        {% endif %} {% endif %}
-                    </div>
-
-                    <div class="min-w-0 max-w-full overflow-hidden p-3">
-                        <c-mdpreview
-                            class="block min-w-0 max-w-full overflow-hidden wrap-break-word zoom-100 **:[&_img]:zoom-50 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:wrap-break-word [&_code]:wrap-break-word [&_img]:max-w-full [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto"
-                        >
-                            {{ journal.content }}
-                        </c-mdpreview>
-                    </div>
-                </article>
-                {% endwith %}
-                {% elif activity_item.status %} {# bad way to check if activity item is a ship #}
-                {% with activity_item as ship %}
-                {% if ship.status != 'pending' %}
-                <c-ship-message title="reviewer note" status="{{ ship.get_status_display }}" :time="ship.updated_at">
-                    {{ ship.note_to_maker|default:"no message!"|linebreaksbr }}
-                </c-ship-message>
-                {% endif %}
-                {% if ship.final_status != 'pending' %}
-                <c-ship-message title="final review complete" status="{{ ship.get_final_status_display }}" :time="ship.updated_at">
-                    {{ ship.final_note_to_maker|default:"no message!"|linebreaksbr }}
-                </c-ship-message>
-                {% endif %}
-                <div class="mb-3 border border-success bg-success/10">
-                    <div class="p-2 px-3 border-b border-success flex gap-2">
-                        <span class="font-bold text-success">Project shipped</span>
-                        <span class="mx-1 text-success opacity-50"> • </span>
-                        <span class="text-success opacity-50" title="{{ ship.created_at }}">
-                            {{ ship.created_at|naturaltime }}
+{% extends "client/osbase.html" %}
+{% load static time_filters humanize %}
+{% block body %}
+    <div class="flex h-full w-full flex-col bg-surface font-vintage text-foreground">
+        <input type="hidden" value="{{ project.project_name }}" id="project-title">
+        <div class="shrink-0 border-b border-border bg-card p-3">
+            <div class="flex flex-wrap items-start gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="wrap-break-word text-xl font-bold">{{ project.project_name }}</h1>
+                        <span class="border border-border bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+                            {{ project.get_project_type_display }}
                         </span>
+                        {% if project.is_shipped %}
+                            {% if project.latest_ship.status == "rejected" %}
+                                <span class="border border-red-600 bg-red-600/20 px-2 py-0.5 text-xs text-red-600">permanently rejected</span>
+                            {% else %}
+                                <span class="border border-success bg-success/20 px-2 py-0.5 text-xs text-success">shipped</span>
+                            {% endif %}
+                        {% endif %}
                     </div>
-                    <div class="p-3">
-                        <div class="mt-1 text-sm text-muted-foreground">This project is now read-only.</div>
-
-                        <div class="mt-2 flex w-full overflow-auto gap-4 items-center justify-center md:justify-start">
-                            <div class="w-24 mb-auto">
-                                <c-project-ship-mark status="{{ first_pass_status }}" />
-                                <p class="text-center w-full text-sm">first pass</p>
-                            </div>
-                            <div class="w-24 mb-auto">
-                                <c-project-ship-mark status="{{ second_pass_status }}" />
-                                <p class="text-center w-full text-sm">second pass</p>
-                            </div>
-                            <div class="w-24 mb-auto">
-                                <c-project-ship-mark status="{{ ship.final_status }}" />
-                                <p class="text-center w-full text-sm">final review</p>
-                            </div>
+                    <p class="mt-1 max-w-2xl break-words text-sm text-muted-foreground">{{ project.project_description }}</p>
+                </div>
+                <div class="flex shrink-0 flex-wrap gap-1">
+                    {% if project.user == request.user %}
+                        {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged > 60 %}
+                            {% if not project.is_shipped %}
+                                <a href="{% url 'fr.projects.ship' project.id %}"
+                                   class="inline-block border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
+                                    ship project
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        {% if not project.is_shipped %}
+                            <a href="{% url 'fr.projects.settings' project.id %}"
+                               class="inline-block border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px">
+                                Settings
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                    <div class="group relative pb-1">
+                        <button type="button"
+                                class="inline-flex items-center justify-center border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
+                                data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
+                                onclick="copyShareLink(this, true)">Copy share link</button>
+                        <div class="absolute right-0 top-full z-10 hidden w-max max-w-sm cursor-pointer break-all border border-border bg-card px-2 py-1 text-xs text-muted-foreground group-hover:block"
+                             data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
+                             onclick="copyShareLink(this)">
+                            {{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}
                         </div>
                     </div>
+                    <script>
+                        function copyShareLink(el, styled) {
+                            if (el.dataset.originalText === undefined) {
+                                el.dataset.originalText = el.textContent
+                            }
+                            if (styled && !el.style.width) {
+                                el.style.width = el.offsetWidth + "px"
+                            }
+                            navigator.clipboard.writeText(el.dataset.url).then(() => {
+                                clearTimeout(el._copyRevertTimeout)
+                                el.textContent = "Copied!"
+                                if (styled) {
+                                    el.classList.remove("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
+                                    el.classList.add("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
+                                }
+                                el._copyRevertTimeout = setTimeout(() => {
+                                    el.textContent = el.dataset.originalText
+                                    if (styled) {
+                                        el.classList.remove("bg-success", "text-success-foreground", "border-success", "hover:bg-success", "hover:text-success-foreground")
+                                        el.classList.add("bg-secondary", "text-secondary-foreground", "hover:bg-primary", "hover:text-primary-foreground")
+                                    }
+                                }, 1500)
+                            }).catch(() => alert("Failed to copy link"))
+                        }
+                    </script>
                 </div>
-                {% endwith %}
-                {% endif %}
-
-                {% empty %}
-
-                <div class="px-4 py-10 text-center">
-                    <div class="font-bold">No journal entries</div>
-
-                    <div class="mt-1 text-sm text-muted-foreground">
-                        Your project progress will appear here... after you journal
-                    </div>
-
-                    {% if not project.is_shipped %}
-                    <button
-                        onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
-                        class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80"
-                    >
+            </div>
+        </div>
+        <div class="min-h-0 flex-1 overflow-y-auto bg-background p-3">
+            <div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-2">
+                <div class="border border-border bg-card p-3">
+                    <div class="text-xs uppercase text-muted-foreground">Time logged</div>
+                    <div class="mt-1 text-2xl font-bold text-primary">{{ project.time_logged|minutes_to_hours_minutes }}</div>
+                </div>
+                <div class="border border-border bg-card p-3">
+                    <div class="text-xs uppercase text-muted-foreground">Journals</div>
+                    <div class="mt-1 text-2xl font-bold">{{ project.journals.count }}</div>
+                </div>
+            </div>
+            {% if project.is_shipped %}{% endif %}
+            {% if not project.hackatime_project_name and project.project_type != "hardware" %}
+                <div class="mb-3 border border-warning bg-warning/10 p-3">
+                    <div class="font-bold text-warning">Hackatime project not linked yet</div>
+                    <div class="mt-1 text-sm text-muted-foreground">Link a Hackatime project to start tracking time on ts project.</div>
+                    {% if project.user == user %}
+                        <a href="{% url 'fr.projects.settings' project.pk %}"
+                           class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                            Open project settings
+                        </a>
+                    {% endif %}
+                </div>
+            {% elif not project.repo_url %}
+                <div class="mb-3 border border-warning bg-warning/10 p-3">
+                    <div class="font-bold text-warning">Repository not linked!</div>
+                    <div class="mt-1 text-sm text-muted-foreground">Link a repository before shipping your project.</div>
+                    <a href="{% url 'fr.projects.settings' project.pk %}"
+                       class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                        Open project settings
+                    </a>
+                </div>
+            {% elif not project.playable_url %}
+                <div class="mb-3 border border-warning bg-warning/10 p-3">
+                    <div class="font-bold text-warning">Playable URL not set</div>
+                    <div class="mt-1 text-sm text-muted-foreground">Add a playable URL before shipping your project.</div>
+                    <a href="{% url 'fr.projects.settings' project.pk %}"
+                       class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                        Open project settings
+                    </a>
+                </div>
+            {% elif not project.screenshot_url %}
+                <div class="mb-3 border border-warning bg-warning/10 p-3">
+                    <div class="font-bold text-warning">Screenshot not set</div>
+                    <div class="mt-1 text-sm text-muted-foreground">Add a screenshot before shipping your project.</div>
+                    <a href="{% url 'fr.projects.settings' project.pk %}"
+                       class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                        Open project settings
+                    </a>
+                </div>
+            {% elif project.time_logged < 60 %}
+                <div class="mb-3 border border-warning bg-warning/10 p-3">
+                    <div class="font-bold text-warning">Log more time!</div>
+                    <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
+                    <button type="button"
+                            onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                            class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                         + New journal
                     </button>
+                </div>
+            {% endif %}
+            <div class="border border-border bg-card">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary px-3 py-2">
+                    <div>
+                        <div class="font-bold">Project activity</div>
+                        <div class="text-xs text-muted-foreground">Devlogs and progress....</div>
+                    </div>
+                    {% if not project.is_shipped %}
+                        <button type="button"
+                                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                class="border border-border bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
+                            + New journal
+                        </button>
                     {% endif %}
                 </div>
-
-                {% endfor %}
+                <div class="p-2">
+                    {% for activity_item in journals %}
+                        {% if activity_item.content %}
+                            {# bad way to check if activity item is a journal #}
+                            {% with activity_item as journal %}
+                                <article class="mb-2 border border-border bg-background last:mb-0">
+                                    <div class="flex flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2">
+                                        <div class="min-w-0 flex-1 text-sm">
+                                            <span class="font-bold">{{ journal.reduced_minutes|minutes_to_hours_minutes }}</span>
+                                            <span class="text-muted-foreground">logged via {{ journal.get_type_display }}</span>
+                                            <span class="mx-1 text-subtle">•</span>
+                                            <span class="text-muted-foreground"
+                                                  title="{{ journal.created_at }}">{{ journal.created_at|naturaltime }}</span>
+                                        </div>
+                                        {% if project.user == request.user %}
+                                            {% if not project.is_shipped %}
+                                                <div class="flex shrink-0 gap-1">
+                                                    {% if journal.type == "untracked" %}
+                                                        <button type="button"
+                                                                title="Delete"
+                                                                onclick="window.parent.postMessage({'type': 'internal', 'action': 'open', 'title': 'Delete journal', 'src': '{% url 'fr.projects.journals.delete' journal.pk %}'}, '*')"
+                                                                class="flex h-7 w-7 items-center justify-center border border-border bg-secondary p-1 hover:bg-destructive hover:text-destructive-foreground">
+                                                            <img draggable="false"
+                                                                 class="image-render-pixelated h-full w-full"
+                                                                 src="{% static 'icons/delete.png' %}"
+                                                                 alt="Delete">
+                                                        </button>
+                                                    {% endif %}
+                                                    <button type="button"
+                                                            title="Edit"
+                                                            class="flex h-7 w-7 items-center justify-center border border-border bg-secondary p-1 hover:bg-primary hover:text-primary-foreground">
+                                                        <img draggable="false"
+                                                             class="image-render-pixelated h-full w-full"
+                                                             src="{% static 'icons/edit.png' %}"
+                                                             alt="Edit">
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="min-w-0 max-w-full overflow-hidden p-3">
+                                        <c-mdpreview class="block min-w-0 max-w-full overflow-hidden wrap-break-word zoom-100 **:[&_img]:zoom-50 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:wrap-break-word [&_code]:wrap-break-word [&_img]:max-w-full [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto">
+                                            {{ journal.content }}
+                                        </c-mdpreview>
+                                    </div>
+                                </article>
+                            {% endwith %}
+                        {% elif activity_item.status %}
+                            {# bad way to check if activity item is a ship #}
+                            {% with activity_item as ship %}
+                                {% if ship.status != "pending" %}
+                                    <c-ship-message title="reviewer note"
+                                                    status="{{ ship.get_status_display }}"
+                                                    :time="ship.updated_at">
+                                        {{ ship.note_to_maker|default:"no message!"|linebreaksbr }}
+                                    </c-ship-message>
+                                {% endif %}
+                                {% if ship.final_status != "pending" %}
+                                    <c-ship-message title="final review complete"
+                                                    status="{{ ship.get_final_status_display }}"
+                                                    :time="ship.updated_at">
+                                        {{ ship.final_note_to_maker|default:"no message!"|linebreaksbr }}
+                                    </c-ship-message>
+                                {% endif %}
+                                <div class="mb-3 border border-success bg-success/10">
+                                    <div class="p-2 px-3 border-b border-success flex gap-2">
+                                        <span class="font-bold text-success">Project shipped</span>
+                                        <span class="mx-1 text-success opacity-50">•</span>
+                                        <span class="text-success opacity-50"
+                                              title="{{ ship.created_at }}">{{ ship.created_at|naturaltime }}</span>
+                                    </div>
+                                    <div class="p-3">
+                                        <div class="mt-1 text-sm text-muted-foreground">This project is now read-only.</div>
+                                        <div class="mt-2 flex w-full overflow-auto gap-4 items-center justify-center md:justify-start">
+                                            <div class="w-24 mb-auto">
+                                                <c-project-ship-mark status="{{ first_pass_status }}" />
+                                                <p class="text-center w-full text-sm">first pass</p>
+                                            </div>
+                                            <div class="w-24 mb-auto">
+                                                <c-project-ship-mark status="{{ second_pass_status }}" />
+                                                <p class="text-center w-full text-sm">second pass</p>
+                                            </div>
+                                            <div class="w-24 mb-auto">
+                                                <c-project-ship-mark status="{{ ship.final_status }}" />
+                                                <p class="text-center w-full text-sm">final review</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% endif %}
+                    {% empty %}
+                        <div class="px-4 py-10 text-center">
+                            <div class="font-bold">No journal entries</div>
+                            <div class="mt-1 text-sm text-muted-foreground">Your project progress will appear here... after you journal</div>
+                            {% if not project.is_shipped %}
+                                <button type="button"
+                                        onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                        class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
+                                    + New journal
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
+        <div class="status-field-border flex shrink-0 items-center justify-between bg-card p-2 border-t border-border text-xs">
+            <span>{{ project.journals.count }} journal{{ project.journals.count|pluralize }}</span>
+            <span>{{ project.time_logged|minutes_to_hours_minutes }} logged</span>
+        </div>
     </div>
-
-    <div
-        class="status-field-border flex shrink-0 items-center justify-between bg-card p-2 border-t border-border text-xs"
-    >
-        <span> {{ project.journals.count }} journal{{ project.journals.count|pluralize }} </span>
-
-        <span> {{ project.time_logged|minutes_to_hours_minutes }} logged </span>
-    </div>
-</div>
 {% endblock body %}

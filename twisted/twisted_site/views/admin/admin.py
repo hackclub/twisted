@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from typing import Any, override
 
-from django.shortcuts import resolve_url
+from django.http import HttpRequest, HttpResponseBase
+from django.shortcuts import redirect, resolve_url
 from django.views import View
 
 from ...models import AuditLog, ProfileStaffPermissions
@@ -16,8 +18,11 @@ class SidebarLink:
 
 # Create your views here.
 class AdminView(View):
-    def get_context_data(self, page, subpage=None) -> dict:
-        context = {}
+    audit_log: AuditLog  # pyright: ignore[reportUninitializedInstanceVariable]
+    perms: ProfileStaffPermissions | None  # pyright: ignore[reportUninitializedInstanceVariable]
+
+    def get_context_data(self, page: str, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
+        context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
         context["page"] = page
         context["subpage"] = subpage
         context["sidebar_links"] = [
@@ -70,21 +75,24 @@ class AdminView(View):
         context["profile"] = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return context
 
-    def dispatch(self, request, *args, **kwargs):
+    @override
+    def dispatch(
+        self, request: HttpRequest, *args: object, **kwargs: object
+    ) -> HttpResponseBase:
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:  # pyright: ignore[reportAttributeAccessIssue]
+        if not request.user.profile.is_staff:  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,
             path=self.request.get_full_path(),
-            post=((request.method or "").lower() == "post"),
+            post=(("" if request.method in (None, "") else request.method).lower() == "post"),
             additional_context={},
         )
 
-        perms = self.request.user.profile.staff_permissions
+        perms = self.request.user.profile.staff_permissions  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         if perms is None:
-            profile = self.request.user.profile
+            profile = self.request.user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             profile.staff_permissions = ProfileStaffPermissions.objects.create()
             profile.save()
 

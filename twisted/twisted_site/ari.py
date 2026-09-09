@@ -3,16 +3,16 @@ import hmac
 import json
 import time
 from collections.abc import Iterable
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import requests
 from django.conf import settings
 
 from .models import Journal, Project, ProjectShip
 
-ARI_INGEST_ENDPOINT = settings.ARI_INGEST_ENDPOINT
-ARI_SIGNING_SECRET = settings.ARI_SIGNING_SECRET
-ARI_WEBHOOK_SECRET = settings.ARI_WEBHOOK_SECRET
+ARI_INGEST_ENDPOINT = cast(str, settings.ARI_INGEST_ENDPOINT)
+ARI_SIGNING_SECRET = cast(str, settings.ARI_SIGNING_SECRET)
+ARI_WEBHOOK_SECRET = cast(str, settings.ARI_WEBHOOK_SECRET)
 
 # Deliveries older than this are rejected, per the "How delivery works" doc.
 WEBHOOK_MAX_AGE_SECONDS = 5 * 60
@@ -24,7 +24,7 @@ def verify_webhook_signature(
     """Verifies an outbound delivery from Ari (the X-Ari-Signature/-Timestamp/-Delivery-Id
     headers on review.* and ship.updated webhooks). Signed with ARI_WEBHOOK_SECRET, which is
     separate from ARI_SIGNING_SECRET (that one signs requests we send to Ari)."""
-    if not (timestamp and delivery_id and signature):
+    if timestamp == "" or delivery_id == "" or signature == "":
         return False
 
     try:
@@ -34,17 +34,17 @@ def verify_webhook_signature(
         return False
 
     key_bytes = ARI_WEBHOOK_SECRET.encode("utf-8")
-    message_bytes = f"{timestamp}.{delivery_id}.".encode() + body
+    message_bytes: bytes = f"{timestamp}.{delivery_id}.".encode() + body
     expected_signature = hmac.new(key_bytes, message_bytes, hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected_signature, signature)
 
 
-def get_hex_signature(content):
+def get_hex_signature(content: bytes | str) -> str:
     key_bytes = ARI_SIGNING_SECRET.encode("utf-8")
-    try:
-        message_bytes = content.encode("utf-8")
-    except AttributeError:
+    if isinstance(content, str):
+        message_bytes: bytes = content.encode("utf-8")
+    else:
         message_bytes = content
 
     hmac_object = hmac.new(key_bytes, message_bytes, hashlib.sha256)
@@ -53,7 +53,7 @@ def get_hex_signature(content):
     return hex_signature
 
 
-def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify=True):
+def send_request(method: Literal["GET", "POST"], data: Any = None, endpoint: str = "", jsonify: bool = True) -> requests.Response:  # pyrefly: ignore[explicit-any]
     if jsonify or data is None:
         data = json.dumps(data)
 
@@ -62,7 +62,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
             "X-Ari-Signature": get_hex_signature(data),
             "Content-Type": "application/json",
         }
-        message_bytes = data.encode("utf-8")
+        message_bytes = cast(bytes, data.encode("utf-8"))
     else:
         message_bytes = None
         headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
@@ -76,7 +76,7 @@ def send_request(method: Literal["GET", "POST"], data=None, endpoint="", jsonify
 
 
 # external_id = "twisted-{project.id}"
-def send_ship(ship: ProjectShip):
+def send_ship(ship: ProjectShip) -> None:
     if settings.DEBUG_REVIEW:
         return
     external_id = f"twisted-{ship.project.id}"
@@ -111,8 +111,8 @@ def send_ship(ship: ProjectShip):
         "admin_project_url": f"https://twisted.hackclub.com/admin/projects/{ship.project.id}",
     }
 
-    journals = []
-    orm_journals: Iterable[Journal] = ship.project.journals.all()  # pyrefly: ignore[missing-attribute]
+    journals: list[dict[str, str | int]] = []
+    orm_journals = cast(Iterable[Journal], ship.project.journals.all())  # pyrefly: ignore[missing-attribute]
     for journal in orm_journals:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
@@ -145,11 +145,12 @@ def send_ship(ship: ProjectShip):
     r.raise_for_status()
 
 
-def get_project_status(project: Project):
+def get_project_status(project: Project) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
     _resp = r.content
     r.raise_for_status()
-    return r.json()
+    status_data: dict[str, Any] = r.json()  # pyrefly: ignore[explicit-any]
+    return status_data
 
 
 # ARI's phases go: (processing | fraud_review | review | under_review) -- reviewer
@@ -163,10 +164,10 @@ _ARI_DECISION_TO_SHIP_STATUS = {
 }
 
 
-def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:
+def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:  # pyrefly: ignore[explicit-any]
     """Maps an ARI /status response into (first_pass_status, second_pass_status),
     using the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes)."""
-    if not status:
+    if status is None or len(status) == 0:
         return "pending", "pending"
 
     phase = status.get("phase")

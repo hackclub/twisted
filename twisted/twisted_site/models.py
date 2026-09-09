@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Any, cast, override
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
@@ -9,6 +12,10 @@ from . import hackatime
 
 User = get_user_model()
 
+#: Template context dictionaries mix value types by design (mirroring
+#: `django.shortcuts.render`), so they are typed loosely.
+TemplateContext = dict[str, Any]  # pyrefly: ignore[explicit-any]
+
 
 class UploadedFile(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -17,7 +24,8 @@ class UploadedFile(models.Model):
     uploaded_thru = models.CharField(max_length=500)
     filesize = models.IntegerField()
 
-    def __str__(self):
+    @override
+    def __str__(self) -> str:
         return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
 
 
@@ -55,27 +63,28 @@ class Profile(models.Model):
     )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
-    def shipped_projects(self):
-        shipped_projects = []
-        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
+    def shipped_projects(self) -> list["Project"]:
+        shipped_projects: list[Project] = []
+        for project in cast(list[Project], self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
             if project.is_shipped():
                 shipped_projects.append(project)
         return shipped_projects
 
-    def time_logged(self):
+    def time_logged(self) -> int:
         time_logged = 0
-        for project in self.user.projects.all():  # pyrefly: ignore[missing-attribute]
+        for project in cast(list[Project], self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
             time_logged += project.time_logged()
         return time_logged
 
-    def time_shipped(self):
+    def time_shipped(self) -> int:
         time_shipped = 0
         for project in self.shipped_projects():
             time_shipped += project.time_logged()
         return time_shipped
 
-    def __str__(self):
-        return self.user.username  # pyrefly: ignore[missing-attribute]
+    @override
+    def __str__(self) -> str:
+        return cast(str, self.user.username)  # pyrefly: ignore[missing-attribute]
 
 
 class ProfileStaffPermissions(models.Model):
@@ -117,11 +126,12 @@ class Project(models.Model):
     playable_url = models.CharField(max_length=200, blank=True, default="")
     screenshot_url = models.CharField(max_length=500, blank=True, default="")
 
-    def __str__(self):
-        return self.project_name
+    @override
+    def __str__(self) -> str:
+        return cast(str, self.project_name)  # pyrefly: ignore[redundant-cast]
 
     def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
-        if not self.hackatime_project_name:
+        if self.hackatime_project_name == "":
             return
         projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[missing-attribute]
         for project in projects:
@@ -129,52 +139,52 @@ class Project(models.Model):
                 return project
         return
 
-    def time_logged(self, include_all_minutes=False):
+    def time_logged(self, include_all_minutes: bool = False) -> int:
         minutes = 0
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += journal.minutes_worked
+                minutes += cast(int, journal.minutes_worked)
             else:
-                minutes += journal.reduced_minutes
+                minutes += cast(int, journal.reduced_minutes)
         return minutes
 
-    def hackatime_logged(self, include_all_minutes=False):
+    def hackatime_logged(self, include_all_minutes: bool = False) -> int:
         minutes = 0
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if journal.type != "hackatime":
                 continue
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += journal.minutes_worked
+                minutes += cast(int, journal.minutes_worked)
             else:
-                minutes += journal.reduced_minutes
+                minutes += cast(int, journal.reduced_minutes)
         return minutes
 
-    def time_spent(self):
+    def time_spent(self) -> int:
         project = self.get_hackatime_project()
         if project is None:
             return 0
         return project.total_seconds // 60
 
-    def hackatime_time_unjournaled(self):
+    def hackatime_time_unjournaled(self) -> int:
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
-    def latest_ship(self):
+    def latest_ship(self) -> "ProjectShip | None":
         ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-        return ship
+        return cast("ProjectShip | None", ship)
 
-    def is_shipped(self):
+    def is_shipped(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status != "requested_changes"
+        return cast(bool, latest_ship.status != "requested_changes")  # pyrefly: ignore[redundant-cast]
 
-    def is_approved(self):
+    def is_approved(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status == "approved"
+        return cast(bool, latest_ship.status == "approved")  # pyrefly: ignore[redundant-cast]
 
 
 JOURNAL_TYPES = {
@@ -198,7 +208,8 @@ class Journal(models.Model):
     minutes_worked = models.IntegerField(validators=[MinValueValidator(0)])
     reduced_minutes = models.IntegerField(validators=[MinValueValidator(0)])
 
-    def __str__(self):
+    @override
+    def __str__(self) -> str:
         return f"{self.reduced_minutes} mins on {self.project}"
 
 
@@ -231,7 +242,8 @@ class ProjectShip(models.Model):
     final_note_to_maker = models.TextField(blank=True, default="")
     final_audit_note = models.TextField(blank=True, default="")
 
-    def __str__(self):
+    @override
+    def __str__(self) -> str:
         return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
 
@@ -245,16 +257,16 @@ class Pathway(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def ended(self):
-        return timezone.now() > self.end
+    def ended(self) -> bool:
+        return timezone.now() > cast(datetime, self.end)  # pyrefly: ignore[redundant-cast]
 
-    def didnt_start(self):
-        return self.start > timezone.now()
+    def didnt_start(self) -> bool:
+        return cast(datetime, self.start) > timezone.now()  # pyrefly: ignore[redundant-cast]
 
-    def in_progress(self):
+    def in_progress(self) -> bool:
         return not self.ended() and not self.didnt_start()
 
-    def status(self):
+    def status(self) -> str | None:
         if self.ended():
             return "ended"
         if self.didnt_start():
@@ -262,14 +274,14 @@ class Pathway(models.Model):
         if self.in_progress():
             return "in progress"
 
-    def mins_spent(self, user: AbstractBaseUser):
+    def mins_spent(self, user: AbstractBaseUser) -> int:
         pathways = Pathway.objects.order_by("start").values(
             "id", "start", "end", "min_mins"
         )
-        if not pathways:
+        if not pathways.exists():
             return 0
 
-        pathway_totals = {p["id"]: 0 for p in pathways}
+        pathway_totals: dict[int, int] = {p["id"]: 0 for p in pathways}
 
         journals = (
             Journal.objects.filter(project__user=user)
@@ -278,7 +290,7 @@ class Pathway(models.Model):
         )
 
         for j_created, j_mins in journals:
-            mins_remaining = j_mins
+            mins_remaining = cast(int, j_mins)
             for pathway in pathways:
                 if mins_remaining <= 0:
                     break
@@ -287,9 +299,9 @@ class Pathway(models.Model):
                 if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = pathway["id"]
+                p_id = cast(int, pathway["id"])
                 mins_completed = pathway_totals.get(p_id, 0)
-                mins_required = pathway["min_mins"]
+                mins_required = cast(int, pathway["min_mins"])
 
                 if mins_completed >= mins_required:
                     continue
@@ -313,7 +325,7 @@ class Pathway(models.Model):
         pathways = list(
             Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
         )
-        if not pathways:
+        if len(pathways) == 0:
             return {}
 
         # Fetch journals from all users that fit within this pathway's active time frame
@@ -327,14 +339,14 @@ class Pathway(models.Model):
             .values_list("project__user_id", "created_at", "reduced_minutes")
         )
 
-        user_pathway_totals = {}
+        user_pathway_totals: dict[int, dict[int, int]] = {}
 
         for user_id, j_created, j_mins in journals:
             if user_id not in user_pathway_totals:
                 user_pathway_totals[user_id] = {p["id"]: 0 for p in pathways}
 
             pathway_totals = user_pathway_totals[user_id]
-            mins_remaining = j_mins
+            mins_remaining = cast(int, j_mins)
 
             for pathway in pathways:
                 if mins_remaining <= 0:
@@ -343,9 +355,9 @@ class Pathway(models.Model):
                 if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = pathway["id"]
+                p_id = cast(int, pathway["id"])
                 mins_completed = pathway_totals[p_id]
-                mins_required = pathway["min_mins"]
+                mins_required = cast(int, pathway["min_mins"])
 
                 if mins_completed >= mins_required:
                     continue
@@ -362,16 +374,17 @@ class Pathway(models.Model):
             for user_id, totals in user_pathway_totals.items()
         }
 
-    def qualified_participants(self):
+    def qualified_participants(self) -> list[AbstractBaseUser]:
         per_part = self.mins_spent_per_participant()
-        qualified = []
+        qualified: list[AbstractBaseUser] = []
         for userid, mins in per_part.items():
             if mins >= self.min_mins:
                 qualified.append(User.objects.get(id=userid))
         return qualified
 
-    def __str__(self):
-        return self.name
+    @override
+    def __str__(self) -> str:
+        return cast(str, self.name)  # pyrefly: ignore[redundant-cast]
 
 
 class AuditLog(models.Model):
@@ -383,5 +396,6 @@ class AuditLog(models.Model):
 
     additional_context = models.JSONField(null=True, default=None)
 
-    def __str__(self):
+    @override
+    def __str__(self) -> str:
         return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[missing-attribute]

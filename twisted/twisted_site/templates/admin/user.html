@@ -1,7 +1,9 @@
 {% load maths time_filters %}
 <c-base>
     <a href="{% url 'admin.users' %}">
-        <c-ui.button>Back</c-ui.button>
+        <c-ui.button>
+            Back
+        </c-ui.button>
     </a>
     <c-ui.card class="mt-4 bg-ink-900">
         <div class="flex gap-2">
@@ -9,25 +11,31 @@
             <div>
                 <h3 class="text-lg font-semibold mb-1">
                     @{{ user.profile.slack_username }}
-                    <c-ui.badge size="sm">{{ user.profile.slack_id|default:"user not found" }}</c-ui.badge>
+                    <c-ui.badge size="sm">
+                        {{ user.profile.slack_id|default:"user not found" }}
+                    </c-ui.badge>
                 </h3>
                 {% if user.profile %}
-                <div>
-                    {% if user.profile.is_staff %}
-                    <c-ui.badge size="sm" color="purple">{{ user.profile.staff_permissions.superuser|yesno:"Admin,Staff" }}</c-ui.badge>
-                    {% endif %}
-                    {% if login_maybe %}
-                    <c-ui.badge size="sm" color="{{ user.profile.is_allowed|yesno:'green,red' }}">{{ user.profile.is_allowed|yesno:"Login allowed,Login disallowed" }}</c-ui.badge>
-                    {% endif %}
-                    <c-ui.badge size="sm" color="{{ user.profile.ysws_eligible|yesno:'green,red' }}"
-                        >{{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}</c-ui.badge
-                    >
-                    {% if user.profile.referred_by %}
-                    <c-ui.badge size="sm" color="blue" href="{% url 'admin.users.detail' id=user.profile.referred_by.user.id %}"
-                        >Referred by @{{ user.profile.referred_by.slack_username }}</c-ui.badge
-                    >
-                    {% endif %}
-                </div>
+                    <div>
+                        {% if user.profile.is_staff %}
+                            <c-ui.badge size="sm" color="purple">
+                                {{ user.profile.staff_permissions.superuser|yesno:"Admin,Staff" }}
+                            </c-ui.badge>
+                        {% endif %}
+                        {% if login_maybe %}
+                            <c-ui.badge size="sm" color="{{ user.profile.is_allowed|yesno:'green,red' }}">
+                                {{ user.profile.is_allowed|yesno:"Login allowed,Login disallowed" }}
+                            </c-ui.badge>
+                        {% endif %}
+                        <c-ui.badge size="sm" color="{{ user.profile.ysws_eligible|yesno:'green,red' }}">
+                            {{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}
+                        </c-ui.badge>
+                        {% if user.profile.referred_by %}
+                            <c-ui.badge size="sm"
+                                        color="blue"
+                                        href="{% url 'admin.users.detail' id=user.profile.referred_by.user.id %}">Referred by @{{ user.profile.referred_by.slack_username }}</c-ui.badge>
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -35,140 +43,157 @@
     <div class="mt-4">
         <h1 class="text-2xl font-black">Projects</h1>
         {% if user.projects.all %}
-        <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {% for project in user.projects.all %}
-            <c-ui.card class="bg-ink-900">
-                <div>
-                    <h1 class="text-lg font-bold">{{ project }}</h1>
-                </div>
-                <div>
-                    <c-ui.badge>{{ project.get_project_type_display }}</c-ui.badge>
-                    {% if project.latest_ship %}
-                    <c-ui.badge>{{ project.latest_ship.get_status_display }}</c-ui.badge>
-                    {% endif %}
-                </div>
-                <div>
-                    <p>
-                        {{ project.time_logged|minutes_to_hours_minutes }} logged
-                    </p>
-                </div>
-            </c-ui.card>
-            {% endfor %}
-        </div>
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {% for project in user.projects.all %}
+                    <c-ui.card class="bg-ink-900">
+                        <div>
+                            <h1 class="text-lg font-bold">{{ project }}</h1>
+                        </div>
+                        <div>
+                            <c-ui.badge>
+                                {{ project.get_project_type_display }}
+                            </c-ui.badge>
+                            {% if project.latest_ship %}
+                                <c-ui.badge>
+                                    {{ project.latest_ship.get_status_display }}
+                                </c-ui.badge>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p>{{ project.time_logged|minutes_to_hours_minutes }} logged</p>
+                        </div>
+                        <div class="mt-2">
+                            <a target="_blank" href="{% url 'dashboard' %}?project={{ project.id }}">
+                                <c-ui.button class="inline-flex gap-2 align-middle">
+                                    <svg class="size-6"
+                                         fill-rule="evenodd"
+                                         clip-rule="evenodd"
+                                         stroke-linejoin="round"
+                                         stroke-miterlimit="1.414"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         aria-label="external"
+                                         viewBox="0 0 32 32"
+                                         preserveAspectRatio="xMidYMid meet"
+                                         fill="currentColor"
+                                         width="256"
+                                         height="256">
+                                        <path d="M18.6696 18.2544C18.6196 18.8044 19.025 19.2908 19.575 19.3408C20.125 19.3908 20.6114 18.9855 20.6614 18.4355L20.6615 18.4338C21.0797 16.5772 21.0797 15.163 20.8286 12.6612C20.7628 12.2869 20.6485 11.9033 20.3726 11.6274C20.0967 11.3515 19.7131 11.2372 19.3387 11.1714C16.8371 10.9203 15.4229 10.9203 13.5651 11.3385C13.0263 11.4598 12.6092 11.875 12.6592 12.425C12.7092 12.975 13.1956 13.3804 13.7456 13.3304L13.9557 13.3114C15.4442 13.1765 16.3383 13.0955 17.4922 13.0936L17.4937 13.0951L12.053 18.5358C11.6625 18.9264 11.6625 19.5595 12.053 19.9501C12.4435 20.3406 13.0767 20.3406 13.4672 19.9501L18.9054 14.5119C18.9021 15.6445 18.8229 16.5339 18.6979 17.9365L18.6696 18.2544Z" />
+                                        <path d="M26 16C26 24 24 26 16 26C8 26 6 24 6 16C6 8 8 6 16 6C24 6 26 8 26 16ZM24 16C24 20.014 23.45 21.722 22.586 22.586C21.722 23.45 20.014 24 16 24C11.986 24 10.278 23.45 9.414 22.586C8.55 21.722 8 20.014 8 16C8 11.986 8.55 10.278 9.414 9.414C10.278 8.55 11.986 8 16 8C20.014 8 21.722 8.55 22.586 9.414C23.45 10.278 24 11.986 24 16Z" />
+                                    </svg>
+                                    <span class="my-auto">Open in Twisted</span>
+                                </c-ui.button>
+                            </a>
+                        </div>
+                    </c-ui.card>
+                {% endfor %}
+            </div>
         {% else %}
-        <c-ui.card class="bg-ink-900">
-            <h1 class="text-lg font-bold">
-                No projects found :(
-            </h1>
-            <p>
-                This user has not created any projects!
-            </p>
-        </c-ui.card>
+            <c-ui.card class="bg-ink-900">
+                <h1 class="text-lg font-bold">No projects found :(</h1>
+                <p>This user has not created any projects!</p>
+            </c-ui.card>
         {% endif %}
     </div>
     <div class="mt-4">
         <h1 class="text-2xl font-black">Referrals</h1>
         {% if user.profile.referrals.all %}
-        <c-ui.card class="bg-ink-900 p-0">
-            <c-ui.table>
-                <thead>
-                    <tr>
-                        <th>Referral</th>
-                        <th>Time logged</th>
-                        <th>Progress</th>
-                        <th>YSWS eligible</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for referral in user.profile.referrals.all %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'admin.users.detail' id=referral.user.id %}" class="flex items-center gap-2">
-                                <c-ui.avatar size="sm" src="{{ referral.slack_pfp_url }}" />
-                                @{{ referral.slack_username }}
-                            </a>
-                        </td>
-                        <td>{{ referral.time_logged|minutes_to_hours_minutes }} / 1h</td>
-                        <td class="min-w-32">
-                            <c-ui.progress
-                                value="{% if referral.time_logged > 60 %}100{% else %}{% widthratio referral.time_logged 60 100 %}{% endif %}"
-                                color="{% if referral.time_logged >= 60 %}green{% else %}accent{% endif %}"
-                                show_value="True"
-                            />
-                        </td>
-                        <td>
-                            <div class="size-8">
-                                {% if referral.ysws_eligible %}
-                                <img src="https://icons.hackclub.com/api/icons/green/checkmark" alt="YSWS eligible" class="size-fill">
-                                {% else %}
-                                <img src="https://icons.hackclub.com/api/icons/red/view-close" alt="Not YSWS eligible" class="size-fill">
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </c-ui.table>
-        </c-ui.card>
+            <c-ui.card class="bg-ink-900 p-0">
+                <c-ui.table>
+                    <thead>
+                        <tr>
+                            <th>Referral</th>
+                            <th>Time logged</th>
+                            <th>Progress</th>
+                            <th>YSWS eligible</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for referral in user.profile.referrals.all %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'admin.users.detail' id=referral.user.id %}"
+                                       class="flex items-center gap-2">
+                                        <c-ui.avatar size="sm" src="{{ referral.slack_pfp_url }}" />
+                                        @{{ referral.slack_username }}
+                                    </a>
+                                </td>
+                                <td>{{ referral.time_logged|minutes_to_hours_minutes }} / 1h</td>
+                                <td class="min-w-32">
+                                    <c-ui.progress value="{% if referral.time_logged > 60 %}100{% else %}{% widthratio referral.time_logged 60 100 %}{% endif %}"
+                                                   color="{% if referral.time_logged >= 60 %}green{% else %}accent{% endif %}"
+                                                   show_value="True" />
+                                </td>
+                                <td>
+                                    <div class="size-8">
+                                        {% if referral.ysws_eligible %}
+                                            <img src="https://icons.hackclub.com/api/icons/green/checkmark"
+                                                 alt="YSWS eligible"
+                                                 class="size-fill">
+                                        {% else %}
+                                            <img src="https://icons.hackclub.com/api/icons/red/view-close"
+                                                 alt="Not YSWS eligible"
+                                                 class="size-fill">
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </c-ui.table>
+            </c-ui.card>
         {% else %}
-        <c-ui.card class="bg-ink-900">
-            <h1 class="text-lg font-bold">
-                No referrals found :(
-            </h1>
-            <p>
-                This user hasn't referred anyone yet!
-            </p>
-        </c-ui.card>
+            <c-ui.card class="bg-ink-900">
+                <h1 class="text-lg font-bold">No referrals found :(</h1>
+                <p>This user hasn't referred anyone yet!</p>
+            </c-ui.card>
         {% endif %}
     </div>
     <div class="mt-4">
         <h1 class="text-2xl font-black">Admin<span class="ml-1 text-sm opacity-75 font-normal italic">proceed with caution!</span></h1>
         {% if user.profile.referrals.all %}
-        <c-ui.card class="bg-ink-900 p-0">
-            <c-ui.table>
-                <thead>
-                    <tr>
-                        <th>Permission</th>
-                        <th>Value</th>
-                        <th>Override Value</th>
-                        <th>Save</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        
-                        {% with user.profile.staff_permissions.superuser as val %}
-                            <td>Superuser</td>
-                            <td>
-                                <c-ui.badge color="{{ val|yesno:'green,red' }}">
-                                    {{ val }}
-                                </c-ui.badge>
-                            </td>
-                            <td></td>
-                            <td></td>
-                        {% endwith %}
-                    </tr>
-                </tbody>
-            </c-ui.badge>
-        </c-ui.card>
+            <c-ui.card class="bg-ink-900 p-0">
+                <c-ui.table>
+                    <thead>
+                        <tr>
+                            <th>Permission</th>
+                            <th>Value</th>
+                            <th>Override Value</th>
+                            <th>Save</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {% with user.profile.staff_permissions.superuser as val %}
+                                <td>Superuser</td>
+                                <td>
+                                    <c-ui.badge color="{{ val|yesno:'green,red' }}">
+                                        {{ val }}
+                                    </c-ui.badge>
+                                </td>
+                                <td></td>
+                                <td></td>
+                            {% endwith %}
+                        </tr>
+                    </tbody>
+                </c-ui.table>
+            </c-ui.card>
         {% else %}
-        <c-ui.card class="bg-ink-900">
-            <h1 class="text-lg font-bold">
-                No referrals found :(
-            </h1>
-            <p>
-                This user hasn't referred anyone yet!
-            </p>
-        </c-ui.card>
+            <c-ui.card class="bg-ink-900">
+                <h1 class="text-lg font-bold">No referrals found :(</h1>
+                <p>This user hasn't referred anyone yet!</p>
+            </c-ui.card>
         {% endif %}
     </div>
     {% if login_maybe %}
-    <div class="mt-4">
-        <form method="post" onsubmit="return confirm('Toggle this user\'s allowed state?');">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="toggle_is_allowed">
-            <c-ui.button type="submit">Toggle allowed state</c-ui.button>
-        </form>
-    </div>
+        <div class="mt-4">
+            <form method="post"
+                  onsubmit="return confirm('Toggle this user\'s allowed state?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="toggle_is_allowed">
+                <c-ui.button type="submit">
+                    Toggle allowed state
+                </c-ui.button>
+            </form>
+        </div>
     {% endif %}
 </c-base>

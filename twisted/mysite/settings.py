@@ -15,8 +15,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-if not os.environ.get("ALLOWED_HOSTS"):
-    load_dotenv()
+if os.environ.get("ALLOWED_HOSTS") in (None, ""):
+    _ = load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,14 +47,14 @@ SECURE_HSTS_PRELOAD = not DEBUG
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 allowed_hosts_raw = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost")
-ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_raw.split(",") if host.strip()]
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_raw.split(",") if host.strip() != ""]
 
 
 csrf_origins_raw = os.getenv(
     "CSRF_TRUSTED_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000"
 )
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() for origin in csrf_origins_raw.split(",") if origin.strip()
+    origin.strip() for origin in csrf_origins_raw.split(",") if origin.strip() != ""
 ]
 
 # Application definition
@@ -84,7 +84,7 @@ INSTALLED_APPS = [
 
 if DEBUG:
     # Add django_browser_reload only in DEBUG mode
-    INSTALLED_APPS += ["django_browser_reload"]
+    INSTALLED_APPS += ["django_browser_reload"]  # pyright: ignore[reportConstantRedefinition]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -101,7 +101,7 @@ MIDDLEWARE = [
 
 if DEBUG:
     # Add django_browser_reload middleware only in DEBUG mode
-    MIDDLEWARE += [
+    MIDDLEWARE += [  # pyright: ignore[reportConstantRedefinition]
         "django_browser_reload.middleware.BrowserReloadMiddleware",
     ]
 
@@ -110,7 +110,7 @@ ROOT_URLCONF = "mysite.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [],  # pyrefly: ignore[implicit-any-empty-container]
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

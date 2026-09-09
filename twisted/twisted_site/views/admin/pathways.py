@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 from django.contrib import messages
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -11,15 +12,15 @@ from .admin import AdminView
 
 # Create your views here.
 class PathwayListView(AdminView):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="pathways")
         context["pathways"] = Pathway.objects.all().order_by("start")
 
         pathways = Pathway.objects.order_by("start").all()
 
-        current_pathways = []
-        past_pathways = []
-        future_pathways = []
+        current_pathways: list[Pathway] = []
+        past_pathways: list[Pathway] = []
+        future_pathways: list[Pathway] = []
 
         for pathway in pathways:
             if pathway.in_progress():
@@ -38,30 +39,35 @@ class PathwayListView(AdminView):
 
 
 class PathwayCreateView(AdminView):
-    def get(self, request, error=None, extracontext=None):
+    def get(
+        self,
+        request: HttpRequest,
+        error: str | None = None,
+        extracontext: dict[str, Any] | None = None,  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         if extracontext is None:
             extracontext = {}
 
         context = self.get_context_data(page="pathways", subpage="create")
         context.update(extracontext)
 
-        if error:
+        if error not in (None, ""):
             messages.error(request, error)
 
         return render(request, "admin/pathways/create.html", context=context)
 
-    def post(self, request):
-        pathway_name = request.POST.get("name")
+    def post(self, request: HttpRequest) -> HttpResponse:
+        pathway_name: str | None = request.POST.get("name")
 
-        start_date = request.POST.get("startDate")
-        start_time = request.POST.get("startTime")
+        start_date: str | None = request.POST.get("startDate")
+        start_time: str | None = request.POST.get("startTime")
 
-        end_date = request.POST.get("endDate")
-        end_time = request.POST.get("endTime")
+        end_date: str | None = request.POST.get("endDate")
+        end_time: str | None = request.POST.get("endTime")
 
         min_mins = int(request.POST.get("mins", "0"))
 
-        errcontext = {
+        errcontext: dict[str, Any] = {  # pyrefly: ignore[explicit-any]
             "pathway_name": pathway_name,
             "start_date": start_date,
             "start_time": start_time,
@@ -70,19 +76,19 @@ class PathwayCreateView(AdminView):
             "min_mins": min_mins,
         }
 
-        if not pathway_name:
+        if pathway_name in (None, ""):
             return self.get(request, "No pathway name typed!", errcontext)
 
-        if not start_date:
+        if start_date in (None, ""):
             return self.get(request, "No start date selected!", errcontext)
 
-        if not start_time:
+        if start_time in (None, ""):
             return self.get(request, "No start time selected!", errcontext)
 
-        if not end_date:
+        if end_date in (None, ""):
             return self.get(request, "No end date selected!", errcontext)
 
-        if not end_time:
+        if end_time in (None, ""):
             return self.get(request, "No end time selected!", errcontext)
 
         if min_mins <= 0:
@@ -100,7 +106,7 @@ class PathwayCreateView(AdminView):
             f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
         )
 
-        Pathway.objects.create(
+        _ = Pathway.objects.create(
             start=start, end=end, name=pathway_name, min_mins=min_mins
         )
 
@@ -110,7 +116,7 @@ class PathwayCreateView(AdminView):
 
 
 class PathwayDetailView(AdminView):
-    def get(self, request, id):
+    def get(self, request: HttpRequest, id: int) -> HttpResponse:
         context = self.get_context_data(page="pathways", subpage="detail")
         pathway = get_object_or_404(Pathway, id=id)
         context["pathway"] = pathway
@@ -123,7 +129,7 @@ class PathwayDetailView(AdminView):
             "profile"
         )
 
-        participants: list[dict[str, Any]] = [
+        participants: list[dict[str, Any]] = [  # pyrefly: ignore[explicit-any]
             {
                 "user": user,
                 "mins": mins_per_participant[user.id],  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
@@ -131,13 +137,13 @@ class PathwayDetailView(AdminView):
                     100,
                     round(mins_per_participant[user.id] / pathway.min_mins * 100),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 )
-                if pathway.min_mins
+                if pathway.min_mins != 0
                 else 0,
                 "qualified": mins_per_participant[user.id] >= pathway.min_mins,  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             }
             for user in users
         ]
-        participants.sort(key=lambda p: p["mins"], reverse=True)
+        participants.sort(key=lambda p: p["mins"], reverse=True)  # pyrefly: ignore[implicit-any-lambda]
 
         context["participants"] = participants
         context["qualified_count"] = sum(1 for p in participants if p["qualified"])
