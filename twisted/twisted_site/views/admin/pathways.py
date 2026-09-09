@@ -115,7 +115,9 @@ class PathwayDetailView(AdminView):
         pathway = get_object_or_404(Pathway, id=id)
         context["pathway"] = pathway
 
-        assert isinstance(self.audit_log.additional_context, dict)
+        if not isinstance(self.audit_log.additional_context, dict):
+            self.audit_log.additional_context = {}
+
         self.audit_log.additional_context["pathway_name"] = pathway.name
 
         mins_per_participant = pathway.mins_spent_per_participant()
