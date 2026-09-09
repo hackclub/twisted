@@ -110,6 +110,10 @@ class ProfileStaffPermissions(models.Model):
 
     view_auditlogs = models.BooleanField(default=False)
 
+    @override
+    def __str__(self) -> str:
+        return f"Staff permissions (superuser={self.superuser})"
+
 
 PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}
 
