@@ -70,7 +70,7 @@ urlpatterns = [
     path("admin/", admin.DashboardView.as_view(), name="admin.dash"),
     path("admin/users/", admin.UsersView.as_view(), name="admin.users"),
     path(
-        "admin/users/<int:id>/",
+        "admin/users/<int:user_id>/",
         admin.UserDetailView.as_view(),
         name="admin.users.detail",
     ),
