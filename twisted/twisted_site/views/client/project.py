@@ -135,7 +135,10 @@ class ProjectSettings(View):
 
 class SubmitProject(View):
     def get(
-        self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+        self,
+        request: HttpRequest,
+        id: int,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
             context = TemplateContext()
@@ -162,7 +165,10 @@ class SubmitProject(View):
         return render(request, "client/projects/ship.html", context)
 
     def post(
-        self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+        self,
+        request: HttpRequest,
+        id: int,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
             context = TemplateContext()

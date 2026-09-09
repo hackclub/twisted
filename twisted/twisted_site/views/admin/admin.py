@@ -86,7 +86,10 @@ class AdminView(View):
         self.audit_log = AuditLog(
             user=request.user,
             path=self.request.get_full_path(),
-            post=(("" if request.method in (None, "") else request.method).lower() == "post"),
+            post=(
+                ("" if request.method in (None, "") else request.method).lower()
+                == "post"
+            ),
             additional_context={},
         )
 

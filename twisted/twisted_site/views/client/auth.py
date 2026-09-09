@@ -95,7 +95,9 @@ class AuthCallbackView(View):
         )
 
         try:
-            slack_user = cast(dict[str, Any], slack_bot.users_info(user=slack_id)["user"])
+            slack_user = cast(
+                dict[str, Any], slack_bot.users_info(user=slack_id)["user"]
+            )
             assert isinstance(slack_user, dict), "Slack users_info missing user"
             slack_profile = slack_user["profile"]
             assert isinstance(slack_profile, dict), "Slack user missing profile"

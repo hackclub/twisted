@@ -189,7 +189,10 @@ class NewProjectUntrackedJournal(View):
 
 class DeleteJournal(View):
     def get(
-        self, request: HttpRequest, id: int | None, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+        self,
+        request: HttpRequest,
+        id: int | None,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
             context = {"success": False}
