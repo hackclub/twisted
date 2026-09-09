@@ -53,6 +53,7 @@ def me(access_token: str) -> MeResponse:
 
 def projects(
     access_token: str,
+    *,
     include_archived: bool = False,
     start: datetime | None = datetime(2026, 9, 7, tzinfo=UTC),
     projects: list[str] | None = None,

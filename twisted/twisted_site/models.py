@@ -147,7 +147,7 @@ class Project(models.Model):
                 return project
         return None
 
-    def time_logged(self, include_all_minutes: bool = False) -> int:
+    def time_logged(self, *, include_all_minutes: bool = False) -> int:
         minutes = 0
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
@@ -157,7 +157,7 @@ class Project(models.Model):
                 minutes += cast("int", journal.reduced_minutes)
         return minutes
 
-    def hackatime_logged(self, include_all_minutes: bool = False) -> int:
+    def hackatime_logged(self, *, include_all_minutes: bool = False) -> int:
         minutes = 0
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if journal.type != "hackatime":
