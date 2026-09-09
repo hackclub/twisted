@@ -72,11 +72,11 @@ class Profile(models.Model):
         return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]
 
     def shipped_projects(self) -> list["Project"]:
-        shipped_projects: list[Project] = []
-        for project in cast("list[Project]", self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
-            if project.is_shipped():
-                shipped_projects.append(project)
-        return shipped_projects
+        return [
+            project
+            for project in cast("list[Project]", self.user.projects.all())  # pyrefly: ignore[missing-attribute]
+            if project.is_shipped()
+        ]
 
     def time_logged(self) -> int:
         time_logged = 0
