@@ -14,7 +14,7 @@ class PathwaysView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         pathways = Pathway.objects.order_by("start").all()
 
         current_pathways: list[dict[str, Pathway | int | bool]] = []
@@ -22,7 +22,7 @@ class PathwaysView(View):
         future_pathways: list[dict[str, Pathway | int | bool]] = []
 
         for pathway in pathways:
-            minutes_spent = pathway.mins_spent(cast(AbstractBaseUser, request.user))
+            minutes_spent = pathway.mins_spent(cast("AbstractBaseUser", request.user))
             pathway_info = {
                 "pathway": pathway,
                 "minutes_spent": minutes_spent,

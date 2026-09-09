@@ -31,7 +31,7 @@ class ProjectDetail(View):
 
         context = TemplateContext()
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
         project = get_object_or_404(Project, id=id)
@@ -84,7 +84,7 @@ class ProjectSettings(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
         try:

@@ -15,9 +15,9 @@ class ListProjects(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
-        projects = cast(QuerySet[Project], request.user.projects.all())  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        projects = cast("QuerySet[Project]", request.user.projects.all())  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         return render(
             request,

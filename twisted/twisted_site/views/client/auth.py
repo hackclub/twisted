@@ -42,7 +42,7 @@ class LoginView(View):
 
         redirect_uri = os.environ["HCA_REDIRECT_URI"]
 
-        response = cast(HttpResponse, oauth.hca.authorize_redirect(request, redirect_uri))
+        response = cast("HttpResponse", oauth.hca.authorize_redirect(request, redirect_uri))
         return response
 
 
@@ -52,19 +52,19 @@ class AuthCallbackView(View):
             return JsonResponse({"error": "Not allowed! DM @kavyansh. if this is a mistake!"})
 
         try:
-            token = cast(dict[str, Any], oauth.hca.authorize_access_token(request))
+            token = cast("dict[str, Any]", oauth.hca.authorize_access_token(request))
         except MismatchingStateError:
             return JsonResponse(
                 {"error": "State mismatch; Auth failed. This may be due to a timeout, try again!"},
             )
 
-        userinfo = cast(dict[str, Any] | None, token.get("userinfo"))
+        userinfo = cast("dict[str, Any] | None", token.get("userinfo"))
         if userinfo is None or len(userinfo) == 0:
-            userinfo = cast(dict[str, Any], oauth.hca.userinfo(token=token))
+            userinfo = cast("dict[str, Any]", oauth.hca.userinfo(token=token))
 
         email = userinfo.get("email", "hackclubber@example.com")
-        name = cast(str, userinfo.get("name", ""))
-        sub = cast(str, userinfo.get("sub"))
+        name = cast("str", userinfo.get("name", ""))
+        sub = cast("str", userinfo.get("sub"))
         clean_sub = sub.replace("!", "_")
         slack_id = userinfo.get("slack_id", "")
         if not slack_id:
@@ -92,7 +92,7 @@ class AuthCallbackView(View):
             if not isinstance(raw_slack_user, dict):
                 raise TypeError("Slack users_info missing user")
 
-            slack_user = cast(dict[str, Any], raw_slack_user)
+            slack_user = cast("dict[str, Any]", raw_slack_user)
             slack_profile = slack_user["profile"]
             if not isinstance(slack_profile, dict):
                 raise TypeError("Slack user missing profile")
@@ -155,7 +155,7 @@ class HackatimeCallbackView(View):
         if os.environ.get("LOGIN_ENABLED") == "false":
             return JsonResponse("not allowed!")
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         state = request.GET["state"]
         if not hmac.compare_digest(state, profile.hackatime_state):
@@ -185,7 +185,7 @@ class HackatimeCallbackView(View):
         )
         resp.raise_for_status()
         data = resp.json()
-        access_token = cast(str, data["access_token"])
+        access_token = cast("str", data["access_token"])
 
         me = hackatime.me(access_token)
         if profile.slack_id != me.slack_id:

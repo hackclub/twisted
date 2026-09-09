@@ -233,7 +233,7 @@ class AriView(View):
         if data["event"] == "review.changes":
             if data["decision"] != "changes":
                 return HttpResponse("Event ignored")
-            note_to_maker = cast(str, data["review"]["note_to_maker"])
+            note_to_maker = cast("str", data["review"]["note_to_maker"])
 
             ship = project.latest_ship()
             if ship is None:
@@ -253,7 +253,7 @@ class AriView(View):
 
         if data["event"] == "review.approved":
             review = cast("dict[str, Any]", data["review"])
-            note_to_maker = cast(str, review.get("note_to_maker", ""))
+            note_to_maker = cast("str", review.get("note_to_maker", ""))
             raw_justification = review.get("justification")
 
             ship = project.latest_ship()
@@ -278,7 +278,7 @@ class AriView(View):
 
         if data["event"] == "review.rejected":
             review = cast("dict[str, Any]", data["review"])
-            note_to_maker = cast(str, review.get("note_to_maker", ""))
+            note_to_maker = cast("str", review.get("note_to_maker", ""))
             raw_justification = review.get("justification")
 
             ship = project.latest_ship()

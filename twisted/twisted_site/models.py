@@ -67,14 +67,14 @@ class Profile(models.Model):
 
     def shipped_projects(self) -> list["Project"]:
         shipped_projects: list[Project] = []
-        for project in cast(list[Project], self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
+        for project in cast("list[Project]", self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
             if project.is_shipped():
                 shipped_projects.append(project)
         return shipped_projects
 
     def time_logged(self) -> int:
         time_logged = 0
-        for project in cast(list[Project], self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
+        for project in cast("list[Project]", self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
             time_logged += project.time_logged()
         return time_logged
 
@@ -86,7 +86,7 @@ class Profile(models.Model):
 
     @override
     def __str__(self) -> str:
-        return cast(str, self.user.username)  # pyrefly: ignore[missing-attribute]
+        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]
 
 
 class ProfileStaffPermissions(models.Model):
@@ -130,7 +130,7 @@ class Project(models.Model):
 
     @override
     def __str__(self) -> str:
-        return cast(str, self.project_name)  # pyrefly: ignore[redundant-cast]
+        return cast("str", self.project_name)  # pyrefly: ignore[redundant-cast]
 
     def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
         if self.hackatime_project_name == "":
@@ -146,9 +146,9 @@ class Project(models.Model):
         for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += cast(int, journal.minutes_worked)
+                minutes += cast("int", journal.minutes_worked)
             else:
-                minutes += cast(int, journal.reduced_minutes)
+                minutes += cast("int", journal.reduced_minutes)
         return minutes
 
     def hackatime_logged(self, include_all_minutes: bool = False) -> int:
@@ -158,9 +158,9 @@ class Project(models.Model):
                 continue
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += cast(int, journal.minutes_worked)
+                minutes += cast("int", journal.minutes_worked)
             else:
-                minutes += cast(int, journal.reduced_minutes)
+                minutes += cast("int", journal.reduced_minutes)
         return minutes
 
     def time_spent(self) -> int:
@@ -180,13 +180,13 @@ class Project(models.Model):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return cast(bool, latest_ship.status != "requested_changes")  # pyrefly: ignore[redundant-cast]
+        return cast("bool", latest_ship.status != "requested_changes")  # pyrefly: ignore[redundant-cast]
 
     def is_approved(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return cast(bool, latest_ship.status == "approved")  # pyrefly: ignore[redundant-cast]
+        return cast("bool", latest_ship.status == "approved")  # pyrefly: ignore[redundant-cast]
 
 
 JOURNAL_TYPES = {
@@ -258,10 +258,10 @@ class Pathway(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def ended(self) -> bool:
-        return timezone.now() > cast(datetime, self.end)  # pyrefly: ignore[redundant-cast]
+        return timezone.now() > cast("datetime", self.end)  # pyrefly: ignore[redundant-cast]
 
     def didnt_start(self) -> bool:
-        return cast(datetime, self.start) > timezone.now()  # pyrefly: ignore[redundant-cast]
+        return cast("datetime", self.start) > timezone.now()  # pyrefly: ignore[redundant-cast]
 
     def in_progress(self) -> bool:
         return not self.ended() and not self.didnt_start()
@@ -288,7 +288,7 @@ class Pathway(models.Model):
         )
 
         for j_created, j_mins in journals:
-            mins_remaining = cast(int, j_mins)
+            mins_remaining = cast("int", j_mins)
             for pathway in pathways:
                 if mins_remaining <= 0:
                     break
@@ -297,9 +297,9 @@ class Pathway(models.Model):
                 if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = cast(int, pathway["id"])
+                p_id = cast("int", pathway["id"])
                 mins_completed = pathway_totals.get(p_id, 0)
-                mins_required = cast(int, pathway["min_mins"])
+                mins_required = cast("int", pathway["min_mins"])
 
                 if mins_completed >= mins_required:
                     continue
@@ -342,7 +342,7 @@ class Pathway(models.Model):
                 user_pathway_totals[user_id] = {p["id"]: 0 for p in pathways}
 
             pathway_totals = user_pathway_totals[user_id]
-            mins_remaining = cast(int, j_mins)
+            mins_remaining = cast("int", j_mins)
 
             for pathway in pathways:
                 if mins_remaining <= 0:
@@ -351,9 +351,9 @@ class Pathway(models.Model):
                 if pathway["start"] > j_created or pathway["end"] < j_created:
                     continue
 
-                p_id = cast(int, pathway["id"])
+                p_id = cast("int", pathway["id"])
                 mins_completed = pathway_totals[p_id]
-                mins_required = cast(int, pathway["min_mins"])
+                mins_required = cast("int", pathway["min_mins"])
 
                 if mins_completed >= mins_required:
                     continue
@@ -380,7 +380,7 @@ class Pathway(models.Model):
 
     @override
     def __str__(self) -> str:
-        return cast(str, self.name)  # pyrefly: ignore[redundant-cast]
+        return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
 
 
 class AuditLog(models.Model):

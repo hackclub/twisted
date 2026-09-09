@@ -12,7 +12,7 @@ class DashboardView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
-        profile = cast(Profile, self.request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", self.request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context: dict[str, Any] = {"profile": profile}  # pyrefly: ignore[explicit-any]
 

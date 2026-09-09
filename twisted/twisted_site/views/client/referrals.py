@@ -17,7 +17,7 @@ class ReferralsView(View):
 
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
         if profile.my_referral_code == "":

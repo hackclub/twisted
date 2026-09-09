@@ -10,9 +10,9 @@ from django.conf import settings
 
 from .models import Journal, Project, ProjectShip
 
-ARI_INGEST_ENDPOINT = cast(str, settings.ARI_INGEST_ENDPOINT)
-ARI_SIGNING_SECRET = cast(str, settings.ARI_SIGNING_SECRET)
-ARI_WEBHOOK_SECRET = cast(str, settings.ARI_WEBHOOK_SECRET)
+ARI_INGEST_ENDPOINT = cast("str", settings.ARI_INGEST_ENDPOINT)
+ARI_SIGNING_SECRET = cast("str", settings.ARI_SIGNING_SECRET)
+ARI_WEBHOOK_SECRET = cast("str", settings.ARI_WEBHOOK_SECRET)
 
 # Deliveries older than this are rejected, per the "How delivery works" doc.
 WEBHOOK_MAX_AGE_SECONDS = 5 * 60
@@ -65,7 +65,7 @@ def send_request(
             "X-Ari-Signature": get_hex_signature(data),
             "Content-Type": "application/json",
         }
-        message_bytes = cast(bytes, data.encode("utf-8"))
+        message_bytes = cast("bytes", data.encode("utf-8"))
     else:
         message_bytes = None
         headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
@@ -115,7 +115,7 @@ def send_ship(ship: ProjectShip) -> None:
     }
 
     journals: list[dict[str, str | int]] = []
-    orm_journals = cast(Iterable[Journal], ship.project.journals.all())  # pyrefly: ignore[missing-attribute]
+    orm_journals = cast("Iterable[Journal]", ship.project.journals.all())  # pyrefly: ignore[missing-attribute]
     for journal in orm_journals:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
