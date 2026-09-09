@@ -70,7 +70,7 @@ class AuthCallbackView(View):
             userinfo = cast(dict[str, Any], oauth.hca.userinfo(token=token))
 
         email = userinfo.get("email", "hackclubber@example.com")
-        name = userinfo.get("name", "")
+        name = cast(str, userinfo.get("name", ""))
         sub = cast(str, userinfo.get("sub"))
         clean_sub = sub.replace("!", "_")
         slack_id = userinfo.get("slack_id", "")
@@ -100,12 +100,12 @@ class AuthCallbackView(View):
             slack_profile = slack_user["profile"]
             assert isinstance(slack_profile, dict), "Slack user missing profile"
 
-            display_name = slack_profile.get("display_name")
+            display_name = cast("str | None", slack_profile.get("display_name"))
             if display_name in (None, ""):
-                display_name = slack_profile.get("real_name")
+                display_name = cast("str | None", slack_profile.get("real_name"))
             if display_name in (None, ""):
                 display_name = name
-            avatar_url = slack_profile.get("image_512")
+            avatar_url = cast("str | None", slack_profile.get("image_512"))
             if avatar_url in (None, ""):
                 avatar_url = os.environ["DEFAULT_PFP"]
 
