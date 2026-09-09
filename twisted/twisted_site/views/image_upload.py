@@ -82,7 +82,10 @@ def upload_file(request: HttpRequest) -> JsonResponse:
 
 
 def _upload_fileobj(
-    fileobj: object, filename: str, content_type: str | None, size: int | None,
+    fileobj: object,
+    filename: str,
+    content_type: str | None,
+    size: int | None,
 ) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     try:
         ext = Path(filename).suffix.lower()

@@ -24,7 +24,8 @@ def _quote_block(value: str) -> str:
 
 
 def _build_ship_update_blocks(
-    project: Project, changes: list[dict[str, str]],
+    project: Project,
+    changes: list[dict[str, str]],
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
@@ -57,7 +58,8 @@ def _build_ship_update_blocks(
 
 
 def _build_review_changes_blocks(
-    project: Project, note_to_maker: str,
+    project: Project,
+    note_to_maker: str,
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
@@ -87,7 +89,8 @@ def _build_review_changes_blocks(
 
 
 def _build_review_approved_blocks(
-    project: Project, note_to_maker: str,
+    project: Project,
+    note_to_maker: str,
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
@@ -113,7 +116,8 @@ def _build_review_approved_blocks(
 
 
 def _build_review_rejected_blocks(
-    project: Project, note_to_maker: str,
+    project: Project,
+    note_to_maker: str,
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
@@ -218,7 +222,8 @@ class AriView(View):
             _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_ship_update_blocks(
-                    project, cast("list[dict[str, str]]", data["changes"]),
+                    project,
+                    cast("list[dict[str, str]]", data["changes"]),
                 ),
                 text=f"Your ship for {project.project_name} has been updated by a reviewer!",
             )

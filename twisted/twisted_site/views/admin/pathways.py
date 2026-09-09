@@ -97,7 +97,8 @@ class PathwayCreateView(AdminView):
         current_tz_offset = datetime.now(timezone.get_current_timezone()).strftime("%z")
 
         start = datetime.strptime(
-            f"{start_date} {start_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z",
+            f"{start_date} {start_time} {current_tz_offset}",
+            "%Y-%m-%d %H:%M %z",
         )
 
         end = datetime.strptime(f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z")

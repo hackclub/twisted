@@ -235,7 +235,9 @@ class ProjectShip(models.Model):
     deflation_reason = models.CharField(blank=True, default="", max_length=255)
 
     final_status = models.CharField(
-        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200,
+        default="pending",
+        choices=PROJECT_SHIP_STATUSES,
+        max_length=200,
     )
     final_note_to_maker = models.TextField(blank=True, default="")
     final_audit_note = models.TextField(blank=True, default="")
