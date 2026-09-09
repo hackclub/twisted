@@ -31,7 +31,7 @@ urlpatterns = [
         name="fr.projects.create",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/",
+        "dashboard/frame/projects/<int:project_id>/",
         client.ProjectDetail.as_view(),
         name="fr.projects.detail",
     ),

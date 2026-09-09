@@ -19,7 +19,7 @@ def _or_none(value: str) -> str:
 
 # Create your views here.
 class ProjectDetail(View):
-    def get(self, request: HttpRequest, id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, project_id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -28,7 +28,7 @@ class ProjectDetail(View):
         profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         context["project"] = project
 
         journals = project.journals.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
