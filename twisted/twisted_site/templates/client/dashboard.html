@@ -258,11 +258,9 @@
 </audio>
 
 <template id="taskbutton-template">
-    <button
-        onclick="focusWindow(this.dataset.winId)"
-        class="flex items-center gap-1 !bg-twisted-600 !text-absolute-white text-sm !px-2 !py-1 !border-2 !border-t-twisted-200 !border-l-twisted-200 !border-r-dark-black !border-b-dark-black max-w-40"
-    >
-        <img src="{% static 'images/round-square.jpg' %}" class="size-4 object-cover shrink-0" />
+    <button type="button" onclick="focusWindow(this.dataset.winId)"
+        class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
+        <img src="{% static 'images/directory.png' %}" alt="" class="size-4 object-cover shrink-0">
         <span class="truncate taskbtn-title"></span>
     </button>
 </template>
