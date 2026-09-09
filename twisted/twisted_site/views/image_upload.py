@@ -28,57 +28,59 @@ s3 = boto3.client(
 
 @login_required
 def upload_file(request: HttpRequest) -> JsonResponse:
-    if request.method == "POST":
-        if "file" in request.FILES:
-            file = request.FILES["file"]
-            assert isinstance(file, DjangoUploadedFile)
+    if request.method != "POST":
+        return JsonResponse(
+            {"status": "error", "reason": "Invalid request: method not POST"}
+        )
 
-            if file.content_type not in ALLOWED_CONTENT_TYPES:
-                return JsonResponse(
-                    {
-                        "status": "error",
-                        "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!",
-                    }
-                )
-
-            # The size limit is a server-side policy; never let the client raise it.
-            max_file_mb = 10
-
-            assert file.size is not None
-            file_size_mb = file.size / (1024 * 1024)
-            if file_size_mb > max_file_mb:
-                return JsonResponse(
-                    {"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"}
-                )
-
-            response_data = file_uploader(request, file)
-            # Handle upload errors
-            if response_data.get("status") == "error":
-                return JsonResponse(response_data)
-
-            url = response_data["link"]
-            filename = response_data["name"]
-            _ = UploadedFile.objects.create(
-                uploaded_by=request.user,
-                link=url,
-                cdn_response=response_data,
-                uploaded_thru=request.POST.get("ref", "unknown"),
-                filesize=file.size,
-            )
-
-            return JsonResponse(
-                {
-                    "status": "ok",
-                    "link": url,
-                    "name": filename,
-                    "response": response_data,
-                }
-            )
+    if "file" not in request.FILES:
         return JsonResponse(
             {"status": "error", "reason": "Invalid request: No file found"}
         )
+
+    file = request.FILES["file"]
+    assert isinstance(file, DjangoUploadedFile)
+
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        return JsonResponse(
+            {
+                "status": "error",
+                "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!",
+            }
+        )
+
+    # The size limit is a server-side policy; never let the client raise it.
+    max_file_mb = 10
+
+    assert file.size is not None
+    file_size_mb = file.size / (1024 * 1024)
+    if file_size_mb > max_file_mb:
+        return JsonResponse(
+            {"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"}
+        )
+
+    response_data = file_uploader(request, file)
+    # Handle upload errors
+    if response_data.get("status") == "error":
+        return JsonResponse(response_data)
+
+    url = response_data["link"]
+    filename = response_data["name"]
+    _ = UploadedFile.objects.create(
+        uploaded_by=request.user,
+        link=url,
+        cdn_response=response_data,
+        uploaded_thru=request.POST.get("ref", "unknown"),
+        filesize=file.size,
+    )
+
     return JsonResponse(
-        {"status": "error", "reason": "Invalid request: method not POST"}
+        {
+            "status": "ok",
+            "link": url,
+            "name": filename,
+            "response": response_data,
+        }
     )
 
 
@@ -116,7 +118,10 @@ def _upload_fileobj(
         }
 
 
-def file_uploader(request: HttpRequest, image: "DjangoUploadedFile[Any]") -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
+def file_uploader(
+    request: HttpRequest,
+    image: "DjangoUploadedFile[Any]",  # pyrefly: ignore[explicit-any]
+) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     """
     Basic imgur uploader return as json data.
     """
