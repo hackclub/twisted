@@ -67,6 +67,10 @@ class Profile(models.Model):
     )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
+    @override
+    def __str__(self) -> str:
+        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]
+
     def shipped_projects(self) -> list["Project"]:
         shipped_projects: list[Project] = []
         for project in cast("list[Project]", self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
@@ -85,10 +89,6 @@ class Profile(models.Model):
         for project in self.shipped_projects():
             time_shipped += project.time_logged()
         return time_shipped
-
-    @override
-    def __str__(self) -> str:
-        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]
 
 
 class ProfileStaffPermissions(models.Model):
