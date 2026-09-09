@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Any, cast, override
+from typing import TYPE_CHECKING, Any, cast, override
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -9,6 +8,9 @@ from django.db.models import TextField
 from django.utils import timezone
 
 from . import hackatime
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 User = get_user_model()
 

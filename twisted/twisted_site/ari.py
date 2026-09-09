@@ -2,13 +2,15 @@ import hashlib
 import hmac
 import json
 import time
-from collections.abc import Iterable
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import requests
 from django.conf import settings
 
 from .models import Journal, Project, ProjectShip
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 ARI_INGEST_ENDPOINT = cast("str", settings.ARI_INGEST_ENDPOINT)
 ARI_SIGNING_SECRET = cast("str", settings.ARI_SIGNING_SECRET)
