@@ -259,6 +259,10 @@ class Pathway(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @override
+    def __str__(self) -> str:
+        return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
+
     def ended(self) -> bool:
         return timezone.now() > cast("datetime", self.end)  # pyrefly: ignore[redundant-cast]
 
@@ -381,10 +385,6 @@ class Pathway(models.Model):
             if mins >= self.min_mins:
                 qualified.append(User.objects.get(id=userid))
         return qualified
-
-    @override
-    def __str__(self) -> str:
-        return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
 
 
 class AuditLog(models.Model):
