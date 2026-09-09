@@ -174,7 +174,9 @@ class SubmitProject(View):
 
         if project.is_shipped():
             return self.get(
-                request, project_id, context={"info": "silly! you have already shipped."}
+                request,
+                project_id,
+                context={"info": "silly! you have already shipped."},
             )
 
         if project.playable_url == "":
