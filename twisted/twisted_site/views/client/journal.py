@@ -185,7 +185,7 @@ class DeleteJournal(View):
     def get(
         self,
         request: HttpRequest,
-        id: int | None,
+        journal_id: int | None,
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
@@ -194,8 +194,8 @@ class DeleteJournal(View):
         if request.user.is_anonymous:
             return redirect("homepage")
 
-        if id is not None:
-            journal = get_object_or_404(Journal, id=id)
+        if journal_id is not None:
+            journal = get_object_or_404(Journal, id=journal_id)
             if journal.project.is_shipped():
                 return redirect("fr.projects.detail", journal.project.id)
 
@@ -209,11 +209,11 @@ class DeleteJournal(View):
 
         return render(request, "client/projects/journal/delete.html", context=context)
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse:
+    def post(self, request: HttpRequest, journal_id: int) -> HttpResponse:
         if request.user.is_anonymous:
             return redirect("homepage")
 
-        journal = get_object_or_404(Journal, id=id)
+        journal = get_object_or_404(Journal, id=journal_id)
 
         if journal.project.is_shipped():
             return redirect("fr.projects.detail", journal.project.id)
@@ -226,4 +226,4 @@ class DeleteJournal(View):
 
         _ = journal.delete()
 
-        return self.get(request, id=None, context={"success": True})
+        return self.get(request, journal_id=None, context={"success": True})

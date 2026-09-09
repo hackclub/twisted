@@ -56,7 +56,7 @@ urlpatterns = [
         name="fr.projects.journals.new.untracked",
     ),
     path(
-        "dashboard/frame/journals/delete/<int:id>/",
+        "dashboard/frame/journals/delete/<int:journal_id>/",
         client.DeleteJournal.as_view(),
         name="fr.projects.journals.delete",
     ),
