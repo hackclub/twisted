@@ -51,7 +51,7 @@ urlpatterns = [
         name="fr.projects.journals.new.hackatime",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/journals/new/untracked/",
+        "dashboard/frame/projects/<int:project_id>/journals/new/untracked/",
         client.NewProjectUntrackedJournal.as_view(),
         name="fr.projects.journals.new.untracked",
     ),

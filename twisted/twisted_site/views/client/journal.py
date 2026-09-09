@@ -96,7 +96,7 @@ class NewProjectUntrackedJournal(View):
     def get(
         self,
         request: HttpRequest,
-        id: int,
+        project_id: int,
         info: str | None = None,
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
@@ -107,7 +107,7 @@ class NewProjectUntrackedJournal(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
 
         if project.user != request.user:
             return redirect("dashboard")
@@ -131,8 +131,8 @@ class NewProjectUntrackedJournal(View):
 
         return render(request, "client/projects/journal/new_untracked.html", context=context)
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse:
-        project = get_object_or_404(Project, id=id)
+    def post(self, request: HttpRequest, project_id: int) -> HttpResponse:
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
@@ -148,7 +148,7 @@ class NewProjectUntrackedJournal(View):
         if time_logged > UNTRACKED_MAX_LOGGABLE_MINUTES:
             return self.get(
                 request,
-                id,
+                project_id,
                 info=f"Time logged cannot be more than {UNTRACKED_MAX_LOGGABLE_MINUTES} minutes!",
                 context={"content": content},
             )
@@ -156,7 +156,7 @@ class NewProjectUntrackedJournal(View):
         if time_logged < 0:
             return self.get(
                 request,
-                id,
+                project_id,
                 info="I dont understand, why do you wanna lose time :hs:",
                 context={"content": content},
             )
@@ -164,7 +164,7 @@ class NewProjectUntrackedJournal(View):
         if content_length < min(100, time_logged * 2):
             return self.get(
                 request,
-                id,
+                project_id,
                 info=f"Content length must be more than 120 characters per hour!<br>({len(content)} of {time_logged} required)",
                 context={"content": content},
             )
@@ -178,7 +178,7 @@ class NewProjectUntrackedJournal(View):
         )
         journal.save()
 
-        return self.get(request, id, context={"success": True})
+        return self.get(request, project_id, context={"success": True})
 
 
 class DeleteJournal(View):
