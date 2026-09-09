@@ -245,7 +245,8 @@
             const container = document.getElementById("windows-container");
             const clone = template.content.cloneNode(true);
             const win = clone.querySelector(".window");
-            const id = "win-" + ++windowCounter;
+            windowCounter++;
+            const id = `win-${windowCounter}`;
             win.dataset.winId = id;
 
             win.querySelector(".title-bar-text").textContent = title;
