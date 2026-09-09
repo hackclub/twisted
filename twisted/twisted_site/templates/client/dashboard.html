@@ -56,7 +56,8 @@
             <nav id="taskbar"
                  class="fixed bottom-0 left-0 right-0 z-50 flex h-12 items-center justify-between gap-2 border-t border-border bg-card px-2 sm:px-3">
                 <div class="relative">
-                    <button onclick="toggleStartMenu(event)"
+                    <button type="button"
+                            onclick="toggleStartMenu(event)"
                             class="flex shrink-0 items-center gap-1.5 sm:gap-2 border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground">
                         <img src="{% static 'images/twisted_logo.png' %}"
                              class="h-4 w-6 object-contain"
@@ -172,6 +173,7 @@
             </div>
             <div class="window-body min-h-0 flex-1 overflow-hidden">
                 <iframe class="w-full h-full block src-frame select-none border-0"
+                        title="Window content"
                         src="about:blank"
                         frameborder="0"></iframe>
             </div>
@@ -654,6 +656,7 @@
             {% for window in startup_windows %}
                 <iframe data-href="{{ window.href }}"
                         data-title="{{ window.title }}"
+                        title="{{ window.title }}"
                         onload="
             console.log('loading...');
             newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);
