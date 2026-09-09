@@ -19,7 +19,7 @@ def send_blocks(
     channel: str,
     blocks: list[dict[str, Any]],  # pyrefly: ignore[explicit-any]
     text: str = " ",
-    **kwargs: Any,  # pyrefly: ignore[explicit-any]
+    **kwargs: Any,  # noqa: ANN401 # pyrefly: ignore[explicit-any]
 ) -> SlackResponse:
     return slack_bot.chat_postMessage(channel=channel, text=text, blocks=blocks, **kwargs)
 

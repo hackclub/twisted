@@ -58,7 +58,7 @@ def get_hex_signature(content: bytes | str) -> str:
 
 def send_request(
     method: Literal["GET", "POST"],
-    data: Any = None,  # pyrefly: ignore[explicit-any]
+    data: Any = None,  # noqa: ANN401 # pyrefly: ignore[explicit-any]
     endpoint: str = "",
     jsonify: bool = True,
 ) -> requests.Response:
