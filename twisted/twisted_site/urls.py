@@ -41,7 +41,7 @@ urlpatterns = [
         name="fr.projects.ship",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/settings/",
+        "dashboard/frame/projects/<int:project_id>/settings/",
         client.ProjectSettings.as_view(),
         name="fr.projects.settings",
     ),

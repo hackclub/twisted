@@ -63,17 +63,17 @@ class ProjectDetail(View):
 
 
 class ProjectSettings(View):
-    def get(self, request: HttpRequest, id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, project_id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
         context = TemplateContext()
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         context["project"] = project
 
         if project.is_shipped():
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if project.user != request.user:
             return redirect("dashboard")
@@ -93,16 +93,16 @@ class ProjectSettings(View):
             context,
         )
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse:
+    def post(self, request: HttpRequest, project_id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
         if project.is_shipped():
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         project_type = request.POST["type"]
         if project_type not in PROJECT_TYPE_CHOICES:
