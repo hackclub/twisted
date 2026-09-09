@@ -84,7 +84,7 @@ INSTALLED_APPS = [
 
 if DEBUG:
     # Add django_browser_reload only in DEBUG mode
-    INSTALLED_APPS += ["django_browser_reload"]
+    INSTALLED_APPS += ["django_browser_reload"]  # pyright: ignore[reportConstantRedefinition]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -101,7 +101,7 @@ MIDDLEWARE = [
 
 if DEBUG:
     # Add django_browser_reload middleware only in DEBUG mode
-    MIDDLEWARE += [
+    MIDDLEWARE += [  # pyright: ignore[reportConstantRedefinition]
         "django_browser_reload.middleware.BrowserReloadMiddleware",
     ]
 

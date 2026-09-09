@@ -18,8 +18,8 @@ class SidebarLink:
 
 # Create your views here.
 class AdminView(View):
-    audit_log: AuditLog
-    perms: ProfileStaffPermissions | None
+    audit_log: AuditLog  # pyright: ignore[reportUninitializedInstanceVariable]
+    perms: ProfileStaffPermissions | None  # pyright: ignore[reportUninitializedInstanceVariable]
 
     def get_context_data(self, page: str, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
