@@ -46,7 +46,7 @@ urlpatterns = [
         name="fr.projects.settings",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/journals/new/hackatime/",
+        "dashboard/frame/projects/<int:project_id>/journals/new/hackatime/",
         client.NewProjectHackatimeJournal.as_view(),
         name="fr.projects.journals.new.hackatime",
     ),
