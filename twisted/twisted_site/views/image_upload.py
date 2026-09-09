@@ -122,9 +122,7 @@ def file_uploader(
     request: HttpRequest,
     image: "DjangoUploadedFile[Any]",  # pyrefly: ignore[explicit-any]
 ) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
-    """
-    Basic imgur uploader return as json data.
-    """
+    """Basic imgur uploader return as json data."""
     if image.name is None:
         return {"status": "error", "error": "Uploaded file is missing a filename"}
 
