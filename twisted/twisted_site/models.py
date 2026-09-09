@@ -136,12 +136,12 @@ class Project(models.Model):
 
     def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
         if self.hackatime_project_name == "":
-            return
+            return None
         projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[missing-attribute]
         for project in projects:
             if project.name == self.hackatime_project_name:
                 return project
-        return
+        return None
 
     def time_logged(self, include_all_minutes: bool = False) -> int:
         minutes = 0
@@ -275,6 +275,7 @@ class Pathway(models.Model):
             return "awaiting"
         if self.in_progress():
             return "in progress"
+        return None
 
     def mins_spent(self, user: AbstractBaseUser) -> int:
         pathways = Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")

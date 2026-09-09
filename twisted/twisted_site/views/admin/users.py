@@ -82,3 +82,4 @@ class UserDetailView(AdminView):
                 },
             )
             return resp
+        return None
