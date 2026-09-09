@@ -56,7 +56,7 @@ def upload_file(request: HttpRequest) -> JsonResponse:
     if file_size_mb > max_file_mb:
         return JsonResponse({"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"})
 
-    response_data = file_uploader(request, file)
+    response_data = file_uploader(file)
     # Handle upload errors
     if response_data.get("status") == "error":
         return JsonResponse(response_data)
@@ -119,7 +119,6 @@ def _upload_fileobj(
 
 
 def file_uploader(
-    request: HttpRequest,
     image: "DjangoUploadedFile[Any]",  # pyrefly: ignore[explicit-any]
 ) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     """Basic imgur uploader return as json data."""
