@@ -284,7 +284,7 @@
             realWin.querySelector(".title-bar-controls").addEventListener("pointerdown", stopDragStart);
             realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
                 frame = realWin.querySelector(".src-frame");
-                frame.contentWindow.location.reload();
+                frame.src = safeSrc;
             });
             realWin.querySelector(".close-button").addEventListener("mouseup", () => {
                 realWin.remove();
