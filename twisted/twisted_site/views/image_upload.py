@@ -107,14 +107,15 @@ def _upload_fileobj(
             "size": size,
         }
 
-    except (ClientError, BotoCoreError) as e:
-        return {"status": "error", "error": str(e)}
+    except (ClientError, BotoCoreError):
+        logger.exception("Error during file upload to R2")
+        return {"status": "error", "error": "Could not upload file"}
 
     except Exception as e:
         logger.exception("Unknown error during file upload")
         return {
             "status": "error",
-            "error": f"Unknown Error Occurred: {e!s}",
+            "error": f"Unknown error occurred: {e!s}",
         }
 
 
