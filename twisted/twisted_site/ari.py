@@ -79,6 +79,7 @@ def send_request(
         ARI_INGEST_ENDPOINT + endpoint,
         data=message_bytes,
         headers=headers,
+        timeout=10,
     )
 
 

@@ -188,6 +188,7 @@ class HackatimeCallbackView(View):
                 "redirect_uri": hackatime_redirect_uri,
                 "grant_type": "authorization_code",
             },
+            timeout=10,
         )
         resp.raise_for_status()
         data = resp.json()

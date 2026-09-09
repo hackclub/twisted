@@ -37,6 +37,7 @@ def me(access_token: str) -> MeResponse:
     resp = requests.get(
         HACKATIME_ROOT_URL + "/api/v1/authenticated/me",
         headers=authhelper(access_token),
+        timeout=10,
     )
     resp.raise_for_status()
     data: dict[str, Any] = resp.json()  # pyrefly: ignore[explicit-any]
@@ -69,6 +70,7 @@ def projects(
         HACKATIME_ROOT_URL + "/api/v1/authenticated/projects",
         params=params,
         headers=authhelper(access_token),
+        timeout=10,
     )
     resp.raise_for_status()
     data: dict[str, Any] = resp.json()  # pyrefly: ignore[explicit-any]
