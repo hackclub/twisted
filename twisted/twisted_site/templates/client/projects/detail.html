@@ -91,18 +91,20 @@
             {% if project.is_shipped %}{% endif %}
             {% if not project.hackatime_project_name and project.project_type != "hardware" %}
                 <div class="mb-3 border border-warning bg-warning/10 p-3">
-                    <div class="font-bold text-warning">Hackatime project not linked bru...</div>
+                    <div class="font-bold text-warning">Hackatime project not linked yet</div>
                     <div class="mt-1 text-sm text-muted-foreground">
-                        Vro link a Hackatime project to start tracking time on ts project.
+                        Link a Hackatime project to start tracking time on ts project.
                     </div>
-                    <a href="{% url 'fr.projects.settings' project.pk %}"
-                       class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                    {% if project.user == user %}
+                        <a href="{% url 'fr.projects.settings' project.pk %}"
+                        class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
                         Open project settings
                     </a>
+                    {% endif %}
                 </div>
             {% elif not project.repo_url %}
                 <div class="mb-3 border border-warning bg-warning/10 p-3">
-                    <div class="font-bold text-warning">VRO repository not linked</div>
+                    <div class="font-bold text-warning">Repository not linked!</div>
                     <div class="mt-1 text-sm text-muted-foreground">Link a repository before shipping your project.</div>
                     <a href="{% url 'fr.projects.settings' project.pk %}"
                        class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
@@ -129,7 +131,7 @@
                 </div>
             {% elif project.time_logged < 60 %}
                 <div class="mb-3 border border-warning bg-warning/10 p-3">
-                    <div class="font-bold text-warning">log more time!</div>
+                    <div class="font-bold text-warning">Log more time!</div>
                     <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
                     <button type="button"
                             onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
