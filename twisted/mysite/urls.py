@@ -19,9 +19,20 @@ Including another URLconf
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpRequest, HttpResponse
 from django.urls import include, path
 
-urlpatterns = [path("", include("twisted_site.urls")), *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)]
+
+def health(_request: HttpRequest) -> HttpResponse:
+    return HttpResponse(status=204)
+
+
+urlpatterns = [
+    path("health", health, name="health"),
+    path("health/", health, name="health-slash"),
+    path("", include("twisted_site.urls")),
+    *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
+]
 
 if settings.DEBUG:
     urlpatterns += [
