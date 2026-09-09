@@ -32,6 +32,10 @@ dependencies = [
 [tool.ruff]
 line-length = 100
 
+[tool.ruff.lint]
+extend-select = ["ALL"]
+ignore = ["C901", "CPY001", "D100", "D101", "D102", "D103", "D401", "E501", "PLR0911", "PLR0912", "PLR0915", "S102", "S105"]
+
 [tool.ruff.lint.per-file-ignores]
 "*/migrations/*.py" = ["RUF012"]
 
