@@ -76,7 +76,7 @@ urlpatterns = [
     ),
     path("admin/pathways/", admin.PathwayListView.as_view(), name="admin.pathways"),
     path(
-        "admin/pathways/<int:id>",
+        "admin/pathways/<int:pathway_id>",
         admin.PathwayDetailView.as_view(),
         name="admin.pathways.detail",
     ),

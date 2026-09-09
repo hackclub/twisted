@@ -112,9 +112,9 @@ class PathwayCreateView(AdminView):
 
 
 class PathwayDetailView(AdminView):
-    def get(self, request: HttpRequest, id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, pathway_id: int) -> HttpResponse:
         context = self.get_context_data(page="pathways", subpage="detail")
-        pathway = get_object_or_404(Pathway, id=id)
+        pathway = get_object_or_404(Pathway, id=pathway_id)
         context["pathway"] = pathway
 
         if not isinstance(self.audit_log.additional_context, dict):
