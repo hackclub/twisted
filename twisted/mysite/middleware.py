@@ -14,7 +14,7 @@ class TimezoneMiddleware:
     def __call__(self, request: HttpRequest) -> HttpResponse:
         try:
             # get django_timezone from cookie
-            tzname: str | None = request.COOKIES.get("django_timezone")
+            tzname = request.COOKIES.get("django_timezone")
             if tzname not in (None, ""):
                 timezone.activate(zoneinfo.ZoneInfo(tzname))
             else:
