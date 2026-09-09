@@ -82,6 +82,6 @@ def projects(
                 total_seconds=project["total_seconds"],
                 most_recent_heartbeat=dt,
                 languages=project["languages"],
-            )
+            ),
         )
     return hackatime_projects

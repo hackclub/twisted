@@ -22,7 +22,7 @@ class UsersView(AdminView):
                 Q(profile__slack_username__icontains=query)
                 | Q(profile__slack_id__icontains=query)
                 | Q(first_name__icontains=query)
-                | Q(last_name__icontains=query)
+                | Q(last_name__icontains=query),
             ).order_by("profile__slack_username")
             context["search"] = True
         else:
@@ -71,7 +71,7 @@ class UserDetailView(AdminView):
                     "toast": {
                         "message": f"Set is_allowed to {prof.is_allowed}",
                         "variant": "success",
-                    }
-                }
+                    },
+                },
             )
             return resp

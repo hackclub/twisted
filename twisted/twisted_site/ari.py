@@ -124,7 +124,7 @@ def send_ship(ship: ProjectShip) -> None:
                 "minutes": journal.reduced_minutes,
                 "text": content,
                 "markdown": content,
-            }
+            },
         )
 
     r = send_request(

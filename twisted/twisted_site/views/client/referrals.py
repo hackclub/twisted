@@ -23,7 +23,7 @@ class ReferralsView(View):
         if profile.my_referral_code == "":
             while True:
                 current_code = "".join(
-                    [random.choice(string.ascii_letters + string.digits) for _ in range(12)]
+                    [random.choice(string.ascii_letters + string.digits) for _ in range(12)],
                 )
                 if len(Profile.objects.filter(my_referral_code=current_code)) == 0:
                     profile.my_referral_code = current_code

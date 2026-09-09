@@ -36,18 +36,18 @@ class DashboardView(AdminView):
 
         context["hours_logged"] = round(hours_logged, 2)
         context["hours_logged_chart"] = json.dumps(
-            [["Date", "Hours"]] + list(hours_logged_chart.items())
+            [["Date", "Hours"]] + list(hours_logged_chart.items()),
         )
         context["logged_project_type"] = json.dumps(
-            [["Type", "Hours"]] + list(logged_project_type.items())
+            [["Type", "Hours"]] + list(logged_project_type.items()),
         )
 
         context["hours_shipped"] = round(hours_shipped, 2)
         context["hours_shipped_chart"] = json.dumps(
-            [["Date", "Hours"]] + list(hours_shipped_chart.items())
+            [["Date", "Hours"]] + list(hours_shipped_chart.items()),
         )
         context["shipped_project_type"] = json.dumps(
-            [["Type", "Hours"]] + list(shipped_project_type.items())
+            [["Type", "Hours"]] + list(shipped_project_type.items()),
         )
 
         return TemplateResponse(request, "admin/dashboard.html", context=context)

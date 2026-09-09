@@ -42,7 +42,7 @@ def upload_file(request: HttpRequest) -> JsonResponse:
             {
                 "status": "error",
                 "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!",
-            }
+            },
         )
 
     # The size limit is a server-side policy; never let the client raise it.
@@ -74,12 +74,12 @@ def upload_file(request: HttpRequest) -> JsonResponse:
             "link": url,
             "name": filename,
             "response": response_data,
-        }
+        },
     )
 
 
 def _upload_fileobj(
-    fileobj: object, filename: str, content_type: str | None, size: int | None
+    fileobj: object, filename: str, content_type: str | None, size: int | None,
 ) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     try:
         ext = Path(filename).suffix.lower()

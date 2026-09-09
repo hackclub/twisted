@@ -28,7 +28,7 @@ oauth.register(
     client_id=os.environ["HCA_CLIENT_ID"],
     client_secret=os.environ["HCA_CLIENT_SECRET"],
     client_kwargs={
-        "scope": "openid profile email phone address birthdate slack_id verification_status"
+        "scope": "openid profile email phone address birthdate slack_id verification_status",
     },
 )
 
@@ -55,7 +55,7 @@ class AuthCallbackView(View):
             token = cast(dict[str, Any], oauth.hca.authorize_access_token(request))
         except MismatchingStateError:
             return JsonResponse(
-                {"error": "State mismatch; Auth failed. This may be due to a timeout, try again!"}
+                {"error": "State mismatch; Auth failed. This may be due to a timeout, try again!"},
             )
 
         userinfo = cast(dict[str, Any] | None, token.get("userinfo"))
@@ -71,8 +71,8 @@ class AuthCallbackView(View):
             return JsonResponse(
                 {
                     "error": "Twisted requires a Slack account linked to Hack Club Identity. "
-                    "Please sign up for Slack and link it at https://auth.hackclub.com, then try logging in again."
-                }
+                    "Please sign up for Slack and link it at https://auth.hackclub.com, then try logging in again.",
+                },
             )
 
         verification_status = userinfo.get("verification_status", "")
@@ -138,7 +138,7 @@ class AuthCallbackView(View):
             profile.save()
 
             return redirect(
-                f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}"
+                f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}",
             )
 
         log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
@@ -159,8 +159,8 @@ class HackatimeCallbackView(View):
             profile.save()
             return JsonResponse(
                 {
-                    "error": "State mismatch; Auth failed. Please contact support with the error code if this is unexpected!"
-                }
+                    "error": "State mismatch; Auth failed. Please contact support with the error code if this is unexpected!",
+                },
             )
         profile.hackatime_state = ""
         profile.save()
@@ -187,8 +187,8 @@ class HackatimeCallbackView(View):
         if profile.slack_id != me.slack_id:
             return JsonResponse(
                 {
-                    "error": "Slack ID mismatch. Please contact support with the error code if this is unexpected!"
-                }
+                    "error": "Slack ID mismatch. Please contact support with the error code if this is unexpected!",
+                },
             )
 
         profile.hackatime_access_token = access_token

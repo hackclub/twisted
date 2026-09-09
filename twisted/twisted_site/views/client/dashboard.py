@@ -26,7 +26,7 @@ class DashboardView(View):
                 {
                     "href": resolve_url("fr.projects.detail", project.id),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                     "title": project.project_name,
-                }
+                },
             )
 
         if request.GET.get("discover") is not None:

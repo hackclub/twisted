@@ -28,7 +28,7 @@ def log_to_channel(message: str) -> None:
     try:
         if settings.DEBUG:
             _ = slack_bot.chat_postMessage(
-                channel=SLACK_LOG_CHANNEL, text=message, username="[DEBUG]"
+                channel=SLACK_LOG_CHANNEL, text=message, username="[DEBUG]",
             )
         else:
             _ = slack_bot.chat_postMessage(channel=SLACK_LOG_CHANNEL, text=message)
