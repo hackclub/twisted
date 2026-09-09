@@ -1,12 +1,14 @@
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
-from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
 from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project
 from twisted_site.slack import log_to_channel
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
 
 
 # Create your views here.
