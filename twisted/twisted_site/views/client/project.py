@@ -129,7 +129,7 @@ class SubmitProject(View):
     def get(
         self,
         request: HttpRequest,
-        id: int,
+        project_id: int,
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
@@ -138,15 +138,15 @@ class SubmitProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
         if project.playable_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if project.screenshot_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
             context["info"] = (
@@ -159,7 +159,7 @@ class SubmitProject(View):
     def post(
         self,
         request: HttpRequest,
-        id: int,
+        project_id: int,
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
@@ -168,21 +168,23 @@ class SubmitProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
         if project.is_shipped():
-            return self.get(request, id, context={"info": "silly! you have already shipped."})
+            return self.get(
+                request, project_id, context={"info": "silly! you have already shipped."}
+            )
 
         if project.playable_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if project.screenshot_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
-            return self.get(request, id)
+            return self.get(request, project_id)
 
         ship = ProjectShip(project=project)
         ship.save()

@@ -36,7 +36,7 @@ urlpatterns = [
         name="fr.projects.detail",
     ),
     path(
-        "dashboard/frame/projects/ship/<int:id>/",
+        "dashboard/frame/projects/ship/<int:project_id>/",
         client.SubmitProject.as_view(),
         name="fr.projects.ship",
     ),
