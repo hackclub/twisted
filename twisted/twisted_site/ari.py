@@ -19,9 +19,11 @@ WEBHOOK_MAX_AGE_SECONDS = 5 * 60
 
 
 def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, signature: str) -> bool:
-    """Verifies an outbound delivery from Ari (the X-Ari-Signature/-Timestamp/-Delivery-Id
+    """
+    Verifies an outbound delivery from Ari (the X-Ari-Signature/-Timestamp/-Delivery-Id
     headers on review.* and ship.updated webhooks). Signed with ARI_WEBHOOK_SECRET, which is
-    separate from ARI_SIGNING_SECRET (that one signs requests we send to Ari)."""
+    separate from ARI_SIGNING_SECRET (that one signs requests we send to Ari).
+    """
     if timestamp == "" or delivery_id == "" or signature == "":
         return False
 
@@ -168,8 +170,10 @@ _ARI_DECISION_TO_SHIP_STATUS = {
 
 
 def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:  # pyrefly: ignore[explicit-any]
-    """Maps an ARI /status response into (first_pass_status, second_pass_status),
-    using the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes)."""
+    """
+    Maps an ARI /status response into (first_pass_status, second_pass_status),
+    using the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes).
+    """
     if status is None or len(status) == 0:
         return "pending", "pending"
 

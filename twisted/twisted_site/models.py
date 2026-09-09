@@ -318,6 +318,7 @@ class Pathway(models.Model):
 
         Returns:
             dict: {user_id: mins_spent}
+
         """
         # Fetch all pathways to accurately model the sequential time donation
         pathways = list(Pathway.objects.order_by("start").values("id", "start", "end", "min_mins"))
