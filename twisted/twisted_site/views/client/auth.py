@@ -90,13 +90,13 @@ class AuthCallbackView(View):
             raw_slack_user = slack_bot.users_info(user=slack_id)["user"]
             if not isinstance(raw_slack_user, dict):
                 msg = "Slack users_info missing user"
-                raise TypeError(msg)
+                _raise_type_error(msg)
 
             slack_user = cast("dict[str, Any]", raw_slack_user)
             slack_profile = slack_user["profile"]
             if not isinstance(slack_profile, dict):
                 msg = "Slack user missing profile"
-                raise TypeError(msg)
+                _raise_type_error(msg)
 
             display_name = cast("str | None", slack_profile.get("display_name"))
             if display_name in (None, ""):

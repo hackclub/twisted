@@ -33,7 +33,7 @@
                         {% if user.profile.referred_by %}
                             <c-ui.badge size="sm"
                                         color="blue"
-                                        href="{% url 'admin.users.detail' id=user.profile.referred_by.user.id %}">Referred by @{{ user.profile.referred_by.slack_username }}</c-ui.badge>
+                                        href="{% url 'admin.users.detail' user_id=user.profile.referred_by.user.id %}">Referred by @{{ user.profile.referred_by.slack_username }}</c-ui.badge>
                         {% endif %}
                     </div>
                 {% endif %}
@@ -111,7 +111,7 @@
                         {% for referral in user.profile.referrals.all %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'admin.users.detail' id=referral.user.id %}"
+                                    <a href="{% url 'admin.users.detail' user_id=referral.user.id %}"
                                        class="flex items-center gap-2">
                                         <c-ui.avatar size="sm" src="{{ referral.slack_pfp_url }}" />
                                         @{{ referral.slack_username }}
