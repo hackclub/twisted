@@ -55,11 +55,11 @@ def get_hex_signature(content: bytes | str) -> str:
     return hmac_object.hexdigest()
 
 
-
 def send_request(
     method: Literal["GET", "POST"],
     data: Any = None,  # noqa: ANN401 # pyrefly: ignore[explicit-any]
     endpoint: str = "",
+    *,
     jsonify: bool = True,
 ) -> requests.Response:
     if jsonify or data is None:
