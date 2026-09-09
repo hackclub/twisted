@@ -135,15 +135,15 @@ class AuthCallbackView(View):
         login(request, user)
 
         if profile.hackatime_access_token == "":
-            HACKATIME_CLIENT_ID = os.environ["HACKATIME_CLIENT_ID"]
-            HACKATIME_REDIRECT_URI = os.environ["HACKATIME_REDIRECT_URI"]
+            hackatime_client_id = os.environ["HACKATIME_CLIENT_ID"]
+            hackatime_redirect_uri = os.environ["HACKATIME_REDIRECT_URI"]
             scopes = "profile+read"
 
             profile.hackatime_state = secrets.token_urlsafe(32)
             profile.save()
 
             return redirect(
-                f"https://hackatime.hackclub.com/oauth/authorize?client_id={HACKATIME_CLIENT_ID}&redirect_uri={HACKATIME_REDIRECT_URI}&response_type=code&scope={scopes}&state={profile.hackatime_state}",
+                f"https://hackatime.hackclub.com/oauth/authorize?client_id={hackatime_client_id}&redirect_uri={hackatime_redirect_uri}&response_type=code&scope={scopes}&state={profile.hackatime_state}",
             )
 
         log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
@@ -171,16 +171,16 @@ class HackatimeCallbackView(View):
         profile.save()
 
         code = request.GET["code"]
-        HACKATIME_CLIENT_ID = os.environ["HACKATIME_CLIENT_ID"]
-        HACKATIME_CLIENT_SECRET = os.environ["HACKATIME_CLIENT_SECRET"]
-        HACKATIME_REDIRECT_URI = os.environ["HACKATIME_REDIRECT_URI"]
+        hackatime_client_id = os.environ["HACKATIME_CLIENT_ID"]
+        hackatime_client_secret = os.environ["HACKATIME_CLIENT_SECRET"]
+        hackatime_redirect_uri = os.environ["HACKATIME_REDIRECT_URI"]
         resp = requests.post(
             "https://hackatime.hackclub.com/oauth/token",
             data={
-                "client_id": HACKATIME_CLIENT_ID,
-                "client_secret": HACKATIME_CLIENT_SECRET,
+                "client_id": hackatime_client_id,
+                "client_secret": hackatime_client_secret,
                 "code": code,
-                "redirect_uri": HACKATIME_REDIRECT_URI,
+                "redirect_uri": hackatime_redirect_uri,
                 "grant_type": "authorization_code",
             },
         )
