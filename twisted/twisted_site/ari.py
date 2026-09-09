@@ -50,9 +50,8 @@ def get_hex_signature(content: bytes | str) -> str:
         message_bytes = content
 
     hmac_object = hmac.new(key_bytes, message_bytes, hashlib.sha256)
-    hex_signature = hmac_object.hexdigest()
+    return hmac_object.hexdigest()
 
-    return hex_signature
 
 
 def send_request(
@@ -73,13 +72,12 @@ def send_request(
     else:
         message_bytes = None
         headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
-    req = requests.request(
+    return requests.request(
         method,
         ARI_INGEST_ENDPOINT + endpoint,
         data=message_bytes,
         headers=headers,
     )
-    return req
 
 
 # external_id = "twisted-{project.id}"

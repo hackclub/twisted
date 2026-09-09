@@ -24,5 +24,4 @@ def minutes_to_hours_minutes(minutes: int | str) -> str | int:
 
 @register.filter
 def rounddelta(delta: timedelta, to: int = 1) -> timedelta:
-    delta = timedelta(seconds=round(delta.total_seconds(), to))
-    return delta
+    return timedelta(seconds=round(delta.total_seconds(), to))

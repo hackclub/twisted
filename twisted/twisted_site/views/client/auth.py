@@ -42,8 +42,7 @@ class LoginView(View):
 
         redirect_uri = os.environ["HCA_REDIRECT_URI"]
 
-        response = cast("HttpResponse", oauth.hca.authorize_redirect(request, redirect_uri))
-        return response
+        return cast("HttpResponse", oauth.hca.authorize_redirect(request, redirect_uri))
 
 
 class AuthCallbackView(View):
