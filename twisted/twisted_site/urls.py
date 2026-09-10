@@ -11,8 +11,8 @@ from .views.client.auth import (
 from .views.image_upload import upload_file
 
 urlpatterns = [
-    path("", view=client.HomepageView.as_view(), name="homepage"),
-    path("faqs/", view=client.FaqsView.as_view(), name="faqs"),
+    path("", client.HomepageView.as_view(), name="homepage"),
+    path("faqs/", client.FaqsView.as_view(), name="faqs"),
     path("api/upload_image/", upload_file, name="misc.upload_file"),
     path("api/ari/", AriView.as_view(), name="ari"),
     path("auth/login/", LoginView.as_view(), name="login"),
@@ -20,7 +20,7 @@ urlpatterns = [
     path(
         "oauth/hackatime_callback/",
         HackatimeCallbackView.as_view(),
-        name="auth_callback",
+        name="hackatime_callback",
     ),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("dashboard/", client.DashboardView.as_view(), name="dashboard"),
@@ -76,7 +76,7 @@ urlpatterns = [
     ),
     path("admin/pathways/", admin.PathwayListView.as_view(), name="admin.pathways"),
     path(
-        "admin/pathways/<int:pathway_id>",
+        "admin/pathways/<int:pathway_id>/",
         admin.PathwayDetailView.as_view(),
         name="admin.pathways.detail",
     ),
