@@ -102,7 +102,7 @@ def _upload_fileobj(
 
         return {
             "status": "ok",
-            "link": f"{os.environ['R2_PUBLIC_URL']}{stored_name}",
+            "link": f"{os.environ['R2_PUBLIC_URL']}/{stored_name}",
             "name": original_filename,
             "size": size,
         }
