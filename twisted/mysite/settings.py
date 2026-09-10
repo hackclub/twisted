@@ -58,7 +58,7 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 TAILWIND_APP_NAME = "tailwindcsstheme"
 
-INSTALLED_APPS = [
+INSTALLED_APPS: list[str] = [
     # 'django.contrib.admin',
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -77,14 +77,15 @@ INSTALLED_APPS = [
     "django_htmx",
     "django_extensions",
     "mathfilters",
+    # Provides naturaldelta/naturalday extras beyond django.contrib.humanize
     "django_humanize",
 ]
 
 if DEBUG:
     # Add django_browser_reload only in DEBUG mode
-    INSTALLED_APPS += ["django_browser_reload"]  # pyright: ignore[reportConstantRedefinition]
+    INSTALLED_APPS.append("django_browser_reload")
 
-MIDDLEWARE = [
+MIDDLEWARE: list[str] = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -99,9 +100,7 @@ MIDDLEWARE = [
 
 if DEBUG:
     # Add django_browser_reload middleware only in DEBUG mode
-    MIDDLEWARE += [  # pyright: ignore[reportConstantRedefinition]
-        "django_browser_reload.middleware.BrowserReloadMiddleware",
-    ]
+    MIDDLEWARE.append("django_browser_reload.middleware.BrowserReloadMiddleware")
 
 ROOT_URLCONF = "mysite.urls"
 
@@ -165,21 +164,30 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 
 USE_I18N = True
-USE_L10N = True
 
 USE_TZ = True
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 CSRF_COOKIE_HTTPONLY = False
 NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm")
 
 # Django Messages Framework
-MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
+MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 
 
 # Logging
