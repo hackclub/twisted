@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponseBase
 from django.shortcuts import redirect, resolve_url
 from django.views import View
 
-from ...models import AuditLog, ProfileStaffPermissions
+from twisted_site.models import AuditLog, ProfileStaffPermissions
 
 
 @dataclass
@@ -50,9 +50,7 @@ class AdminView(View):
                 text="Fulfillment",
                 href=resolve_url("admin.fulfillment"),
             ),
-            SidebarLink(
-                name="shop", icon="bag-add", text="Shop", href=resolve_url("admin.shop")
-            ),
+            SidebarLink(name="shop", icon="bag-add", text="Shop", href=resolve_url("admin.shop")),
             SidebarLink(
                 name="review",
                 icon="message-new",
@@ -76,9 +74,7 @@ class AdminView(View):
         return context
 
     @override
-    def dispatch(
-        self, request: HttpRequest, *args: object, **kwargs: object
-    ) -> HttpResponseBase:
+    def dispatch(self, request: HttpRequest, *args: object, **kwargs: object) -> HttpResponseBase:
         if request.user.is_anonymous:
             return redirect("homepage")
         if not request.user.profile.is_staff:  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]

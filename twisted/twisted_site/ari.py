@@ -2,28 +2,32 @@ import hashlib
 import hmac
 import json
 import time
-from collections.abc import Iterable
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import requests
 from django.conf import settings
 
 from .models import Journal, Project, ProjectShip
 
-ARI_INGEST_ENDPOINT = cast(str, settings.ARI_INGEST_ENDPOINT)
-ARI_SIGNING_SECRET = cast(str, settings.ARI_SIGNING_SECRET)
-ARI_WEBHOOK_SECRET = cast(str, settings.ARI_WEBHOOK_SECRET)
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+ARI_INGEST_ENDPOINT = cast("str", settings.ARI_INGEST_ENDPOINT)
+ARI_SIGNING_SECRET = cast("str", settings.ARI_SIGNING_SECRET)
+ARI_WEBHOOK_SECRET = cast("str", settings.ARI_WEBHOOK_SECRET)
 
 # Deliveries older than this are rejected, per the "How delivery works" doc.
 WEBHOOK_MAX_AGE_SECONDS = 5 * 60
 
 
-def verify_webhook_signature(
-    body: bytes, timestamp: str, delivery_id: str, signature: str
-) -> bool:
-    """Verifies an outbound delivery from Ari (the X-Ari-Signature/-Timestamp/-Delivery-Id
-    headers on review.* and ship.updated webhooks). Signed with ARI_WEBHOOK_SECRET, which is
-    separate from ARI_SIGNING_SECRET (that one signs requests we send to Ari)."""
+def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, signature: str) -> bool:
+    """
+    Verifies an outbound delivery from Ari.
+
+    The X-Ari-Signature/-Timestamp/-Delivery-Id headers on review.* and ship.updated
+    webhooks. Signed with ARI_WEBHOOK_SECRET, which is separate from ARI_SIGNING_SECRET
+    (that one signs requests we send to Ari).
+    """
     if timestamp == "" or delivery_id == "" or signature == "":
         return False
 
@@ -48,12 +52,16 @@ def get_hex_signature(content: bytes | str) -> str:
         message_bytes = content
 
     hmac_object = hmac.new(key_bytes, message_bytes, hashlib.sha256)
-    hex_signature = hmac_object.hexdigest()
-
-    return hex_signature
+    return hmac_object.hexdigest()
 
 
-def send_request(method: Literal["GET", "POST"], data: Any = None, endpoint: str = "", jsonify: bool = True) -> requests.Response:  # pyrefly: ignore[explicit-any]
+def send_request(
+    method: Literal["GET", "POST"],
+    data: Any = None,  # noqa: ANN401 # pyrefly: ignore[explicit-any]
+    endpoint: str = "",
+    *,
+    jsonify: bool = True,
+) -> requests.Response:
     if jsonify or data is None:
         data = json.dumps(data)
 
@@ -62,20 +70,19 @@ def send_request(method: Literal["GET", "POST"], data: Any = None, endpoint: str
             "X-Ari-Signature": get_hex_signature(data),
             "Content-Type": "application/json",
         }
-        message_bytes = cast(bytes, data.encode("utf-8"))
+        message_bytes = cast("bytes", data.encode("utf-8"))
     else:
         message_bytes = None
         headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
-    req = requests.request(
+    return requests.request(
         method,
         ARI_INGEST_ENDPOINT + endpoint,
         data=message_bytes,
         headers=headers,
+        timeout=10,
     )
-    return req
 
 
-# external_id = "twisted-{project.id}"
 def send_ship(ship: ProjectShip) -> None:
     if settings.DEBUG_REVIEW:
         return
@@ -112,7 +119,7 @@ def send_ship(ship: ProjectShip) -> None:
     }
 
     journals: list[dict[str, str | int]] = []
-    orm_journals = cast(Iterable[Journal], ship.project.journals.all())  # pyrefly: ignore[missing-attribute]
+    orm_journals = cast("Iterable[Journal]", ship.project.journals.all())  # pyrefly: ignore[missing-attribute]
     for journal in orm_journals:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
@@ -121,7 +128,7 @@ def send_ship(ship: ProjectShip) -> None:
                 "minutes": journal.reduced_minutes,
                 "text": content,
                 "markdown": content,
-            }
+            },
         )
 
     r = send_request(
@@ -165,8 +172,11 @@ _ARI_DECISION_TO_SHIP_STATUS = {
 
 
 def ship_passes_from_status(status: dict[str, Any] | None) -> tuple[str, str]:  # pyrefly: ignore[explicit-any]
-    """Maps an ARI /status response into (first_pass_status, second_pass_status),
-    using the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes)."""
+    """
+    Maps an ARI /status response into (first_pass_status, second_pass_status).
+
+    Uses the PROJECT_SHIP_STATUSES vocabulary (pending/approved/rejected/requested_changes).
+    """
     if status is None or len(status) == 0:
         return "pending", "pending"
 

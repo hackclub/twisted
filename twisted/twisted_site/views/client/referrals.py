@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 from typing import Any, cast
 
@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
-from ...models import Profile
+from twisted_site.models import Profile
 
 
 # Create your views here.
@@ -17,16 +17,13 @@ class ReferralsView(View):
 
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
         if profile.my_referral_code == "":
             while True:
                 current_code = "".join(
-                    [
-                        random.choice(string.ascii_letters + string.digits)
-                        for _ in range(12)
-                    ]
+                    [secrets.choice(string.ascii_letters + string.digits) for _ in range(12)],
                 )
                 if len(Profile.objects.filter(my_referral_code=current_code)) == 0:
                     profile.my_referral_code = current_code

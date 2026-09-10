@@ -4,7 +4,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ...models import Journal
+from twisted_site.models import Journal
+
 from .admin import AdminView
 
 
@@ -32,24 +33,22 @@ class DashboardView(AdminView):
             if journal.project.is_shipped():
                 hours_shipped += hours
                 hours_shipped_chart[date] = hours_shipped_chart.get(date, 0) + hours
-                shipped_project_type[journal.project.get_project_type_display()] += (
-                    hours
-                )
+                shipped_project_type[journal.project.get_project_type_display()] += hours
 
         context["hours_logged"] = round(hours_logged, 2)
         context["hours_logged_chart"] = json.dumps(
-            [["Date", "Hours"]] + list(hours_logged_chart.items())
+            [["Date", "Hours"], *list(hours_logged_chart.items())],
         )
         context["logged_project_type"] = json.dumps(
-            [["Type", "Hours"]] + list(logged_project_type.items())
+            [["Type", "Hours"], *list(logged_project_type.items())],
         )
 
         context["hours_shipped"] = round(hours_shipped, 2)
         context["hours_shipped_chart"] = json.dumps(
-            [["Date", "Hours"]] + list(hours_shipped_chart.items())
+            [["Date", "Hours"], *list(hours_shipped_chart.items())],
         )
         context["shipped_project_type"] = json.dumps(
-            [["Type", "Hours"]] + list(shipped_project_type.items())
+            [["Type", "Hours"], *list(shipped_project_type.items())],
         )
 
         return TemplateResponse(request, "admin/dashboard.html", context=context)

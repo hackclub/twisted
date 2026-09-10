@@ -6,9 +6,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from ..ari import verify_webhook_signature
-from ..models import Project
-from ..slack import send_blocks
+from twisted_site.ari import verify_webhook_signature
+from twisted_site.models import Project
+from twisted_site.slack import send_blocks
 
 
 def _escape_mrkdwn(text: str) -> str:
@@ -24,7 +24,8 @@ def _quote_block(value: str) -> str:
 
 
 def _build_ship_update_blocks(
-    project: Project, changes: list[dict[str, str]]
+    project: Project,
+    changes: list[dict[str, str]],
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
@@ -50,14 +51,15 @@ def _build_ship_update_blocks(
                         f"*New:*\n{_quote_block(change['new_value'])}"
                     ),
                 },
-            }
+            },
         )
 
     return blocks
 
 
 def _build_review_changes_blocks(
-    project: Project, note_to_maker: str
+    project: Project,
+    note_to_maker: str,
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
@@ -87,7 +89,8 @@ def _build_review_changes_blocks(
 
 
 def _build_review_approved_blocks(
-    project: Project, note_to_maker: str
+    project: Project,
+    note_to_maker: str,
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
@@ -107,13 +110,14 @@ def _build_review_approved_blocks(
                     "type": "mrkdwn",
                     "text": f"*Note from reviewer:*\n{_quote_block(note_to_maker)}",
                 },
-            }
+            },
         )
     return blocks
 
 
 def _build_review_rejected_blocks(
-    project: Project, note_to_maker: str
+    project: Project,
+    note_to_maker: str,
 ) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
@@ -133,7 +137,7 @@ def _build_review_rejected_blocks(
                     "type": "mrkdwn",
                     "text": f"*Note from reviewer:*\n{_quote_block(note_to_maker)}",
                 },
-            }
+            },
         )
     blocks.append({"type": "divider"})
     blocks.append(
@@ -143,7 +147,7 @@ def _build_review_rejected_blocks(
                 "type": "mrkdwn",
                 "text": "Feel free to drop us a message over at #twisted-help if you think this is a mistake!",
             },
-        }
+        },
     )
     return blocks
 
@@ -218,7 +222,8 @@ class AriView(View):
             _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
                 blocks=_build_ship_update_blocks(
-                    project, cast("list[dict[str, str]]", data["changes"])
+                    project,
+                    cast("list[dict[str, str]]", data["changes"]),
                 ),
                 text=f"Your ship for {project.project_name} has been updated by a reviewer!",
             )
@@ -228,7 +233,7 @@ class AriView(View):
         if data["event"] == "review.changes":
             if data["decision"] != "changes":
                 return HttpResponse("Event ignored")
-            note_to_maker = cast(str, data["review"]["note_to_maker"])
+            note_to_maker = cast("str", data["review"]["note_to_maker"])
 
             ship = project.latest_ship()
             if ship is None:
@@ -248,7 +253,7 @@ class AriView(View):
 
         if data["event"] == "review.approved":
             review = cast("dict[str, Any]", data["review"])
-            note_to_maker = cast(str, review.get("note_to_maker", ""))
+            note_to_maker = cast("str", review.get("note_to_maker", ""))
             raw_justification = review.get("justification")
 
             ship = project.latest_ship()
@@ -259,9 +264,7 @@ class AriView(View):
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
             if isinstance(raw_justification, dict):
-                ship.technical_features = raw_justification.get(
-                    "technical_features", ""
-                )
+                ship.technical_features = raw_justification.get("technical_features", "")
                 ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 
@@ -275,7 +278,7 @@ class AriView(View):
 
         if data["event"] == "review.rejected":
             review = cast("dict[str, Any]", data["review"])
-            note_to_maker = cast(str, review.get("note_to_maker", ""))
+            note_to_maker = cast("str", review.get("note_to_maker", ""))
             raw_justification = review.get("justification")
 
             ship = project.latest_ship()
@@ -286,9 +289,7 @@ class AriView(View):
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
             if isinstance(raw_justification, dict):
-                ship.technical_features = raw_justification.get(
-                    "technical_features", ""
-                )
+                ship.technical_features = raw_justification.get("technical_features", "")
                 ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 

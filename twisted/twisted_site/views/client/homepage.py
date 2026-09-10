@@ -8,10 +8,7 @@ from django.views import View
 # Create your views here.
 class HomepageView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
-        if os.environ.get("LOGIN_ENABLED") == "false":
-            login_enabled = False
-        else:
-            login_enabled = True
+        login_enabled = os.environ.get("LOGIN_ENABLED") != "false"
 
         referral_code: str | None = request.GET.get("ref")
 

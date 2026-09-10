@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ...models import ProjectShip
+from twisted_site.models import ProjectShip
+
 from .admin import AdminView
 
 
@@ -29,7 +30,7 @@ class ReviewView(AdminView):
         return render(request, "admin/debug/review.html", context=context)
 
     def debug_post(self, request: HttpRequest) -> HttpResponse:
-        id: str = request.POST["id"]
+        ship_id: str = request.POST["id"]
 
         status: str = request.POST["status"]
         note_to_maker: str = request.POST["note_to_maker"]
@@ -41,7 +42,7 @@ class ReviewView(AdminView):
         final_note_to_maker: str = request.POST["final_note_to_maker"]
         final_audit_note: str = request.POST["final_audit_note"]
 
-        ship = get_object_or_404(ProjectShip, id=id)
+        ship = get_object_or_404(ProjectShip, id=ship_id)
 
         ship.status = status
         ship.note_to_maker = note_to_maker
@@ -54,5 +55,5 @@ class ReviewView(AdminView):
         ship.final_audit_note = final_audit_note
 
         ship.save()
-        messages.info(request, f"Ship with id {id} updated.")
+        messages.info(request, f"Ship with id {ship_id} updated.")
         return redirect(self.request.path_info)

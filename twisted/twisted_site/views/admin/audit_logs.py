@@ -4,7 +4,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from ...models import AuditLog
+from twisted_site.models import AuditLog
+
 from .admin import AdminView
 
 
@@ -22,7 +23,7 @@ class AuditLogsView(AdminView):
         context_mode: bool = request.GET.get("context_mode", "false") == "true"
         if context_mode:
             auditlogs = auditlogs.exclude(
-                Q(additional_context__isnull=True) | Q(additional_context={})
+                Q(additional_context__isnull=True) | Q(additional_context={}),
             )
 
         paginator = Paginator(auditlogs, 100, orphans=50)
