@@ -1,8 +1,11 @@
+import logging
 import zoneinfo
 from collections.abc import Callable
 
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 class TimezoneMiddleware:
@@ -20,6 +23,7 @@ class TimezoneMiddleware:
             else:
                 timezone.deactivate()
         except (zoneinfo.ZoneInfoNotFoundError, ValueError):
+            logger.warning("Invalid django_timezone cookie value: %r", request.COOKIES.get("django_timezone"))
             timezone.deactivate()
 
         return self.get_response(request)
