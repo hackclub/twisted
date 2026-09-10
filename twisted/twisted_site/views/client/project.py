@@ -7,15 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 from requests import HTTPError, RequestException
 
-from ... import ari, hackatime
-from ...models import (
-    PROJECT_TYPE_CHOICES,
-    Profile,
-    Project,
-    ProjectShip,
-    TemplateContext,
-)
-from ...slack import log_to_channel
+from twisted_site import ari, hackatime
+from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip, TemplateContext
+from twisted_site.slack import log_to_channel
 
 
 def _or_none(value: str) -> str:
@@ -25,16 +19,16 @@ def _or_none(value: str) -> str:
 
 # Create your views here.
 class ProjectDetail(View):
-    def get(self, request: HttpRequest, id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, project_id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
         context = TemplateContext()
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         context["project"] = project
 
         journals = project.journals.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
@@ -69,28 +63,26 @@ class ProjectDetail(View):
 
 
 class ProjectSettings(View):
-    def get(self, request: HttpRequest, id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, project_id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
         context = TemplateContext()
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         context["project"] = project
 
         if project.is_shipped():
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if project.user != request.user:
             return redirect("dashboard")
 
-        profile = cast(Profile, request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         context["profile"] = profile
 
         try:
-            context["hackatime_projects"] = hackatime.projects(
-                profile.hackatime_access_token
-            )
+            context["hackatime_projects"] = hackatime.projects(profile.hackatime_access_token)
         except HTTPError:
             no_projects: list[hackatime.HackatimeProject] = []
             context["hackatime_projects"] = no_projects
@@ -101,16 +93,16 @@ class ProjectSettings(View):
             context,
         )
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse:
+    def post(self, request: HttpRequest, project_id: int) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
         if project.is_shipped():
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         project_type = request.POST["type"]
         if project_type not in PROJECT_TYPE_CHOICES:
@@ -127,7 +119,7 @@ class ProjectSettings(View):
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         log_to_channel(
-            f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(project.hackatime_project_name)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}"
+            f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(project.hackatime_project_name)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}",
         )
 
         return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
@@ -135,7 +127,10 @@ class ProjectSettings(View):
 
 class SubmitProject(View):
     def get(
-        self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+        self,
+        request: HttpRequest,
+        project_id: int,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
             context = TemplateContext()
@@ -143,15 +138,15 @@ class SubmitProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
         if project.playable_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if project.screenshot_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
             context["info"] = (
@@ -162,7 +157,10 @@ class SubmitProject(View):
         return render(request, "client/projects/ship.html", context)
 
     def post(
-        self, request: HttpRequest, id: int, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+        self,
+        request: HttpRequest,
+        project_id: int,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
             context = TemplateContext()
@@ -170,23 +168,25 @@ class SubmitProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
         if project.is_shipped():
             return self.get(
-                request, id, context={"info": "silly! you have already shipped."}
+                request,
+                project_id,
+                context={"info": "silly! you have already shipped."},
             )
 
         if project.playable_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if project.screenshot_url == "":
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
-            return self.get(request, id)
+            return self.get(request, project_id)
 
         ship = ProjectShip(project=project)
         ship.save()
@@ -198,7 +198,7 @@ class SubmitProject(View):
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         log_to_channel(
-            f":shipitparrot: Project *<{project_url}|{project.project_name}> shipped with *{project.time_logged()} minutes*"
+            f":shipitparrot: Project *<{project_url}|{project.project_name}> shipped with *{project.time_logged()} minutes*",
         )
 
         return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]

@@ -6,7 +6,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from ...models import Pathway, User
+from twisted_site.models import Pathway, User
+
 from .admin import AdminView
 
 
@@ -92,23 +93,18 @@ class PathwayCreateView(AdminView):
             return self.get(request, "No end time selected!", errcontext)
 
         if min_mins <= 0:
-            return self.get(
-                request, "Minimum minutes must be greater than zero!", errcontext
-            )
+            return self.get(request, "Minimum minutes must be greater than zero!", errcontext)
 
         current_tz_offset = datetime.now(timezone.get_current_timezone()).strftime("%z")
 
         start = datetime.strptime(
-            f"{start_date} {start_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
+            f"{start_date} {start_time} {current_tz_offset}",
+            "%Y-%m-%d %H:%M %z",
         )
 
-        end = datetime.strptime(
-            f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z"
-        )
+        end = datetime.strptime(f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z")
 
-        _ = Pathway.objects.create(
-            start=start, end=end, name=pathway_name, min_mins=min_mins
-        )
+        _ = Pathway.objects.create(start=start, end=end, name=pathway_name, min_mins=min_mins)
 
         messages.success(request, f'Successfully created Pathway for "{pathway_name}"!')
 
@@ -116,18 +112,18 @@ class PathwayCreateView(AdminView):
 
 
 class PathwayDetailView(AdminView):
-    def get(self, request: HttpRequest, id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, pathway_id: int) -> HttpResponse:
         context = self.get_context_data(page="pathways", subpage="detail")
-        pathway = get_object_or_404(Pathway, id=id)
+        pathway = get_object_or_404(Pathway, id=pathway_id)
         context["pathway"] = pathway
 
-        assert isinstance(self.audit_log.additional_context, dict)
+        if not isinstance(self.audit_log.additional_context, dict):
+            self.audit_log.additional_context = {}
+
         self.audit_log.additional_context["pathway_name"] = pathway.name
 
         mins_per_participant = pathway.mins_spent_per_participant()
-        users = User.objects.filter(id__in=mins_per_participant.keys()).select_related(
-            "profile"
-        )
+        users = User.objects.filter(id__in=mins_per_participant.keys()).select_related("profile")
 
         participants: list[dict[str, Any]] = [  # pyrefly: ignore[explicit-any]
             {

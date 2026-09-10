@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from ...models import Journal, Project, TemplateContext
+from twisted_site.models import Journal, Project, TemplateContext
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
@@ -15,7 +15,7 @@ class NewProjectHackatimeJournal(View):
     def get(
         self,
         request: HttpRequest,
-        id: int,
+        project_id: int,
         info: str | None = None,
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
@@ -26,14 +26,14 @@ class NewProjectHackatimeJournal(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
         context["project"] = project
 
         if project.is_shipped():
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         log_minutes = project.hackatime_time_unjournaled()
 
@@ -41,21 +41,17 @@ class NewProjectHackatimeJournal(View):
 
         context["log_minutes"] = log_minutes
 
-        return render(
-            request, "client/projects/journal/new_hackatime.html", context=context
-        )
+        return render(request, "client/projects/journal/new_hackatime.html", context=context)
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse:
-        project = get_object_or_404(Project, id=id)
+    def post(self, request: HttpRequest, project_id: int) -> HttpResponse:
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
-        reduced_minutes = min(
-            project.hackatime_time_unjournaled(), HACKATIME_MAX_LOGGABLE_MINUTES
-        )
+        reduced_minutes = min(project.hackatime_time_unjournaled(), HACKATIME_MAX_LOGGABLE_MINUTES)
 
         if project.is_shipped():
-            return redirect("fr.projects.detail", id)
+            return redirect("fr.projects.detail", project_id)
 
         content = request.POST["content"]
 
@@ -68,7 +64,7 @@ class NewProjectHackatimeJournal(View):
         if image_count < required_image_count:
             return self.get(
                 request,
-                id,
+                project_id,
                 info=f"please add atleast {required_image_count - image_count} more image(s) to log this journal!",
                 context={"content": content},
             )
@@ -76,7 +72,7 @@ class NewProjectHackatimeJournal(View):
         if content_length < min(100, required_content_length):
             return self.get(
                 request,
-                id,
+                project_id,
                 info=f"Content length must be more than 20 characters per hour!<br>({content_length} of {required_content_length} required)",
                 context={"content": content},
             )
@@ -90,7 +86,7 @@ class NewProjectHackatimeJournal(View):
         )
         journal.save()
 
-        return self.get(request, id, context={"success": True})
+        return self.get(request, project_id, context={"success": True})
 
 
 UNTRACKED_MAX_LOGGABLE_MINUTES = 60
@@ -100,7 +96,7 @@ class NewProjectUntrackedJournal(View):
     def get(
         self,
         request: HttpRequest,
-        id: int,
+        project_id: int,
         info: str | None = None,
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
@@ -111,7 +107,7 @@ class NewProjectUntrackedJournal(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project = get_object_or_404(Project, id=id)
+        project = get_object_or_404(Project, id=project_id)
 
         if project.user != request.user:
             return redirect("dashboard")
@@ -133,12 +129,10 @@ class NewProjectUntrackedJournal(View):
             "logging untracked journals may lead to heavy time deflation. for hardware projects, consider using lapse and sync to hackatime."
         )
 
-        return render(
-            request, "client/projects/journal/new_untracked.html", context=context
-        )
+        return render(request, "client/projects/journal/new_untracked.html", context=context)
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse:
-        project = get_object_or_404(Project, id=id)
+    def post(self, request: HttpRequest, project_id: int) -> HttpResponse:
+        project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
             return redirect("dashboard")
 
@@ -154,7 +148,7 @@ class NewProjectUntrackedJournal(View):
         if time_logged > UNTRACKED_MAX_LOGGABLE_MINUTES:
             return self.get(
                 request,
-                id,
+                project_id,
                 info=f"Time logged cannot be more than {UNTRACKED_MAX_LOGGABLE_MINUTES} minutes!",
                 context={"content": content},
             )
@@ -162,7 +156,7 @@ class NewProjectUntrackedJournal(View):
         if time_logged < 0:
             return self.get(
                 request,
-                id,
+                project_id,
                 info="I dont understand, why do you wanna lose time :hs:",
                 context={"content": content},
             )
@@ -170,7 +164,7 @@ class NewProjectUntrackedJournal(View):
         if content_length < min(100, time_logged * 2):
             return self.get(
                 request,
-                id,
+                project_id,
                 info=f"Content length must be more than 120 characters per hour!<br>({len(content)} of {time_logged} required)",
                 context={"content": content},
             )
@@ -184,12 +178,15 @@ class NewProjectUntrackedJournal(View):
         )
         journal.save()
 
-        return self.get(request, id, context={"success": True})
+        return self.get(request, project_id, context={"success": True})
 
 
 class DeleteJournal(View):
     def get(
-        self, request: HttpRequest, id: int | None, context: TemplateContext | None = None  # pyrefly: ignore[explicit-any]
+        self,
+        request: HttpRequest,
+        journal_id: int | None,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         if context is None:
             context = {"success": False}
@@ -197,8 +194,8 @@ class DeleteJournal(View):
         if request.user.is_anonymous:
             return redirect("homepage")
 
-        if id is not None:
-            journal = get_object_or_404(Journal, id=id)
+        if journal_id is not None:
+            journal = get_object_or_404(Journal, id=journal_id)
             if journal.project.is_shipped():
                 return redirect("fr.projects.detail", journal.project.id)
 
@@ -212,11 +209,11 @@ class DeleteJournal(View):
 
         return render(request, "client/projects/journal/delete.html", context=context)
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse:
+    def post(self, request: HttpRequest, journal_id: int) -> HttpResponse:
         if request.user.is_anonymous:
             return redirect("homepage")
 
-        journal = get_object_or_404(Journal, id=id)
+        journal = get_object_or_404(Journal, id=journal_id)
 
         if journal.project.is_shipped():
             return redirect("fr.projects.detail", journal.project.id)
@@ -229,4 +226,4 @@ class DeleteJournal(View):
 
         _ = journal.delete()
 
-        return self.get(request, id=None, context={"success": True})
+        return self.get(request, journal_id=None, context={"success": True})

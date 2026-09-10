@@ -56,7 +56,8 @@
             <nav id="taskbar"
                  class="fixed bottom-0 left-0 right-0 z-50 flex h-12 items-center justify-between gap-2 border-t border-border bg-card px-2 sm:px-3">
                 <div class="relative">
-                    <button onclick="toggleStartMenu(event)"
+                    <button type="button"
+                            onclick="toggleStartMenu(event)"
                             class="flex shrink-0 items-center gap-1.5 sm:gap-2 border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground">
                         <img src="{% static 'images/twisted_logo.png' %}"
                              class="h-4 w-6 object-contain"
@@ -64,8 +65,7 @@
                         Twisted
                     </button>
                     <div id="start-menu"
-                         style="display: none"
-                         class="z-10000 fixed bottom-13 left-5 border-2 border-border shadow-[2px_2px_0px_0px] shadow-accent rounded-md">
+                         class="z-10000 fixed bottom-13 left-5 hidden border-2 border-border shadow-[2px_2px_0px_0px] shadow-accent rounded-md">
                         <div class="flex h-80">
                             <div class="w-44 bg-card p-3 pt-10 flex flex-col rounded-md">
                                 <div class="text-center mb-3 rounded-lg">
@@ -79,7 +79,7 @@
                                 </div>
                                 <div class="font-vintage space-y-1 text-absolute-white text-sm border-t border-twisted-800 pt-2">
                                     {% if user.is_staff %}
-                                        <a href="/admin/"
+                                        <a href="{% url 'admin.dash' %}"
                                            class="block text-absolute-white px-2 py-1 hover:bg-twisted-800">Admin Panel</a>
                                     {% endif %}
                                     <a href="https://docs.twisted.hackclub.com/"
@@ -153,13 +153,7 @@
         </div>
     </main>
     <template id="window-template">
-        <div class="absolute window resize flex flex-col overflow-hidden bg-card border-2 border-dark-black shadow-lg"
-             style="min-width: 40vw;
-                    min-height: 40vh;
-                    left: 300px;
-                    top: 300px;
-                    width: 300px;
-                    height: 300px">
+        <div class="absolute window resize flex flex-col overflow-hidden bg-card border-2 border-dark-black shadow-lg min-w-[40vw] min-h-[40vh] left-75 top-75 w-75 h-75">
             <div class="title-bar w-full h-8 shrink-0 flex items-center justify-between bg-primary text-primary-foreground px-2 select-none">
                 <div class="flex gap-2">
                     <button class="reload-button h-5 w-5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary"
@@ -177,37 +171,41 @@
                             aria-label="Close">×</button>
                 </div>
             </div>
-            <div class="window-body min-h-0 flex-1 overflow-hidden">
-                <iframe class="w-full h-full block src-frame select-none border-0"
-                        src="about:blank"
-                        frameborder="0"></iframe>
-            </div>
-            <div class="resize-handle resize-n"></div>
-            <div class="resize-handle resize-s"></div>
-            <div class="resize-handle resize-e"></div>
-            <div class="resize-handle resize-w"></div>
-            <div class="resize-handle resize-ne"></div>
-            <div class="resize-handle resize-nw"></div>
-            <div class="resize-handle resize-se"></div>
-            <div class="resize-handle resize-sw"></div>
         </div>
-    </template>
-    <audio id="bg-music" loop>
-        <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
-    </audio>
-    <template id="taskbutton-template">
-        <button type="button"
-                onclick="focusWindow(this.dataset.winId)"
-                class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
-            <img src="{% static 'images/directory.png' %}"
-                 alt=""
-                 class="size-4 object-cover shrink-0">
-            <span class="truncate taskbtn-title"></span>
-        </button>
-    </template>
-    <script>
-        let windowCounter = 0;
-        let currentMaximisedWindow = null;
+
+        <div class="window-body min-h-0 flex-1 overflow-hidden">
+            <iframe
+                class="w-full h-full block src-frame select-none border-0"
+                src="about:blank"
+                frameborder="0"
+            ></iframe>
+        </div>
+        <div class="resize-handle resize-n"></div>
+        <div class="resize-handle resize-s"></div>
+        <div class="resize-handle resize-e"></div>
+        <div class="resize-handle resize-w"></div>
+        <div class="resize-handle resize-ne"></div>
+        <div class="resize-handle resize-nw"></div>
+        <div class="resize-handle resize-se"></div>
+        <div class="resize-handle resize-sw"></div>
+    </div>
+</template>
+
+<audio id="bg-music" loop>
+    <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
+</audio>
+
+<template id="taskbutton-template">
+    <button type="button" onclick="focusWindow(this.dataset.winId)"
+        class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
+        <img src="{% static 'images/directory.png' %}" alt="" class="size-4 object-cover shrink-0">
+        <span class="truncate taskbtn-title"></span>
+    </button>
+</template>
+
+<script>
+    let windowCounter = 0;
+    let currentMaximisedWindow = null;
 
         function getSafeInternalUrl(urlValue) {
             try {
@@ -240,14 +238,13 @@
             false,
         );
 
-        function newWindow(title, src, w = 600, h = 600, x = null, y = null) {
-            const template = document.getElementById("window-template");
-            const container = document.getElementById("windows-container");
-            const clone = template.content.cloneNode(true);
-            const win = clone.querySelector(".window");
-            windowCounter++;
-            const id = `win-${windowCounter}`;
-            win.dataset.winId = id;
+    function newWindow(title, src, w = 600, h = 600, x=null, y=null) {
+        const template = document.getElementById("window-template");
+        const container = document.getElementById("windows-container");
+        const clone = template.content.cloneNode(true);
+        const win = clone.querySelector(".window");
+        const id = "win-" + ++windowCounter;
+        win.dataset.winId = id;
 
             win.querySelector(".title-bar-text").textContent = title;
             const safeSrc = getSafeInternalUrl(src);
@@ -275,25 +272,25 @@
             taskBtn.querySelector(".taskbtn-title").textContent = title;
             document.getElementById("taskbar-windows").appendChild(taskBtn);
 
-            realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
-            dragWindow(realWin);
-            initResizeHandles(realWin);
-            focusWindow(id);
-            realWin.querySelector(".max-button").addEventListener("click", () => {
-                fullscreenWindow(realWin);
-            });
-            realWin.querySelector(".title-bar-controls").addEventListener("mousedown", (event) => {
-                event.stopPropagation();
-            });
-            realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
-                frame = realWin.querySelector(".src-frame");
-                frame.contentWindow.location.reload();
-            });
-            realWin.querySelector(".close-button").addEventListener("mouseup", () => {
-                realWin.remove();
-                taskBtn.remove();
-            });
-        }
+        realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
+        dragWindow(realWin);
+        initResizeHandles(realWin);
+        focusWindow(id);
+        realWin.querySelector(".max-button").addEventListener("click", () => {
+            fullscreenWindow(realWin);
+        });
+        realWin.querySelector(".title-bar-controls").addEventListener("mousedown", (event) => {
+            event.stopPropagation();
+        });
+        realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
+            frame = realWin.querySelector(".src-frame");
+            frame.src = frame.src;
+        });
+        realWin.querySelector(".close-button").addEventListener("mouseup", () => {
+            realWin.remove();
+            taskBtn.remove();
+        });
+    }
 
         function fullscreenWindow(win) {
             if (currentMaximisedWindow?.win === win) {
@@ -342,11 +339,9 @@
             win.style.height = "auto";
         }
 
-        function focusWindow(id) {
-            document.querySelectorAll("#taskbar-windows button").forEach((b) => {
-                b.classList.remove("bg-twisted-999!")
-            });
-            const win = document.querySelector(`.window[data-win-id="${id}"]`);
+    function focusWindow(id) {
+        document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
+        const win = document.querySelector('.window[data-win-id="' + id + '"]');
 
             container = document.getElementById("windows-container");
             container.moveBefore(win, null);
@@ -368,6 +363,9 @@
 
         function dragWindow(mywindow) {
             const titleBar = mywindow.getElementsByClassName("title-bar")[0];
+            const frame = mywindow.querySelector(".src-frame");
+            // Required for reliable touch dragging; also stops the browser from hijacking the gesture (scrolling/zooming) mid-drag.
+            titleBar.style.touchAction = "none";
             let dragging = false,
                 startX = 0,
                 startY = 0,
@@ -375,7 +373,9 @@
                 origY = 0,
                 pendingX = 0,
                 pendingY = 0,
-                rafId = null;
+                rafId = null,
+                oldFramePointerEvents = "",
+                oldCursor = "";
 
             function apply() {
                 rafId = null;
@@ -383,48 +383,89 @@
                 mywindow.style.top = `${pendingY}px`;
             }
 
-            function onMove(e) {
-                if (currentMaximisedWindow != null && currentMaximisedWindow.win === mywindow) {
-                    return;
-                }
-                if (!dragging) return;
-                e.preventDefault();
-                const rect = mywindow.getBoundingClientRect();
-                let x = origX + (e.clientX - startX);
-                let y = origY + (e.clientY - startY);
-                const viewportWidth = document.documentElement.clientWidth;
-                const viewportHeight = document.documentElement.clientHeight;
-                const maxX = Math.max(0, viewportWidth - rect.width);
-                const maxY = Math.max(0, viewportHeight - rect.height);
-                x = Math.max(0, Math.min(x, maxX));
-                y = Math.max(0, Math.min(y, maxY));
-                pendingX = x;
-                pendingY = y;
-                // throttle DOM writes to one per animation frame for smoothness
-                if (rafId === null) rafId = requestAnimationFrame(apply);
+        function onMove(e) {
+            if (currentMaximisedWindow != null && currentMaximisedWindow.win == mywindow) {
+                return;
             }
+            if (!dragging) return;
+            e.preventDefault();
+            const rect = mywindow.getBoundingClientRect();
+            let x = origX + (e.clientX - startX);
+            let y = origY + (e.clientY - startY);
+            const viewportWidth = document.documentElement.clientWidth;
+            const viewportHeight = document.documentElement.clientHeight;
+            const maxX = Math.max(0, viewportWidth - rect.width);
+            const maxY = Math.max(0, viewportHeight - rect.height);
+            x = Math.max(0, Math.min(x, maxX));
+            y = Math.max(0, Math.min(y, maxY));
+            pendingX = x;
+            pendingY = y;
+            // throttle DOM writes to one per animation frame for smoothness
+            if (rafId === null) rafId = requestAnimationFrame(apply);
+        }
 
-            function onUp() {
+            function endDrag(e) {
+                if (!dragging) return;
                 dragging = false;
-                document.body.style.userSelect = "";
-                document.removeEventListener("mousemove", onMove);
-                document.removeEventListener("mouseup", onUp);
+                // Flush the last pending position so a fast flick doesn't drop its final move.
                 if (rafId !== null) {
                     cancelAnimationFrame(rafId);
                     rafId = null;
+                    mywindow.style.left = `${pendingX}px`;
+                    mywindow.style.top = `${pendingY}px`;
+                }
+                if (frame) frame.style.pointerEvents = oldFramePointerEvents;
+                document.body.style.userSelect = "";
+                document.body.style.cursor = oldCursor;
+                document.removeEventListener("pointermove", onMove);
+                document.removeEventListener("pointerup", endDrag);
+                document.removeEventListener("pointercancel", endDrag);
+                window.removeEventListener("blur", endDrag);
+                if (e && e.pointerId !== undefined && titleBar.hasPointerCapture && titleBar.hasPointerCapture(e.pointerId)) {
+                    try {
+                        titleBar.releasePointerCapture(e.pointerId);
+                    } catch {
+                        // ignore - capture may already be released
+                    }
                 }
             }
 
-            titleBar.addEventListener("mousedown", (e) => {
+            titleBar.addEventListener("pointerdown", (e) => {
+                // Only drag with the primary (left / touch) button.
+                if (e.button !== undefined && e.button !== 0) return;
+                if (e.isPrimary === false) return;
+                if (currentMaximisedWindow != null && currentMaximisedWindow.win === mywindow) return;
+                // Don't start a drag from the title-bar buttons (controls also stopPropagation).
+                if (e.target.closest?.("button")) return;
                 e.preventDefault();
+                if (mywindow.dataset.winId) focusWindow(mywindow.dataset.winId);
                 dragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
                 origX = mywindow.offsetLeft;
                 origY = mywindow.offsetTop;
+                pendingX = origX;
+                pendingY = origY;
+                // Keep receiving pointermove even when the cursor outruns the
+                // title bar or passes over the iframe (which would otherwise
+                // swallow mouse events and stall the drag).
+                try {
+                    titleBar.setPointerCapture(e.pointerId);
+                } catch (_) {
+                    // Fall back to document listeners below.
+                }
+                // Belt-and-braces: suppress iframe hit-testing so document still sees the pointer.
+                if (frame) {
+                    oldFramePointerEvents = frame.style.pointerEvents;
+                    frame.style.pointerEvents = "none";
+                }
+                oldCursor = document.body.style.cursor;
+                document.body.style.cursor = "grabbing";
                 document.body.style.userSelect = "none";
-                document.addEventListener("mousemove", onMove);
-                document.addEventListener("mouseup", onUp);
+                document.addEventListener("pointermove", onMove);
+                document.addEventListener("pointerup", endDrag);
+                document.addEventListener("pointercancel", endDrag);
+                window.addEventListener("blur", endDrag);
             });
         }
 
@@ -498,13 +539,13 @@
         function toggleStartMenu(event) {
             event.stopPropagation();
             const menu = document.getElementById("start-menu");
-            menu.style.display = menu.style.display === "none" ? "block" : "none";
+            menu.classList.toggle("hidden");
         }
 
         document.addEventListener("click", (e) => {
             const menu = document.getElementById("start-menu");
-            if (menu.style.display !== "none" && !menu.contains(e.target)) {
-                menu.style.display = "none";
+            if (!menu.classList.contains("hidden") && !menu.contains(e.target)) {
+                menu.classList.add("hidden");
             }
         });
 
@@ -606,19 +647,21 @@
             console.log('WELCOME TO TWISTED!!!')
             console.log('shh....')
 
-            console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
-        }, 500)
-    </script>
-    {% if startup_windows %}
-        <div id="_startup" class="hidden">
-            {% for window in startup_windows %}
-                <iframe data-href="{{ window.href }}"
-                        data-title="{{ window.title }}"
-                        onload="
+        console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
+    }, 500)
+</script>
+
+{% if startup_windows %}
+<div id="_startup" class="hidden">
+    {% for window in startup_windows %}
+    <iframe
+        data-href="{{ window.href }}"
+        data-title="{{ window.title }}"
+        onload="
             console.log('loading...');
             newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);
-        "></iframe>
-            {% endfor %}
-        </div>
-    {% endif %}
-{% endblock body %}
+        "
+    ></iframe>
+    {% endfor %}
+</div>
+{% endif %} {% endblock body %}

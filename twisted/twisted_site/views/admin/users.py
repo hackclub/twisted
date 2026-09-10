@@ -7,7 +7,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 
-from ...models import User
+from twisted_site.models import User
+
 from .admin import AdminView
 
 
@@ -22,7 +23,7 @@ class UsersView(AdminView):
                 Q(profile__slack_username__icontains=query)
                 | Q(profile__slack_id__icontains=query)
                 | Q(first_name__icontains=query)
-                | Q(last_name__icontains=query)
+                | Q(last_name__icontains=query),
             ).order_by("profile__slack_username")
             context["search"] = True
         else:
@@ -33,7 +34,9 @@ class UsersView(AdminView):
         if request.POST.get("action") == "logoutall":
             session_count = Session.objects.count()
             _ = Session.objects.all().delete()
-            assert isinstance(self.audit_log.additional_context, dict)
+            if not isinstance(self.audit_log.additional_context, dict):
+                self.audit_log.additional_context = {}
+
             self.audit_log.additional_context["action"] = "logoutall"
             self.audit_log.additional_context["sessions_deleted"] = session_count
 
@@ -41,11 +44,13 @@ class UsersView(AdminView):
 
 
 class UserDetailView(AdminView):
-    def get(self, request: HttpRequest, id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, user_id: int) -> HttpResponse:
         context = self.get_context_data(page="users", subpage="detail")
-        user = get_object_or_404(User, id=id)
+        user = get_object_or_404(User, id=user_id)
 
-        assert isinstance(self.audit_log.additional_context, dict)
+        if not isinstance(self.audit_log.additional_context, dict):
+            self.audit_log.additional_context = {}
+
         self.audit_log.additional_context["user_pfp__img"] = user.profile.slack_pfp_url  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         self.audit_log.additional_context["user"] = user.profile.slack_username  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
@@ -53,19 +58,19 @@ class UserDetailView(AdminView):
         context["login_maybe"] = os.environ.get("LOGIN_ENABLED") == "maybe"
         return TemplateResponse(request, "admin/user.html", context)
 
-    def post(self, request: HttpRequest, id: int) -> HttpResponse | None:
-        user = get_object_or_404(User, id=id)
+    def post(self, request: HttpRequest, user_id: int) -> HttpResponse | None:
+        user = get_object_or_404(User, id=user_id)
 
-        assert isinstance(self.audit_log.additional_context, dict)
+        if not isinstance(self.audit_log.additional_context, dict):
+            self.audit_log.additional_context = {}
+
         self.audit_log.additional_context["user_pfp__img"] = user.profile.slack_pfp_url  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         self.audit_log.additional_context["user"] = user.profile.slack_username  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         if request.POST.get("action") == "toggle_is_allowed":
             prof = user.profile  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             prof.is_allowed = not prof.is_allowed
-            self.audit_log.additional_context["is_allowed"] = (
-                f"Set to {prof.is_allowed}"
-            )
+            self.audit_log.additional_context["is_allowed"] = f"Set to {prof.is_allowed}"
             prof.save()
             resp = redirect(self.request.path)
             resp["HX-Trigger"] = json.dumps(
@@ -73,7 +78,8 @@ class UserDetailView(AdminView):
                     "toast": {
                         "message": f"Set is_allowed to {prof.is_allowed}",
                         "variant": "success",
-                    }
-                }
+                    },
+                },
             )
             return resp
+        return None

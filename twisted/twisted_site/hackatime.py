@@ -25,9 +25,7 @@ class HackatimeProject:
     languages: list[str]
 
 
-def authhelper(
-    access_token: str, headers: dict[str, str] | None = None
-) -> dict[str, str]:
+def authhelper(access_token: str, headers: dict[str, str] | None = None) -> dict[str, str]:
     if headers is None:
         headers = {}
 
@@ -39,6 +37,7 @@ def me(access_token: str) -> MeResponse:
     resp = requests.get(
         HACKATIME_ROOT_URL + "/api/v1/authenticated/me",
         headers=authhelper(access_token),
+        timeout=10,
     )
     resp.raise_for_status()
     data: dict[str, Any] = resp.json()  # pyrefly: ignore[explicit-any]
@@ -55,6 +54,7 @@ def me(access_token: str) -> MeResponse:
 
 def projects(
     access_token: str,
+    *,
     include_archived: bool = False,
     start: datetime | None = datetime(2026, 9, 7, tzinfo=UTC),
     projects: list[str] | None = None,
@@ -70,6 +70,7 @@ def projects(
         HACKATIME_ROOT_URL + "/api/v1/authenticated/projects",
         params=params,
         headers=authhelper(access_token),
+        timeout=10,
     )
     resp.raise_for_status()
     data: dict[str, Any] = resp.json()  # pyrefly: ignore[explicit-any]
@@ -84,6 +85,6 @@ def projects(
                 total_seconds=project["total_seconds"],
                 most_recent_heartbeat=dt,
                 languages=project["languages"],
-            )
+            ),
         )
     return hackatime_projects

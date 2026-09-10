@@ -13,9 +13,9 @@
             meow :3
         {% endblock body %}
     </body>
-    <script>
+    <script type="module">
         // Timezone settings
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
-        document.cookie = `django_timezone=${timezone}`;
+        await cookieStore.set('django_timezone', timezone, { path: '/' });
     </script>
 </html>
