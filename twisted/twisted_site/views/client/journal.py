@@ -78,7 +78,6 @@ class NewProjectHackatimeJournal(View):
                 context={"content": content},
             )
 
-        log_to_channel(f":haiku: *New journal for {project.project_name}!\n- {journal.time_logged} minutes")
         
         journal = Journal(
             project=project,
@@ -88,6 +87,8 @@ class NewProjectHackatimeJournal(View):
             reduced_minutes=reduced_minutes,
         )
         journal.save()
+
+        log_to_channel(f":haiku: *New journal for {project.project_name}!\n- {journal.reduced_minutes} minutes")
 
         return self.get(request, project_id, context={"success": True})
 
