@@ -171,38 +171,41 @@
                             aria-label="Close">×</button>
                 </div>
             </div>
-            <div class="window-body min-h-0 flex-1 overflow-hidden">
-                <iframe class="w-full h-full block src-frame select-none border-0"
-                        title="Window content"
-                        src="about:blank"
-                        frameborder="0"></iframe>
-            </div>
-            <div class="resize-handle resize-n"></div>
-            <div class="resize-handle resize-s"></div>
-            <div class="resize-handle resize-e"></div>
-            <div class="resize-handle resize-w"></div>
-            <div class="resize-handle resize-ne"></div>
-            <div class="resize-handle resize-nw"></div>
-            <div class="resize-handle resize-se"></div>
-            <div class="resize-handle resize-sw"></div>
         </div>
-    </template>
-    <audio id="bg-music" loop>
-        <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
-    </audio>
-    <template id="taskbutton-template">
-        <button type="button"
-                onclick="focusWindow(this.dataset.winId)"
-                class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
-            <img src="{% static 'images/directory.png' %}"
-                 alt=""
-                 class="size-4 object-cover shrink-0">
-            <span class="truncate taskbtn-title"></span>
-        </button>
-    </template>
-    <script>
-        let windowCounter = 0;
-        let currentMaximisedWindow = null;
+
+        <div class="window-body min-h-0 flex-1 overflow-hidden">
+            <iframe
+                class="w-full h-full block src-frame select-none border-0"
+                src="about:blank"
+                frameborder="0"
+            ></iframe>
+        </div>
+        <div class="resize-handle resize-n"></div>
+        <div class="resize-handle resize-s"></div>
+        <div class="resize-handle resize-e"></div>
+        <div class="resize-handle resize-w"></div>
+        <div class="resize-handle resize-ne"></div>
+        <div class="resize-handle resize-nw"></div>
+        <div class="resize-handle resize-se"></div>
+        <div class="resize-handle resize-sw"></div>
+    </div>
+</template>
+
+<audio id="bg-music" loop>
+    <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
+</audio>
+
+<template id="taskbutton-template">
+    <button type="button" onclick="focusWindow(this.dataset.winId)"
+        class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
+        <img src="{% static 'images/directory.png' %}" alt="" class="size-4 object-cover shrink-0">
+        <span class="truncate taskbtn-title"></span>
+    </button>
+</template>
+
+<script>
+    let windowCounter = 0;
+    let currentMaximisedWindow = null;
 
         function getSafeInternalUrl(urlValue) {
             try {
@@ -235,14 +238,13 @@
             false,
         );
 
-        function newWindow(title, src, w = 600, h = 600, x = null, y = null) {
-            const template = document.getElementById("window-template");
-            const container = document.getElementById("windows-container");
-            const clone = template.content.cloneNode(true);
-            const win = clone.querySelector(".window");
-            windowCounter++;
-            const id = `win-${windowCounter}`;
-            win.dataset.winId = id;
+    function newWindow(title, src, w = 600, h = 600, x=null, y=null) {
+        const template = document.getElementById("window-template");
+        const container = document.getElementById("windows-container");
+        const clone = template.content.cloneNode(true);
+        const win = clone.querySelector(".window");
+        const id = "win-" + ++windowCounter;
+        win.dataset.winId = id;
 
             win.querySelector(".title-bar-text").textContent = title;
             const safeSrc = getSafeInternalUrl(src);
@@ -270,27 +272,25 @@
             taskBtn.querySelector(".taskbtn-title").textContent = title;
             document.getElementById("taskbar-windows").appendChild(taskBtn);
 
-            realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
-            dragWindow(realWin);
-            initResizeHandles(realWin);
-            focusWindow(id);
-            realWin.querySelector(".max-button").addEventListener("click", () => {
-                fullscreenWindow(realWin);
-            });
-            const stopDragStart = (event) => {
-                event.stopPropagation();
-            };
-            realWin.querySelector(".title-bar-controls").addEventListener("mousedown", stopDragStart);
-            realWin.querySelector(".title-bar-controls").addEventListener("pointerdown", stopDragStart);
-            realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
-                frame = realWin.querySelector(".src-frame");
-                frame.src = safeSrc;
-            });
-            realWin.querySelector(".close-button").addEventListener("mouseup", () => {
-                realWin.remove();
-                taskBtn.remove();
-            });
-        }
+        realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
+        dragWindow(realWin);
+        initResizeHandles(realWin);
+        focusWindow(id);
+        realWin.querySelector(".max-button").addEventListener("click", () => {
+            fullscreenWindow(realWin);
+        });
+        realWin.querySelector(".title-bar-controls").addEventListener("mousedown", (event) => {
+            event.stopPropagation();
+        });
+        realWin.querySelector(".reload-button").addEventListener("mouseup", () => {
+            frame = realWin.querySelector(".src-frame");
+            frame.src = frame.src;
+        });
+        realWin.querySelector(".close-button").addEventListener("mouseup", () => {
+            realWin.remove();
+            taskBtn.remove();
+        });
+    }
 
         function fullscreenWindow(win) {
             if (currentMaximisedWindow?.win === win) {
@@ -339,11 +339,9 @@
             win.style.height = "auto";
         }
 
-        function focusWindow(id) {
-            document.querySelectorAll("#taskbar-windows button").forEach((b) => {
-                b.classList.remove("bg-twisted-999!")
-            });
-            const win = document.querySelector(`.window[data-win-id="${id}"]`);
+    function focusWindow(id) {
+        document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
+        const win = document.querySelector('.window[data-win-id="' + id + '"]');
 
             container = document.getElementById("windows-container");
             container.moveBefore(win, null);
@@ -385,25 +383,26 @@
                 mywindow.style.top = `${pendingY}px`;
             }
 
-            function onMove(e) {
-                if (currentMaximisedWindow != null && currentMaximisedWindow.win === mywindow) {
-                    return;
-                }
-                if (!dragging) return;
-                const rect = mywindow.getBoundingClientRect();
-                let x = origX + (e.clientX - startX);
-                let y = origY + (e.clientY - startY);
-                const viewportWidth = document.documentElement.clientWidth;
-                const viewportHeight = document.documentElement.clientHeight;
-                const maxX = Math.max(0, viewportWidth - rect.width);
-                const maxY = Math.max(0, viewportHeight - rect.height);
-                x = Math.max(0, Math.min(x, maxX));
-                y = Math.max(0, Math.min(y, maxY));
-                pendingX = x;
-                pendingY = y;
-                // throttle DOM writes to one per animation frame for smoothness
-                if (rafId === null) rafId = requestAnimationFrame(apply);
+        function onMove(e) {
+            if (currentMaximisedWindow != null && currentMaximisedWindow.win == mywindow) {
+                return;
             }
+            if (!dragging) return;
+            e.preventDefault();
+            const rect = mywindow.getBoundingClientRect();
+            let x = origX + (e.clientX - startX);
+            let y = origY + (e.clientY - startY);
+            const viewportWidth = document.documentElement.clientWidth;
+            const viewportHeight = document.documentElement.clientHeight;
+            const maxX = Math.max(0, viewportWidth - rect.width);
+            const maxY = Math.max(0, viewportHeight - rect.height);
+            x = Math.max(0, Math.min(x, maxX));
+            y = Math.max(0, Math.min(y, maxY));
+            pendingX = x;
+            pendingY = y;
+            // throttle DOM writes to one per animation frame for smoothness
+            if (rafId === null) rafId = requestAnimationFrame(apply);
+        }
 
             function endDrag(e) {
                 if (!dragging) return;
@@ -648,20 +647,21 @@
             console.log('WELCOME TO TWISTED!!!')
             console.log('shh....')
 
-            console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
-        }, 500)
-    </script>
-    {% if startup_windows %}
-        <div id="_startup" class="hidden">
-            {% for window in startup_windows %}
-                <iframe data-href="{{ window.href }}"
-                        data-title="{{ window.title }}"
-                        title="{{ window.title }}"
-                        onload="
+        console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
+    }, 500)
+</script>
+
+{% if startup_windows %}
+<div id="_startup" class="hidden">
+    {% for window in startup_windows %}
+    <iframe
+        data-href="{{ window.href }}"
+        data-title="{{ window.title }}"
+        onload="
             console.log('loading...');
             newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);
-        "></iframe>
-            {% endfor %}
-        </div>
-    {% endif %}
-{% endblock body %}
+        "
+    ></iframe>
+    {% endfor %}
+</div>
+{% endif %} {% endblock body %}
