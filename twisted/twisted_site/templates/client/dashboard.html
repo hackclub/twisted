@@ -172,14 +172,11 @@
                 </div>
             </div>
             <div class="window-body min-h-0 flex-1 overflow-hidden">
-                <iframe
-                    class="w-full h-full block src-frame select-none border-0"
-                    src="about:blank"
-                    frameborder="0"
-                ></iframe>
+                <iframe class="w-full h-full block src-frame select-none border-0"
+                        src="about:blank"
+                        frameborder="0"></iframe>
             </div>
         </div>
-        
         <div class="resize-handle resize-n"></div>
         <div class="resize-handle resize-s"></div>
         <div class="resize-handle resize-e"></div>
@@ -189,21 +186,21 @@
         <div class="resize-handle resize-se"></div>
         <div class="resize-handle resize-sw"></div>
     </div>
-</template>
-
-<audio id="bg-music" loop>
-    <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
-</audio>
-
-<template id="taskbutton-template">
-    <button type="button" onclick="focusWindow(this.dataset.winId)"
-        class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
-        <img src="{% static 'images/directory.png' %}" alt="" class="size-4 object-cover shrink-0">
-        <span class="truncate taskbtn-title"></span>
-    </button>
-</template>
-
-<script>
+    </template>
+    <audio id="bg-music" loop>
+        <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
+    </audio>
+    <template id="taskbutton-template">
+        <button type="button"
+                onclick="focusWindow(this.dataset.winId)"
+                class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
+            <img src="{% static 'images/directory.png' %}"
+                 alt=""
+                 class="size-4 object-cover shrink-0">
+            <span class="truncate taskbtn-title"></span>
+        </button>
+    </template>
+    <script>
     let windowCounter = 0;
     let currentMaximisedWindow = null;
 
@@ -649,19 +646,17 @@
 
         console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
     }, 500)
-</script>
-
-{% if startup_windows %}
-<div id="_startup" class="hidden">
-    {% for window in startup_windows %}
-    <iframe
-        data-href="{{ window.href }}"
-        data-title="{{ window.title }}"
-        onload="
+    </script>
+    {% if startup_windows %}
+        <div id="_startup" class="hidden">
+            {% for window in startup_windows %}
+                <iframe data-href="{{ window.href }}"
+                        data-title="{{ window.title }}"
+                        onload="
             console.log('loading...');
             newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);
-        "
-    ></iframe>
-    {% endfor %}
-</div>
-{% endif %} {% endblock body %}
+        "></iframe>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock body %}
