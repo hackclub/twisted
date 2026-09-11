@@ -13,3 +13,5 @@ twisted/*.sqlite3
 
 .env
 twisted/.env
+
+.logs
