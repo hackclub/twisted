@@ -5,7 +5,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from twisted_site.models import Journal, Project, TemplateContext
+from ...models import Journal, Project, TemplateContext
+from ...slack import log_to_channel
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
@@ -77,6 +78,8 @@ class NewProjectHackatimeJournal(View):
                 context={"content": content},
             )
 
+        log_to_channel(f":haiku: *New journal for {project.project_name}!\n- {journal.time_logged} minutes")
+        
         journal = Journal(
             project=project,
             type="hackatime",
@@ -224,6 +227,6 @@ class DeleteJournal(View):
         if journal.type != "untracked":
             return redirect("dashboard")
 
-        _ = journal.delete()
+        journal.delete()
 
         return self.get(request, journal_id=None, context={"success": True})
