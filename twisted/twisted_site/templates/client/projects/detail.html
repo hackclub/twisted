@@ -90,55 +90,55 @@
             </div>
             {% if project.is_shipped %}{% endif %}
             {% if project.user == request.user %}
-	            {% if not project.hackatime_project_name and project.project_type != "hardware" %}
-	                <div class="mb-3 border border-warning bg-warning/10 p-3">
-	                    <div class="font-bold text-warning">Hackatime project not linked yet</div>
-	                    <div class="mt-1 text-sm text-muted-foreground">Link a Hackatime project to start tracking time on ts project.</div>
-	                    {% if project.user == user %}
-	                        <a href="{% url 'fr.projects.settings' project.pk %}"
-	                           class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
-	                            Open project settings
-	                        </a>
-	                    {% endif %}
-	                </div>
-	            {% elif not project.repo_url %}
-	                <div class="mb-3 border border-warning bg-warning/10 p-3">
-	                    <div class="font-bold text-warning">Repository not linked!</div>
-	                    <div class="mt-1 text-sm text-muted-foreground">Link a repository before shipping your project.</div>
-	                    <a href="{% url 'fr.projects.settings' project.pk %}"
-	                        class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
-	                        Open project settings
-	                    </a>
-	                </div>
-	            {% elif not project.playable_url %}
-	                <div class="mb-3 border border-warning bg-warning/10 p-3">
-	                    <div class="font-bold text-warning">Playable URL not set</div>
-	                    <div class="mt-1 text-sm text-muted-foreground">Add a playable URL before shipping your project.</div>
-	                    <a href="{% url 'fr.projects.settings' project.pk %}"
-	                       class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
-	                        Open project settings
-	                    </a>
-	                </div>
-	            {% elif not project.screenshot_url %}
-	                <div class="mb-3 border border-warning bg-warning/10 p-3">
-	                    <div class="font-bold text-warning">Screenshot not set</div>
-	                    <div class="mt-1 text-sm text-muted-foreground">Add a screenshot before shipping your project.</div>
-	                    <a href="{% url 'fr.projects.settings' project.pk %}"
-	                       class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
-	                        Open project settings
-	                    </a>
-	                </div>
-	            {% elif project.time_logged < 60 %}
-	                <div class="mb-3 border border-warning bg-warning/10 p-3">
-	                    <div class="font-bold text-warning">Log more time!</div>
-	                    <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
-	                    <button type="button"
-	                            onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
-	                            class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
-	                        + New journal
-	                    </button>
-	                </div>
-	            {% endif %}
+                {% if not project.hackatime_project_name and project.project_type != "hardware" %}
+                    <div class="mb-3 border border-warning bg-warning/10 p-3">
+                        <div class="font-bold text-warning">Hackatime project not linked yet</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Link a Hackatime project to start tracking time on ts project.</div>
+                        {% if project.user == user %}
+                            <a href="{% url 'fr.projects.settings' project.pk %}"
+                               class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                                Open project settings
+                            </a>
+                        {% endif %}
+                    </div>
+                {% elif not project.repo_url %}
+                    <div class="mb-3 border border-warning bg-warning/10 p-3">
+                        <div class="font-bold text-warning">Repository not linked!</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Link a repository before shipping your project.</div>
+                        <a href="{% url 'fr.projects.settings' project.pk %}"
+                           class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                            Open project settings
+                        </a>
+                    </div>
+                {% elif not project.playable_url %}
+                    <div class="mb-3 border border-warning bg-warning/10 p-3">
+                        <div class="font-bold text-warning">Playable URL not set</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Add a playable URL before shipping your project.</div>
+                        <a href="{% url 'fr.projects.settings' project.pk %}"
+                           class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                            Open project settings
+                        </a>
+                    </div>
+                {% elif not project.screenshot_url %}
+                    <div class="mb-3 border border-warning bg-warning/10 p-3">
+                        <div class="font-bold text-warning">Screenshot not set</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Add a screenshot before shipping your project.</div>
+                        <a href="{% url 'fr.projects.settings' project.pk %}"
+                           class="mt-2 inline-block text-sm text-primary underline hover:text-accent">
+                            Open project settings
+                        </a>
+                    </div>
+                {% elif project.time_logged < 60 %}
+                    <div class="mb-3 border border-warning bg-warning/10 p-3">
+                        <div class="font-bold text-warning">Log more time!</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
+                        <button type="button"
+                                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
+                            + New journal
+                        </button>
+                    </div>
+                {% endif %}
             {% endif %}
             <div class="border border-border bg-card">
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary px-3 py-2">
