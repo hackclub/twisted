@@ -111,15 +111,16 @@ class ProjectSettings(View):
         project.project_name = request.POST["name"]
         project.project_description = request.POST["description"]
         project.project_type = project_type
-        project.hackatime_project_name = request.POST.get("hackatime", "")
+        project.hackatime_project_names = request.POST.getlist("hackatime")
         project.repo_url = request.POST["repo"]
         project.playable_url = request.POST.get("playable_url", "")
         project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        hackatime_names = ", ".join(project.hackatime_project_names)
         log_to_channel(
-            f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(project.hackatime_project_name)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}",
+            f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(hackatime_names)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}",
         )
 
         return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]

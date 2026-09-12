@@ -44,20 +44,15 @@
                 </select>
             </div>
             <div class="flex flex-col gap-1">
-                <label for="hackatime" class="font-bold">Hackatime project</label>
+                <label for="hackatime" class="font-bold">Hackatime project(s)</label>
                 <select id="hackatime"
                         name="hackatime"
+                        multiple
+                        size="6"
                         class="w-full bg-card text-card-foreground border border-border px-2 py-1">
-                    {% if not project.hackatime_project_name %}
-                        <option value=""
-                                disabled
-                                selected
-                                hidden
-                                class="text-muted-foreground">Select a project</option>
-                    {% endif %}
                     {% for hack_project in hackatime_projects %}
                         {% if hack_project.total_seconds > 300 %}
-                            {% if project.hackatime_project_name == hack_project.name %}
+                            {% if hack_project.name in project.hackatime_project_names %}
                                 <option value="{{ hack_project.name }}" selected>
                                     {{ hack_project.name }}
                                     ({{ hack_project.total_seconds|divide:60|minutes_to_hours_minutes }})
@@ -71,6 +66,7 @@
                         {% endif %}
                     {% endfor %}
                 </select>
+                <span class="text-xs text-muted-foreground">Hold ctrl/cmd to select multiple projects</span>
             </div>
             <div class="flex flex-col gap-1">
                 <label for="repo" class="font-bold">Repo URL</label>

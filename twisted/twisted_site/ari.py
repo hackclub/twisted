@@ -111,7 +111,7 @@ def send_ship(ship: ProjectShip) -> None:
 
     thumbnail_url = ship.project.screenshot_url
 
-    hackatime_projects = [ship.project.hackatime_project_name]
+    hackatime_projects = ship.project.hackatime_project_names  # pyrefly: ignore[missing-attribute]
 
     meta = {
         "project_url": f"https://twisted.hackclub.com/dashboard/?project={ship.project.id}",

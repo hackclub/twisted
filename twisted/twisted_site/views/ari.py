@@ -217,7 +217,7 @@ class AriView(View):
             project.screenshot_url = data["ship"]["thumbnail_url"]
             project.repo_url = data["ship"]["repo_url"]
             project.playable_url = data["ship"]["demo_url"]
-            project.hackatime_project_name = data["ship"]["hackatime_projects"][0]
+            project.hackatime_project_names = data["ship"]["hackatime_projects"]
             project.save()
             _ = send_blocks(
                 channel=project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
