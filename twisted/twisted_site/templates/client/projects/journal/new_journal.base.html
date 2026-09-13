@@ -45,7 +45,7 @@
                 {% endif %}
                 {% block journal_log_message %}
                     <div class="mb-3 border border-border bg-background px-3 py-2">
-                        This journal will log {{ log_minutes|minutes_to_hours_minutes }}.
+                        This journal will log {{ log_minutes|minutes_to_hours_minutes }} out of {{ max_minutes|minutes_to_hours_minutes }} (max).
                     </div>
                 {% endblock journal_log_message %}
                 <form method="post" class="flex-1 min-h-0 flex flex-col">

@@ -23,7 +23,6 @@ class NewProjectHackatimeJournal(View):
         if context is None:
             context = TemplateContext()
 
-        context["info"] = info
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -32,6 +31,7 @@ class NewProjectHackatimeJournal(View):
             return redirect("dashboard")
 
         context["project"] = project
+        context["max_minutes"] = HACKATIME_MAX_LOGGABLE_MINUTES
 
         if project.is_shipped():
             return redirect("fr.projects.detail", project_id)
