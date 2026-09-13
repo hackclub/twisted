@@ -129,7 +129,7 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    hackatime_project_name = models.CharField(max_length=200, blank=True, default="")
+    hackatime_project_names = models.JSONField(default=list, blank=True)
     repo_url = models.CharField(max_length=200, blank=True, default="")
     playable_url = models.CharField(max_length=200, blank=True, default="")
     screenshot_url = models.CharField(max_length=500, blank=True, default="")
@@ -138,14 +138,12 @@ class Project(models.Model):
     def __str__(self) -> str:
         return cast("str", self.project_name)  # pyrefly: ignore[redundant-cast]
 
-    def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
-        if self.hackatime_project_name == "":
-            return None
+    def get_hackatime_projects(self) -> list[hackatime.HackatimeProject]:
+        names = cast("list[str]", self.hackatime_project_names)
+        if len(names) == 0:
+            return []
         projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[missing-attribute]
-        for project in projects:
-            if project.name == self.hackatime_project_name:
-                return project
-        return None
+        return [project for project in projects if project.name in names]
 
     def time_logged(self, *, include_all_minutes: bool = False) -> int:
         minutes = 0
@@ -170,10 +168,8 @@ class Project(models.Model):
         return minutes
 
     def time_spent(self) -> int:
-        project = self.get_hackatime_project()
-        if project is None:
-            return 0
-        return project.total_seconds // 60
+        total_seconds = sum(project.total_seconds for project in self.get_hackatime_projects())
+        return total_seconds // 60
 
     def hackatime_time_unjournaled(self) -> int:
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)

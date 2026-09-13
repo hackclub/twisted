@@ -90,7 +90,7 @@
             </div>
             {% if project.is_shipped %}{% endif %}
             {% if project.user == request.user %}
-                {% if not project.hackatime_project_name and project.project_type != "hardware" %}
+                {% if not project.hackatime_project_names and project.project_type != "hardware" %}
                     <div class="mb-3 border border-warning bg-warning/10 p-3">
                         <div class="font-bold text-warning">Hackatime project not linked yet</div>
                         <div class="mt-1 text-sm text-muted-foreground">Link a Hackatime project to start tracking time on ts project.</div>

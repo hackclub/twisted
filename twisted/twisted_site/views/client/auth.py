@@ -139,21 +139,18 @@ class AuthCallbackView(View):
 
         login(request, user)
 
-        if profile.hackatime_access_token == "":
-            hackatime_client_id = os.environ["HACKATIME_CLIENT_ID"]
-            hackatime_redirect_uri = os.environ["HACKATIME_REDIRECT_URI"]
-            scopes = "profile+read"
+        hackatime_client_id = os.environ["HACKATIME_CLIENT_ID"]
+        hackatime_redirect_uri = os.environ["HACKATIME_REDIRECT_URI"]
+        scopes = "profile+read"
 
-            profile.hackatime_state = secrets.token_urlsafe(32)
-            profile.save()
-
-            return redirect(
-                f"https://hackatime.hackclub.com/oauth/authorize?client_id={hackatime_client_id}&redirect_uri={hackatime_redirect_uri}&response_type=code&scope={scopes}&state={profile.hackatime_state}",
-            )
+        profile.hackatime_state = secrets.token_urlsafe(32)
+        profile.save()
 
         log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
 
-        return redirect("dashboard")
+        return redirect(
+            f"https://hackatime.hackclub.com/oauth/authorize?client_id={hackatime_client_id}&redirect_uri={hackatime_redirect_uri}&response_type=code&scope={scopes}&state={profile.hackatime_state}",
+        )
 
 
 class HackatimeCallbackView(View):
