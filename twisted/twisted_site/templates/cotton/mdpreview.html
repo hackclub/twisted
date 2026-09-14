@@ -8,8 +8,12 @@
             content = elem.value.trim();
             elem.classList.add('hidden')
             parsed = DOMPurify.sanitize(marked.parse(content));
-            elem.parentElement.querySelector('.previewdiv');
-            elem.parentElement.querySelector('.previewdiv').innerHTML = parsed;
+            previewdiv = elem.parentElement.querySelector('.previewdiv');
+            previewdiv.innerHTML = parsed;
+            previewdiv.querySelectorAll('a[href]').forEach(function (link) {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
         }
         rendermarkdown()
     </script>
