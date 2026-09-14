@@ -148,9 +148,10 @@
             </c-ui.card>
         {% endif %}
     </div>
+    {% if request.user.profile.staff_permissions.superuser %}
     <div class="mt-4">
         <h1 class="text-2xl font-black">Admin<span class="ml-1 text-sm opacity-75 font-normal italic">proceed with caution!</span></h1>
-        {% if user.profile.referrals.all %}
+        {% if user.profile.staff_permissions %}
             <c-ui.card class="bg-ink-900 p-0">
                 <c-ui.table>
                     <thead>
@@ -158,32 +159,46 @@
                             <th>Permission</th>
                             <th>Value</th>
                             <th>Override Value</th>
-                            <th>Save</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for key, val in staff_perms.items %}
+                        {% if key not in 'id' %}
                         <tr>
-                            {% with user.profile.staff_permissions.superuser as val %}
-                                <td>Superuser</td>
-                                <td>
-                                    <c-ui.badge color="{{ val|yesno:'green,red' }}">
-                                        {{ val }}
-                                    </c-ui.badge>
-                                </td>
-                                <td></td>
-                                <td></td>
-                            {% endwith %}
+                            <td>{{ key.title }}</td>
+                            <td>
+                                <c-ui.badge color="{{ val|yesno:'green,red' }}">
+                                    {{ val }}
+                                </c-ui.badge>
+                            </td>
+                            <td>
+                                <div class="w-fit flex gap-2">
+                                    <c-ui.select>
+                                        <c-ui.select.option>True</c-ui.select.option>
+                                        <c-ui.select.option>False</c-ui.select.option>
+                                    </c-ui.select.option>
+                                    <c-ui.button>Save</c-ui.button>
+                                </div>
+                            </td>
                         </tr>
+                        {% endif %}
+                        {% endfor %}
                     </tbody>
                 </c-ui.table>
             </c-ui.card>
         {% else %}
             <c-ui.card class="bg-ink-900">
-                <h1 class="text-lg font-bold">No referrals found :(</h1>
-                <p>This user hasn't referred anyone yet!</p>
+                <h1 class="text-lg font-bold">Not an admin!</h1>
+                <p>This user is not an admin yet!</p>
+                {% if request.user.profile.staff_permissions.superuser %}
+                <c-ui.button class="mt-2">
+                    Make admin
+                </c-ui.button>
+                {% endif %}
             </c-ui.card>
         {% endif %}
     </div>
+    {% endif %}
     {% if login_maybe %}
         <div class="mt-4">
             <form method="post"
