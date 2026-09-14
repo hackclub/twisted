@@ -60,6 +60,11 @@ urlpatterns = [
         client.DeleteJournal.as_view(),
         name="fr.projects.journals.delete",
     ),
+    path(
+        "dashboard/frame/journals/edit/<int:id>/",
+        client.EditJournal.as_view(),
+        name="fr.projects.journals.edit",
+    ),
     path("dashboard/frame/pathways/", client.PathwaysView.as_view(), name="fr.pathways"),
     path(
         "dashboard/frame/referrals/",

@@ -3,6 +3,7 @@ from .discover import DiscoverView
 from .homepage import FaqsView, HomepageView
 from .journal import (
     DeleteJournal,
+    EditJournal,
     NewProjectHackatimeJournal,
     NewProjectUntrackedJournal,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "DashboardView",
     "DeleteJournal",
     "DiscoverView",
+    "EditJournal",
     "FaqsView",
     "HomepageView",
     "ListProjects",

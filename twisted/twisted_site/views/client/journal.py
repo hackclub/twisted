@@ -23,7 +23,6 @@ class NewProjectHackatimeJournal(View):
         if context is None:
             context = TemplateContext()
 
-        context["info"] = info
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -32,6 +31,7 @@ class NewProjectHackatimeJournal(View):
             return redirect("dashboard")
 
         context["project"] = project
+        context["max_minutes"] = HACKATIME_MAX_LOGGABLE_MINUTES
 
         if project.is_shipped():
             return redirect("fr.projects.detail", project_id)
@@ -78,7 +78,6 @@ class NewProjectHackatimeJournal(View):
                 context={"content": content},
             )
 
-        
         journal = Journal(
             project=project,
             type="hackatime",
@@ -231,3 +230,53 @@ class DeleteJournal(View):
         journal.delete()
 
         return self.get(request, journal_id=None, context={"success": True})
+
+
+class EditJournal(View):
+    def get(self, request, id, info=None, context=None):
+        journal = Journal.objects.get(id=id)
+        if journal.project.user != request.user:
+            return redirect("fr.projects.detail", journal.project.id)
+        context = context or {}
+        if info:
+            context['info'] = info
+        context["journal"] = journal
+        return render(request, "client/projects/journal/edit.html", context)
+
+    def post(self, request, id):
+        journal = Journal.objects.get(id=id)
+
+        if journal.project.user != request.user:
+            return redirect("fr.projects.detail", journal.project.id)
+
+        reduced_minutes = journal.reduced_minutes
+        content = request.POST['content']
+        image_count = len(re.findall(IMAGE_REGEX, content))
+        required_image_count = math.ceil(max(1, reduced_minutes / 180))
+
+        content_no_images = re.sub(IMAGE_REGEX, "", content)
+        content_length = len(" ".join(content_no_images.split()))
+
+        if image_count < required_image_count:
+            return self.get(
+                request,
+                journal.id,
+                info=f"please add atleast {required_image_count - image_count} more image(s) to log this journal!",
+                context={"content": content},
+            )
+        required_content_length = reduced_minutes // 3
+        if content_length < min(100, required_content_length):
+            return self.get(
+                request,
+                journal.id,
+                info=f"Content length must be more than 20 characters per hour!<br>({content_length} of {required_content_length} required)",
+                context={"content": content},
+            )
+
+        journal.content = content
+        journal.save()
+
+        log_to_channel(f":haiku: *Journal edited for {journal.project.project_name}!*\n- {journal.reduced_minutes} minutes")
+
+        return self.get(request, journal.id, context={"success": True})
+
