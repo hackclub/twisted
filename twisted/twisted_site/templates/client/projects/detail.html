@@ -27,7 +27,7 @@
                             {% if not project.is_shipped %}
                                 <a href="{% url 'fr.projects.ship' project.id %}"
                                    class="inline-block border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
-                                    ship project
+                                    Ship project
                                 </a>
                             {% endif %}
                         {% endif %}
@@ -38,7 +38,7 @@
                             </a>
                         {% endif %}
                     {% endif %}
-                    <div class="group relative pb-1">
+                    <div class="group relative">
                         <button type="button"
                                 class="inline-flex items-center justify-center border border-border bg-secondary px-3 py-1.5 text-sm text-secondary-foreground hover:bg-primary hover:text-primary-foreground active:translate-y-px"
                                 data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?project={{ project.id }}"
@@ -183,6 +183,8 @@
                                                         </button>
                                                     {% endif %}
                                                     <button type="button"
+                                                            onclick="createWindow('Edit journal', this.dataset.href)"
+                                                            data-href="{% url 'fr.projects.journals.edit' journal.id %}"
                                                             title="Edit"
                                                             class="flex h-7 w-7 items-center justify-center border border-border bg-secondary p-1 hover:bg-primary hover:text-primary-foreground">
                                                         <img draggable="false"

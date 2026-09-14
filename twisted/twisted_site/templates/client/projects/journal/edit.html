@@ -1,0 +1,64 @@
+{% extends "client/osbase.html" %}
+{% load static time_filters humanize %}
+{% block body %}
+    <div class="bg-surface text-foreground flex flex-col w-full h-full font-vintage">
+        {% if not success %}
+            <div class="shrink-0 flex items-center justify-between bg-card border-b border-border px-3 py-2">
+                <div class="text-xl font-bold">Edit journal</div>
+                <div class="text-sm text-muted-foreground truncate">
+                    {{ journal.project.project_name }}
+                </div>
+            </div>
+            <div class="flex flex-col flex-1 min-h-0 overflow-y-auto p-3">
+                {% if info %}
+                    <div class="mb-3 border border-warning bg-warning/30 px-3 py-2">
+                        <div class="text-sm">{{ info|safe }}</div>
+                    </div>
+                {% endif %}
+                {% block journal_log_message %}
+                    <div class="mb-3 border border-border bg-background px-3 py-2">
+                        <div class="min-w-0 text-sm">
+                            <span class="font-bold">{{ journal.reduced_minutes|minutes_to_hours_minutes }}</span>
+                            <span class="text-muted-foreground">logged via {{ journal.get_type_display }}</span>
+                            <span class="mx-1 text-subtle">•</span>
+                            <span class="text-muted-foreground"
+                                    title="{{ journal.created_at }}">{{ journal.created_at|naturaltime }}</span>
+                        </div>
+                    </div>
+                {% endblock journal_log_message %}
+                <form method="post" class="flex-1 min-h-0 flex flex-col">
+                    {% csrf_token %}
+                    {% block form %}
+                        {% block preform %}
+                        {% endblock preform %}
+                        <div class="flex-1 border border-border bg-card">
+                            <c-mdedit class="h-full overflow-auto">
+                                <c-slot name="content">{{ content|default:journal.content }}</c-slot>
+                            </c-mdedit>
+                        </div>
+                        <div class="flex justify-end pt-3">
+                            <button type="submit"
+                                    class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">
+                                Edit journal
+                            </button>
+                        </div>
+                    {% endblock form %}
+                </form>
+            </div>
+        {% else %}
+            <div class="flex-1 flex items-center justify-center p-6 text-center">
+                <div class="border border-success bg-success/30 p-6 max-w-sm">
+                    <div class="text-2xl font-bold mb-2">Journal edited!</div>
+                    <p class="text-sm text-muted-foreground mb-4">Your journal has been successfully edited yay!</p>
+                    <button type="button"
+                            data-uri="{% url 'fr.projects.detail' journal.project.id %}"
+                            data-title="{{ journal.project.project_name }}"
+                            onclick="createWindow(this.dataset.title, this.dataset.uri)"
+                            class="px-4 py-2 bg-primary text-primary-foreground border-2 border-border hover:bg-primary/80">
+                        Back to Project
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock body %}
