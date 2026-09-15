@@ -57,7 +57,11 @@ class UserDetailView(AdminView):
         self.audit_log.additional_context["user"] = user.profile.slack_username  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context["user"] = user
-        context["staff_perms"] = model_to_dict(user.profile.staff_permissions or {})
+        try:
+            context["staff_perms"] = model_to_dict(user.profile.staff_permissions)
+        except AttributeError:
+            context["staff_perms"] = None
+
         context["login_maybe"] = os.environ.get("LOGIN_ENABLED") == "maybe"
         return TemplateResponse(request, "admin/user.html", context)
 
