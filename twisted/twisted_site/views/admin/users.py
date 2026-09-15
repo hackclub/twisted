@@ -1,7 +1,7 @@
-from django.contrib import messages
 import json
 import os
 
+from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.db.models import Q
 from django.forms.models import model_to_dict
@@ -87,7 +87,7 @@ class UserDetailView(AdminView):
             return resp
         if request.POST.get("action") == "change_permissions":
             if not request.user.profile.staff_permissions.superuser:
-                return
+                return None
             key = request.POST["key"]
             value = request.POST.get("value") == "True"
             perms = user.profile.staff_permissions
@@ -97,4 +97,5 @@ class UserDetailView(AdminView):
             self.audit_log.additional_context["permission_changed"] = f"'{key}' set to '{value}'"
             messages.success(request, f"Set permission '{key}' to '{value}' successfully.")
             return redirect(self.request.path+"#adminperms")
-        return None
+
+        return redirect(self.request.path)

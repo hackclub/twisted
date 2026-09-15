@@ -5,8 +5,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from ...models import Journal, Project, TemplateContext
-from ...slack import log_to_channel
+from twisted_site.models import Journal, Project, TemplateContext
+from twisted_site.slack import log_to_channel
 
 HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
