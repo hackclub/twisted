@@ -32,7 +32,8 @@
                         {% block preform %}
                         {% endblock preform %}
                         <div class="flex-1 border border-border bg-card">
-                            <c-mdedit class="h-full overflow-auto">
+                            <c-mdedit class="h-full overflow-auto"
+                                      save_id="edit-journal-{{ journal.id }}">
                                 <c-slot name="content">{{ content|default:journal.content }}</c-slot>
                             </c-mdedit>
                         </div>
