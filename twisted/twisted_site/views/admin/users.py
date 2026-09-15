@@ -1,8 +1,10 @@
 import json
 import os
 
+from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.db.models import Q
+from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
@@ -55,6 +57,7 @@ class UserDetailView(AdminView):
         self.audit_log.additional_context["user"] = user.profile.slack_username  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context["user"] = user
+        context["staff_perms"] = model_to_dict(user.profile.staff_permissions or {})
         context["login_maybe"] = os.environ.get("LOGIN_ENABLED") == "maybe"
         return TemplateResponse(request, "admin/user.html", context)
 
@@ -82,4 +85,17 @@ class UserDetailView(AdminView):
                 },
             )
             return resp
-        return None
+        if request.POST.get("action") == "change_permissions":
+            if not request.user.profile.staff_permissions.superuser:
+                return None
+            key = request.POST["key"]
+            value = request.POST.get("value") == "True"
+            perms = user.profile.staff_permissions
+            setattr(perms, key, value)
+            perms.save()
+            self.audit_log.pii = True
+            self.audit_log.additional_context["permission_changed"] = f"'{key}' set to '{value}'"
+            messages.success(request, f"Set permission '{key}' to '{value}' successfully.")
+            return redirect(self.request.path+"#adminperms")
+
+        return redirect(self.request.path)
