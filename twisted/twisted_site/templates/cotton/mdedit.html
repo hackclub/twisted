@@ -1,4 +1,20 @@
 <div class="flex flex-col flex-1 min-h-0 min-w-0 {{ class }} font-vintage">
+    <div id="restorebanner"
+         class="hidden shrink-0 items-center justify-between gap-2 bg-warning/30 border-b border-warning px-3 py-2 text-sm">
+        <span>A saved draft was found. Restore it?</span>
+        <div class="flex gap-2 shrink-0">
+            <button type="button"
+                    onclick="restoreSavedDraft()"
+                    class="px-2 py-1 bg-primary text-primary-foreground border border-border hover:bg-primary/80">
+                Restore
+            </button>
+            <button type="button"
+                    onclick="dismissSavedDraft()"
+                    class="px-2 py-1 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                Dismiss
+            </button>
+        </div>
+    </div>
     <div class="shrink-0 flex items-center gap-1 bg-card border-b border-border p-1">
         <button id="editbutton"
                 type="button"
@@ -34,6 +50,84 @@
 <script>
     const textbox = document.querySelector("#content");
     const csrfToken = "{{ csrf_token }}";
+
+    const saveId = "{{ save_id }}";
+    const draftStorageKey = saveId ? `mdedit-draft:${saveId}` : null;
+
+    function readSavedDraft() {
+        if (!draftStorageKey) {
+            return null;
+        }
+
+        try {
+            return localStorage.getItem(draftStorageKey);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function saveDraft() {
+        if (!draftStorageKey) {
+            return;
+        }
+
+        try {
+            localStorage.setItem(draftStorageKey, textbox.value);
+        } catch (e) {
+            // localStorage unavailable (private browsing, quota exceeded, etc.)
+        }
+    }
+
+    function clearSavedDraft() {
+        if (!draftStorageKey) {
+            return;
+        }
+
+        try {
+            localStorage.removeItem(draftStorageKey);
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    function restoreSavedDraft() {
+        const saved = readSavedDraft();
+
+        if (saved !== null) {
+            textbox.value = saved;
+            renderpreview();
+        }
+
+        document.getElementById("restorebanner").classList.add("hidden");
+        document.getElementById("restorebanner").classList.remove("flex");
+    }
+
+    function dismissSavedDraft() {
+        document.getElementById("restorebanner").classList.add("hidden");
+        document.getElementById("restorebanner").classList.remove("flex");
+    }
+
+    if (draftStorageKey) {
+        const saved = readSavedDraft();
+
+        if (saved !== null && saved !== textbox.value) {
+            if (textbox.value.trim() === "") {
+                textbox.value = saved;
+                renderpreview();
+            } else {
+                document.getElementById("restorebanner").classList.remove("hidden");
+                document.getElementById("restorebanner").classList.add("flex");
+            }
+        }
+
+        setInterval(saveDraft, 1_000);
+
+        const form = textbox.closest("form");
+
+        if (form) {
+            form.addEventListener("submit", clearSavedDraft);
+        }
+    }
 
     function generateRandomString(length) {
         const chars =
