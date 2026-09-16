@@ -32,6 +32,7 @@ class NewProjectHackatimeJournal(View):
 
         context["project"] = project
         context["max_minutes"] = HACKATIME_MAX_LOGGABLE_MINUTES
+        context["info"] = info
 
         if project.is_shipped():
             return redirect("fr.projects.detail", project_id)
