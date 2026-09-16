@@ -234,24 +234,24 @@ class DeleteJournal(View):
 
 
 class EditJournal(View):
-    def get(self, request, id, info=None, context=None):
+    def get(self, request:HttpRequest, id:int, info:str|None=None, context:str|None=None) -> HttpResponse:
         journal = Journal.objects.get(id=id)
         if journal.project.user != request.user:
             return redirect("fr.projects.detail", journal.project.id)
         context = context or {}
         if info:
-            context['info'] = info
+            context["info"] = info
         context["journal"] = journal
         return render(request, "client/projects/journal/edit.html", context)
 
-    def post(self, request, id):
+    def post(self, request:HttpRequest, id:int) -> HttpResponse:
         journal = Journal.objects.get(id=id)
 
         if journal.project.user != request.user:
             return redirect("fr.projects.detail", journal.project.id)
 
         reduced_minutes = journal.reduced_minutes
-        content = request.POST['content']
+        content = request.POST["content"]
         image_count = len(re.findall(IMAGE_REGEX, content))
         required_image_count = math.ceil(max(1, reduced_minutes / 180))
 
