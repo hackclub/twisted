@@ -202,9 +202,64 @@
                 <h1 class="text-lg font-bold">Not an admin!</h1>
                 <p>This user is not an admin yet!</p>
                 {% if request.user.profile.staff_permissions.superuser %}
-                <c-ui.button class="mt-2">
-                    Make admin
-                </c-ui.button>
+                <c-admin.dialog title="Are you sure?" class="mt-2">
+                    <c-slot name="trigger">
+                        <c-ui.button>Make admin</c-ui.button>
+                    </c-slot>
+                    <div class="w-full">
+                        <div class="w-full flex gap-2">
+                            <div class="flex-1">
+                                <c-ui.input id="textCopyInput" disabled value="Yes, I am sure, make @{{ user.profile.slack_username }} an admin." />
+                            </div>
+                            <c-ui.button onclick="copyAction(this)">
+                                <img class="size-4" src="https://icons.hackclub.com/api/icons/white/copy">
+                            </c-ui.button>
+                            <script>
+                                function copyAction(elem) {
+                                    copyText = document.getElementById('textCopyInput').value
+                                    navigator.clipboard.writeText(copyText)
+
+                                    currentHTML = elem.innerHTML
+                                    elem.innerHTML = "Copied!"
+                                    elem.classList.add('bg-success/50!')
+                                    setTimeout(() => {
+                                        elem.innerHTML = currentHTML
+                                        elem.classList.remove('bg-success/50!')
+                                    }, 500)
+                                }
+                            </script>
+                        </div>
+                        <div class="mt-2">Type the text in the input above to confirm this action</div>
+                        <c-ui.input oninput="makeAdminInputChange(this)" />
+                        <script>
+                            function makeAdminInputChange(elem) {
+                                text = elem.value
+                                copyText = document.getElementById('textCopyInput').value
+                                enabledButton = document.getElementById('enabledButton')
+                                disabledButton = document.getElementById('disabledButton')
+                                if (text == copyText) {
+                                    enabledButton.classList.remove('hidden')
+                                    disabledButton.classList.add('hidden')
+                                } else {
+                                    enabledButton.classList.add('hidden')
+                                    disabledButton.classList.remove('hidden')
+                                }
+                            }
+                        </script>
+                        <div class="mt-4 flex justify-end">
+                            <c-ui.button id="disabledButton">
+                                Confirm
+                            </c-ui.button>
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="make_admin">
+                                <c-ui.button type="submit" id="enabledButton" class="hidden" variant="primary">
+                                    Confirm
+                                </c-ui.button>
+                            </form>
+                        </div>
+                    </div>
+                </c-admin.dialog>
                 {% endif %}
             </c-ui.card>
         {% endif %}
