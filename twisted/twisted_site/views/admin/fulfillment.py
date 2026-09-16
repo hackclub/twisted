@@ -7,5 +7,10 @@ from .admin import AdminView
 # Create your views here.
 class FulfillmentView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.manage_fulfillments:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         context = self.get_context_data(page="fulfillment")
         return render(request, "admin/fulfillment.html", context=context)

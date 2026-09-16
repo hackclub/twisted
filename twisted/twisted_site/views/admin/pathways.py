@@ -14,6 +14,12 @@ from .admin import AdminView
 # Create your views here.
 class PathwayListView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.view_pathways:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
+
         context = self.get_context_data(page="pathways")
         context["pathways"] = Pathway.objects.all().order_by("start")
 
@@ -46,6 +52,11 @@ class PathwayCreateView(AdminView):
         error: str | None = None,
         extracontext: dict[str, Any] | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
+        if self.perms.manage_pathways:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         if extracontext is None:
             extracontext = {}
 
@@ -58,6 +69,11 @@ class PathwayCreateView(AdminView):
         return render(request, "admin/pathways/create.html", context=context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.manage_pathways:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         pathway_name: str | None = request.POST.get("name")
 
         start_date: str | None = request.POST.get("startDate")
@@ -113,6 +129,11 @@ class PathwayCreateView(AdminView):
 
 class PathwayDetailView(AdminView):
     def get(self, request: HttpRequest, pathway_id: int) -> HttpResponse:
+        if self.perms.view_pathways:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         context = self.get_context_data(page="pathways", subpage="detail")
         pathway = get_object_or_404(Pathway, id=pathway_id)
         context["pathway"] = pathway

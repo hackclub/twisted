@@ -11,6 +11,7 @@ from .admin import AdminView
 
 # Create your views here.
 class DashboardView(AdminView):
+    allowed = True
     def get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="dashboard")
         if self.request.user.is_anonymous:

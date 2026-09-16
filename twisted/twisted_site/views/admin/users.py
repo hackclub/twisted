@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 
-from twisted_site.models import User
+from twisted_site.models import User, ProfileStaffPermissions
 
 from .admin import AdminView
 
@@ -17,6 +17,11 @@ from .admin import AdminView
 # Create your views here.
 class UsersView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.view_users:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         context = self.get_context_data(page="users")
         if request.GET.get("search") not in (None, ""):
             query: str = request.GET["search"]
@@ -34,6 +39,11 @@ class UsersView(AdminView):
 
     def post(self, request: HttpRequest) -> HttpResponse:
         if request.POST.get("action") == "logoutall":
+            if self.perms.superuser:
+                self.allowed = True
+            else:
+                return HttpResponse("err")
+
             session_count = Session.objects.count()
             _ = Session.objects.all().delete()
             if not isinstance(self.audit_log.additional_context, dict):
@@ -47,6 +57,11 @@ class UsersView(AdminView):
 
 class UserDetailView(AdminView):
     def get(self, request: HttpRequest, user_id: int) -> HttpResponse:
+        if self.perms.view_users:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         context = self.get_context_data(page="users", subpage="detail")
         user = get_object_or_404(User, id=user_id)
 
@@ -66,6 +81,11 @@ class UserDetailView(AdminView):
         return TemplateResponse(request, "admin/user.html", context)
 
     def post(self, request: HttpRequest, user_id: int) -> HttpResponse | None:
+        if self.perms.superuser:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         user = get_object_or_404(User, id=user_id)
 
         if not isinstance(self.audit_log.additional_context, dict):
@@ -91,8 +111,9 @@ class UserDetailView(AdminView):
             return resp
         if request.POST.get("action") == "change_permissions":
             if not request.user.profile.staff_permissions.superuser:
-                return None
-            key = request.POST["key"]
+                messages.error(request, "You are not allowed to change the permissions!")
+                return redirect(self.request.path)
+            key:str = request.POST["key"] # pyright: ignore[reportAssignmentType]
             value = request.POST.get("value") == "True"
             perms = user.profile.staff_permissions
             setattr(perms, key, value)
@@ -101,5 +122,14 @@ class UserDetailView(AdminView):
             self.audit_log.additional_context["permission_changed"] = f"'{key}' set to '{value}'"
             messages.success(request, f"Set permission '{key}' to '{value}' successfully.")
             return redirect(self.request.path+"#adminperms")
+
+        if request.POST.get("action") == "make_admin":
+            profile = user.profile
+            profile.is_staff = True
+            profile.staff_permissions = ProfileStaffPermissions.objects.create()
+            self.audit_log.pii = True
+            self.audit_log.additional_context["permission_changed"] = "Made user an admin"
+            messages.success(request, f"Made @{user.profile.slack_username} an admin.")
+            profile.save()
 
         return redirect(self.request.path)

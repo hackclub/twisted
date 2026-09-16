@@ -11,6 +11,11 @@ from .admin import AdminView
 # Create your views here.
 class ReviewView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.view_review:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         if settings.DEBUG_REVIEW:
             return self.debug_get(request)
 
@@ -18,6 +23,11 @@ class ReviewView(AdminView):
         return render(request, "admin/review.html", context=context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.manage_review:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         if settings.DEBUG_REVIEW:
             return self.debug_post(request)
 

@@ -7,5 +7,10 @@ from .admin import AdminView
 # Create your views here.
 class ShopView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.manage_shop:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         context = self.get_context_data(page="shop")
         return render(request, "admin/shop.html", context=context)
