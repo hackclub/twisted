@@ -132,11 +132,13 @@
                     <div class="mb-3 border border-warning bg-warning/10 p-3">
                         <div class="font-bold text-warning">Log more time!</div>
                         <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
+                        {% if project.user == user %}
                         <button type="button"
                                 onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                 class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                             + New journal
                         </button>
+                        {% endif %}
                     </div>
                 {% endif %}
             {% endif %}
