@@ -12,6 +12,11 @@ from .admin import AdminView
 # Create your views here.
 class AuditLogsView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
+        if self.perms.view_auditlogs:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
         page_number: str | None = request.GET.get("page")
         if page_number is None:
             return redirect(self.request.get_full_path() + "?page=1")

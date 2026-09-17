@@ -23,18 +23,18 @@ class UsersView(AdminView):
             return HttpResponse("err")
 
         context = self.get_context_data(page="users")
+        context["user_count"] = User.objects.count()
         if request.GET.get("search") not in (None, ""):
             query: str = request.GET["search"]
-            context["users"] = User.objects.all()
             context["users"] = User.objects.filter(
                 Q(profile__slack_username__icontains=query)
                 | Q(profile__slack_id__icontains=query)
                 | Q(first_name__icontains=query)
                 | Q(last_name__icontains=query),
-            ).order_by("profile__slack_username")
+            ).order_by("profile__slack_username").all()[:50]
             context["search"] = True
         else:
-            context["users"] = User.objects.all().order_by("profile__slack_username")
+            context["users"] = User.objects.order_by("profile__slack_username").all()[:75]
         return TemplateResponse(request, "admin/users.html", context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
