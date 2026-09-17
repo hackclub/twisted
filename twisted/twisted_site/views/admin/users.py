@@ -31,7 +31,7 @@ class UsersView(AdminView):
                 | Q(profile__slack_id__icontains=query)
                 | Q(first_name__icontains=query)
                 | Q(last_name__icontains=query),
-            ).order_by("profile__slack_username")
+            ).order_by("profile__slack_username").all()[:50]
             context["search"] = True
         else:
             context["users"] = User.objects.order_by("profile__slack_username").all()[:75]
