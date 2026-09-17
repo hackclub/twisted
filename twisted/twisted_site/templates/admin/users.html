@@ -9,7 +9,7 @@
                         hx-target="#container"
                         hx-select="#search-results"
                         hx-indicator=".htmx-indicator"
-                        placeholder="Search Users..."
+                        placeholder="Search {{ user_count }} users..."
                         autocomplete="off"
                         value="{{ request.GET.search }}"
                         autofocus>
