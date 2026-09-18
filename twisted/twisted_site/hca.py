@@ -1,6 +1,8 @@
-from typing import Literal
 from dataclasses import dataclass
+from typing import Literal
+
 import requests
+
 from .models import Profile
 
 HCA_BASE_URL = "https://auth.hackclub.com/api/v1"
