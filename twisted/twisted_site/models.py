@@ -1,10 +1,14 @@
-from typing import TYPE_CHECKING, Any, cast, override
+from django.db.models.query import QuerySet
+from typing import TYPE_CHECKING, Any, ClassVar, cast, override
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import RangeOperators
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import TextField
+from django.db.models import CheckConstraint, F, Func, Q, TextField, Sum
 from django.utils import timezone
 
 from . import hackatime
@@ -248,10 +252,47 @@ class ProjectShip(models.Model):
     def __str__(self) -> str:
         return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
-
-class Pathway(models.Model):
+class PathwayGroup(models.Model):
+    name = models.CharField(max_length=200)
     start = models.DateTimeField()
     end = models.DateTimeField()
+
+    def get_unspent_mins(self, user:User) -> float:
+        all_journals = Journal.objects.filter(project__user=user)
+        timed_journals = all_journals.filter(created_at__gte=self.start, created_at__lte=self.end)
+        earned = timed_journals.aggregate(total=Sum("reduced_minutes"))["total"] or 0
+        spent = PathwayTimeSpent.objects.filter(pathway__group=self, user=user).aggregate(total=Sum("minutes"))["total"] or 0  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return earned - spent
+
+
+    class Meta:
+        """Meta class for the PathwayGroup model."""
+
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            CheckConstraint(condition=Q(start__lt=F("end")), name="pathwaygroup_start_before_end"),
+            ExclusionConstraint(
+                name="pathwaygroup_no_overlapping_ranges",
+                expressions=[(Func(F("start"), F("end"), function="tstzrange"), RangeOperators.OVERLAPS)],
+            ),
+        ]
+
+    @override
+    def __str__(self) -> str:
+        return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
+
+    def clean(self) -> None:
+        super().clean()
+        if self.start is not None and self.end is not None and self.start >= self.end:
+            msg = "Start must be before end."
+            raise ValidationError(msg)
+        overlapping = PathwayGroup.objects.filter(start__lt=self.end, end__gt=self.start).exclude(pk=self.pk)
+        if overlapping.exists():
+            msg = "This time window overlaps with an existing pathway group."
+            raise ValidationError(msg)
+
+
+class Pathway(models.Model):
+    group = models.ForeignKey("twisted_site.PathwayGroup", on_delete=models.PROTECT, related_name="pathways")
 
     name = models.CharField(max_length=200)
     min_mins = models.IntegerField(default=300)
@@ -263,11 +304,19 @@ class Pathway(models.Model):
     def __str__(self) -> str:
         return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
 
+    @property
+    def start(self) -> "datetime":
+        return self.group.start  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+
+    @property
+    def end(self) -> "datetime":
+        return self.group.end  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+
     def ended(self) -> bool:
-        return timezone.now() > cast("datetime", self.end)  # pyrefly: ignore[redundant-cast]
+        return timezone.now() > self.end
 
     def didnt_start(self) -> bool:
-        return cast("datetime", self.start) > timezone.now()  # pyrefly: ignore[redundant-cast]
+        return self.start > timezone.now()
 
     def in_progress(self) -> bool:
         return not self.ended() and not self.didnt_start()
@@ -282,42 +331,8 @@ class Pathway(models.Model):
         return None
 
     def mins_spent(self, user: AbstractBaseUser) -> int:
-        pathways = Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
-        if not pathways.exists():
-            return 0
-
-        pathway_totals: dict[int, int] = {p["id"]: 0 for p in pathways}
-
-        journals = (
-            Journal.objects.filter(project__user=user)
-            .order_by("created_at")
-            .values_list("created_at", "reduced_minutes")
-        )
-
-        for j_created, j_mins in journals:
-            mins_remaining = cast("int", j_mins)
-            for pathway in pathways:
-                if mins_remaining <= 0:
-                    break
-
-                # Check if journal falls within the pathway window
-                if pathway["start"] > j_created or pathway["end"] < j_created:
-                    continue
-
-                p_id = cast("int", pathway["id"])
-                mins_completed = pathway_totals.get(p_id, 0)
-                mins_required = cast("int", pathway["min_mins"])
-
-                if mins_completed >= mins_required:
-                    continue
-
-                mins_needed = mins_required - mins_completed
-                mins_donated = min(mins_remaining, mins_needed)
-
-                mins_remaining -= mins_donated
-                pathway_totals[p_id] = mins_completed + mins_donated
-
-        return pathway_totals[self.id]  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return time_spent.minutes if time_spent else 0
 
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
@@ -327,56 +342,9 @@ class Pathway(models.Model):
             dict: {user_id: mins_spent}
 
         """
-        # Fetch all pathways to accurately model the sequential time donation
-        pathways = list(Pathway.objects.order_by("start").values("id", "start", "end", "min_mins"))
-        if len(pathways) == 0:
-            return {}
-
-        # Fetch journals from all users that fit within this pathway's active time frame
-        journals = (
-            Journal.objects.filter(
-                created_at__gte=self.start,
-                created_at__lte=self.end,
-                reduced_minutes__gt=0,
-            )
-            .order_by("project__user_id", "created_at")
-            .values_list("project__user_id", "created_at", "reduced_minutes")
+        return dict(
+            PathwayTimeSpent.objects.filter(pathway=self).values_list("user_id", "minutes"),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         )
-
-        user_pathway_totals: dict[int, dict[int, int]] = {}
-
-        for user_id, j_created, j_mins in journals:
-            if user_id not in user_pathway_totals:
-                user_pathway_totals[user_id] = {p["id"]: 0 for p in pathways}
-
-            pathway_totals = user_pathway_totals[user_id]
-            mins_remaining = cast("int", j_mins)
-
-            for pathway in pathways:
-                if mins_remaining <= 0:
-                    break
-
-                if pathway["start"] > j_created or pathway["end"] < j_created:
-                    continue
-
-                p_id = cast("int", pathway["id"])
-                mins_completed = pathway_totals[p_id]
-                mins_required = cast("int", pathway["min_mins"])
-
-                if mins_completed >= mins_required:
-                    continue
-
-                mins_needed = mins_required - mins_completed
-                mins_donated = min(mins_remaining, mins_needed)
-
-                mins_remaining -= mins_donated
-                pathway_totals[p_id] += mins_donated
-
-        # Extract only this pathway's result for each participant
-        return {
-            user_id: totals.get(self.id, 0)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
-            for user_id, totals in user_pathway_totals.items()
-        }
 
     def qualified_participants(self) -> list[AbstractBaseUser]:
         per_part = self.mins_spent_per_participant()
@@ -386,6 +354,19 @@ class Pathway(models.Model):
                 qualified.append(User.objects.get(id=userid))
         return qualified
 
+
+class PathwayTimeSpent(models.Model):
+    pathway = models.ForeignKey("twisted_site.Pathway", on_delete=models.CASCADE)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+
+    unlocked = models.BooleanField(default=False)
+    minutes = models.IntegerField(default=0)
+    golden_twists = models.IntegerField(default=0)
+
+    class Meta: #meta :loll:
+        """Meta class for the PathwayTimeSpent model."""
+
+        unique_together = ("pathway", "user")
 
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)

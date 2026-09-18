@@ -7,7 +7,7 @@ from .journal import (
     NewProjectHackatimeJournal,
     NewProjectUntrackedJournal,
 )
-from .pathways import PathwaysView
+from .pathways import PathwaysView, UnlockPathway
 from .project import ProjectDetail, ProjectSettings, SubmitProject
 from .projects import CreateProject, ListProjects
 from .referrals import ReferralsView
@@ -28,4 +28,5 @@ __all__ = [
     "ProjectSettings",
     "ReferralsView",
     "SubmitProject",
+    "UnlockPathway",
 ]

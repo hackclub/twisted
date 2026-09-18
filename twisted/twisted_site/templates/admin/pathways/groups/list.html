@@ -1,0 +1,55 @@
+<c-base>
+    <div>
+        <c-ui.breadcrumbs>
+            <c-ui.breadcrumbs.item href="{% url 'admin.dash' %}">Admin</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item href="{% url 'admin.pathways' %}">Pathways</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item :current="True">
+                Groups
+            </c-ui.breadcrumbs.item>
+        </c-ui.breadcrumbs>
+        <div class="mb-2 flex mx-auto md:mx-0 flex-row items-center gap-2 mt-2">
+            <h1 class="text-center md:text-left me-4 font-semibold text-3xl">Pathway Groups</h1>
+            <a href="{% url 'admin.pathway_groups.create' %}">
+                <c-ui.button variant="primary">
+                    Create new
+                </c-ui.button>
+            </a>
+        </div>
+        <c-ui.card class="bg-ink-900 p-0">
+            <c-ui.table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Pathways</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                        <tr>
+                            <td>
+                                <a class="underline" href="{% url 'admin.pathway_groups.detail' group.id %}">{{ group.name }}</a>
+                            </td>
+                            <td title="local time">{{ group.start }}</td>
+                            <td title="local time">{{ group.end }}</td>
+                            <td>
+                                {% if group.pathways.all %}
+                                    {% for pathway in group.pathways.all %}
+                                        <a class="underline" href="{% url 'admin.pathways.detail' pathway.id %}">{{ pathway.name }}</a>{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-ink-400">None yet</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">No pathway groups yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </c-ui.table>
+        </c-ui.card>
+    </div>
+</c-base>

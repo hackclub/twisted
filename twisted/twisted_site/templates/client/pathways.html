@@ -17,6 +17,9 @@
                         <h1 class="text-lg sm:text-xl font-bold whitespace-nowrap">Current Pathway{{ current_pathways|pluralize }}</h1>
                         <div class="h-px bg-border flex-1"></div>
                     </div>
+                    <div class="text-center">
+                        <p>You have <b>{{ unspent_mins|minutes_to_hours_minutes }}</b> to spend.</p>
+                    </div>
                     <div class="grid gap-3">
                         {% for pathway_info in current_pathways %}
                             <div class="bg-background border border-primary p-3 sm:p-4 shadow-sm">
@@ -40,8 +43,21 @@
                                         </div>
                                     </div>
                                     <div class="bg-secondary border border-border px-3 py-2 text-center shrink-0">
-                                        <div class="text-lg sm:text-xl font-bold">{{ pathway_info.minutes_spent|minutes_to_hours_minutes }}</div>
-                                        <div class="text-xs text-muted-foreground">of {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
+                                        {% if pathway_info.time_spent.unlocked %}
+                                        <div class="text-lg sm:text-xl font-bold">unlocked</div>
+                                        <div class="text-xs text-muted-foreground">spent {{ pathway_info.time_spent.minutes|minutes_to_hours_minutes }}</div>
+                                        {% elif unspent_mins >= pathway_info.pathway.min_mins %}
+                                        <form method="post" action="{% url 'fr.pathways.unlock' pathway_info.pathway.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="w-full cursor-pointer">
+                                                <div class="text-lg sm:text-xl font-bold">unlock</div>
+                                                <div class="text-xs text-muted-foreground">spends {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <div class="text-lg sm:text-xl font-bold">unlock for {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
+                                        <div class="text-xs text-muted-foreground">You need {{ pathway_info.pathway.min_mins|sub:unspent_mins|minutes_to_hours_minutes }} more to unlock</div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

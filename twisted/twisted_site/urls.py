@@ -67,6 +67,11 @@ urlpatterns = [
     ),
     path("dashboard/frame/pathways/", client.PathwaysView.as_view(), name="fr.pathways"),
     path(
+        "dashboard/frame/pathways/<int:pathway_id>/unlock/",
+        client.UnlockPathway.as_view(),
+        name="fr.pathways.unlock",
+    ),
+    path(
         "dashboard/frame/referrals/",
         client.ReferralsView.as_view(),
         name="fr.referrals",
@@ -89,6 +94,21 @@ urlpatterns = [
         "admin/pathways/new/",
         admin.PathwayCreateView.as_view(),
         name="admin.pathways.create",
+    ),
+    path(
+        "admin/pathway-groups/",
+        admin.PathwayGroupListView.as_view(),
+        name="admin.pathway_groups",
+    ),
+    path(
+        "admin/pathway-groups/new/",
+        admin.PathwayGroupCreateView.as_view(),
+        name="admin.pathway_groups.create",
+    ),
+    path(
+        "admin/pathway-groups/<int:group_id>/",
+        admin.PathwayGroupDetailView.as_view(),
+        name="admin.pathway_groups.detail",
     ),
     path("admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"),
     path("admin/shop/", admin.ShopView.as_view(), name="admin.shop"),

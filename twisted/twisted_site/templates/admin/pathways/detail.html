@@ -35,6 +35,10 @@
                     <p title="local time">{{ pathway.end }}</p>
                 </div>
                 <div>
+                    <p class="text-ink-400 text-sm">Group</p>
+                    <p>{{ pathway.group.name }}</p>
+                </div>
+                <div>
                     <p class="text-ink-400 text-sm">Minimum time required</p>
                     <p>{{ pathway.min_mins|minutes_to_hours_minutes }}</p>
                 </div>
