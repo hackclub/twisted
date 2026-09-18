@@ -1,3 +1,4 @@
+from urllib.error import HTTPError
 import json
 
 from django.http import HttpRequest, HttpResponse
@@ -34,8 +35,11 @@ class DashboardView(AdminView):
 
             logged_project_type[journal.project.get_project_type_display()] += hours
 
-            iden = hca.get_user_data(journal.project.user.profile)
-            country = iden.primary_address.country if iden.primary_address else "Unknown"
+            try:
+                iden = hca.get_user_data(journal.project.user.profile)
+                country = iden.primary_address.country if iden.primary_address else "Unknown"
+            except HTTPError:
+                country = "Unknown"
 
             logged_region_hours.setdefault(country, 0)
             logged_region_hours[country] += hours
