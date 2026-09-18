@@ -4,6 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
+from twisted_site import hca
 from twisted_site.models import Journal
 
 from .admin import AdminView
@@ -20,6 +21,8 @@ class DashboardView(AdminView):
         hours_logged_chart: dict[str, float] = {}
         logged_project_type: dict[str, float] = {"Software": 0, "Hardware": 0}
         shipped_project_type: dict[str, float] = {"Software": 0, "Hardware": 0}
+        logged_region_hours: dict[str, float] = {}
+
         hours_shipped = 0
         hours_shipped_chart: dict[str, float] = {}
         for journal in Journal.objects.all().prefetch_related("project"):
@@ -30,6 +33,12 @@ class DashboardView(AdminView):
             hours_logged_chart[date] = hours_logged_chart.get(date, 0) + hours
 
             logged_project_type[journal.project.get_project_type_display()] += hours
+
+            iden = hca.get_user_data(journal.project.user.profile)
+            country = iden.primary_address.country if iden.primary_address else "Unknown"
+
+            logged_region_hours.setdefault(country, 0)
+            logged_region_hours[country] += hours
 
             if journal.project.is_shipped():
                 hours_shipped += hours
@@ -42,6 +51,9 @@ class DashboardView(AdminView):
         )
         context["logged_project_type"] = json.dumps(
             [["Type", "Hours"], *list(logged_project_type.items())],
+        )
+        context["logged_region_hours"] = json.dumps(
+            [["Country", "Hours"], *list(logged_region_hours.items())],
         )
 
         context["hours_shipped"] = round(hours_shipped, 2)

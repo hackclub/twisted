@@ -34,7 +34,7 @@
         <c-ui.tabs.tab name="Logged">
             <c-ui.card class="bg-zinc-900">
                 <div class="flex flex-col md:flex-row text-center md:text-left gap-4">
-                    <div class="md:w-fit">
+                    <div class="md:w-fit flex flex-row mx-auto">
                         <div>
                             <div class="text-center">Hours logged</div>
                             <div class="text-center text-lg font-bold">{{ hours_logged }}h</div>
@@ -72,7 +72,7 @@
                             }
                         </script>
                     </div>
-                    <div class="md:w-fit flex flex-row">
+                    <div class="md:w-fit flex flex-row mx-auto">
                         <div>
                             <div class="text-center">Project type</div>
                             <div id="logged_project_type" class="mx-auto md:mx-0 mt-6">
@@ -105,6 +105,43 @@
                                 };
 
                                 var chart = new google.visualization.PieChart(document.getElementById('logged_project_type'));
+                                chart.draw(data, options);
+                            }
+                        </script>
+                    </div>
+                    <div class="md:w-fit flex flex-row mx-auto">
+                        <div>
+                            <div class="text-center">Hours spent by region</div>
+                            <div id="chart_region_hours" class="mx-auto md:mx-0 mt-6">
+                                <div class="text-center py-4">Loading chart...</div>
+                            </div>
+                        </div>
+                        <script>
+                            google.charts.load('current', {
+                                'packages': ['corechart']
+                            });
+                            google.charts.setOnLoadCallback(drawChart);
+
+                            function drawChart() {
+                                var data = google.visualization.arrayToDataTable({{ logged_region_hours|safe }});
+
+                                var options = {
+                                    vAxis: {
+                                        minValue: 0
+                                    },
+                                    animation: {
+                                        duration: 250,
+                                        startup: true
+                                    },
+                                    backgroundColor: {
+                                        fill: 'transparent'
+                                    },
+                                    theme: "maximized",
+                                    width: 240,
+                                    height: 160
+                                };
+
+                                var chart = new google.visualization.PieChart(document.getElementById('chart_region_hours'));
                                 chart.draw(data, options);
                             }
                         </script>
