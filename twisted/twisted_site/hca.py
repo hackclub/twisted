@@ -56,7 +56,7 @@ def get_user_data(profile: Profile) -> Identity:
 
     addresses: list[Address] = []
     primary_address: Address | None = None
-    for address in resp["addresses"]:
+    for address in resp.get("addresses", []):
         transformed_address = Address(
             id=address.get("id", "None"),
             first_name=address.get("first_name", "None"),
