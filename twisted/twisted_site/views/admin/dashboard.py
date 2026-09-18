@@ -1,9 +1,9 @@
 import json
-from urllib.error import HTTPError
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from requests.exceptions import HTTPError
 
 from twisted_site import hca
 from twisted_site.models import Journal
