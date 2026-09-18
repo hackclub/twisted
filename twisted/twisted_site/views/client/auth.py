@@ -33,7 +33,7 @@ oauth.register(
     client_id=os.environ["HCA_CLIENT_ID"],
     client_secret=os.environ["HCA_CLIENT_SECRET"],
     client_kwargs={
-        "scope": "openid profile email phone address birthdate slack_id verification_status",
+        "scope": "openid email name profile verification_status slack_id phone birthdate address basic_info",
     },
 )
 
