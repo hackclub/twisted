@@ -58,17 +58,17 @@ def get_user_data(profile: Profile) -> Identity:
     primary_address: Address | None = None
     for address in resp["addresses"]:
         transformed_address = Address(
-            id=address["id"],
-            first_name=address["first_name"],
-            last_name=address["last_name"],
-            line_1=address["line_1"],
-            line_2=address["line_2"],
-            city=address["city"],
-            state=address["state"],
-            postal_code=address["postal_code"],
-            country=address["country"],
-            phone_number=address["phone_number"],
-            primary=address["primary"],
+            id=address.get("id", "None"),
+            first_name=address.get("first_name", "None"),
+            last_name=address.get("last_name", "None"),
+            line_1=address.get("line_1", "None"),
+            line_2=address.get("line_2", "None"),
+            city=address.get("city", "None"),
+            state=address.get("state", "None"),
+            postal_code=address.get("postal_code", "None"),
+            country=address.get("country", "None"),
+            phone_number=address.get("phone_number", "None"),
+            primary=address.get("primary", "None"),
         )
         if transformed_address.primary:
             primary_address = transformed_address
