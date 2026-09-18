@@ -1,5 +1,5 @@
-from urllib.error import HTTPError
 import json
+from urllib.error import HTTPError
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
