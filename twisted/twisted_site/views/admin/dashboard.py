@@ -3,9 +3,7 @@ import json
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from requests.exceptions import HTTPError
 
-from twisted_site import hca
 from twisted_site.models import Journal
 
 from .admin import AdminView
@@ -35,11 +33,7 @@ class DashboardView(AdminView):
 
             logged_project_type[journal.project.get_project_type_display()] += hours
 
-            try:
-                iden = hca.get_user_data(journal.project.user.profile)
-                country = iden.primary_address.country if iden.primary_address else "Unknown"
-            except HTTPError:
-                country = "Unknown"
+            country = journal.project.user.profile.get_country()
 
             logged_region_hours.setdefault(country, 0)
             logged_region_hours[country] += hours
