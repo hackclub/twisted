@@ -72,8 +72,8 @@ def get_user_data(access_token: str) -> Identity:
 
     return Identity(
         id=resp["id"],
-        ysws_eligible=resp["ysws_eligible"],
-        verification_status=resp["ysws_eligible"],
+        ysws_eligible=resp.get("ysws_eligible", False),
+        verification_status=resp.get("verification_status", None),
         first_name=resp.get("first_name", "None"),
         last_name=resp.get("last_name", "None"),
         primary_email=resp["primary_email"],
