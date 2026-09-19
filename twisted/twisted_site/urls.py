@@ -95,21 +95,6 @@ urlpatterns = [
         admin.PathwayCreateView.as_view(),
         name="admin.pathways.create",
     ),
-    path(
-        "admin/pathway-groups/",
-        admin.PathwayGroupListView.as_view(),
-        name="admin.pathway_groups",
-    ),
-    path(
-        "admin/pathway-groups/new/",
-        admin.PathwayGroupCreateView.as_view(),
-        name="admin.pathway_groups.create",
-    ),
-    path(
-        "admin/pathway-groups/<int:group_id>/",
-        admin.PathwayGroupDetailView.as_view(),
-        name="admin.pathway_groups.detail",
-    ),
     path("admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"),
     path("admin/shop/", admin.ShopView.as_view(), name="admin.shop"),
     path("admin/review/", admin.ReviewView.as_view(), name="admin.review"),

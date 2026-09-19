@@ -1,20 +1,13 @@
-from django.db.models.query import QuerySet
-from typing import TYPE_CHECKING, Any, ClassVar, cast, override
+from typing import Any, cast, override
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.postgres.constraints import ExclusionConstraint
-from django.contrib.postgres.fields import RangeOperators
-from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import CheckConstraint, F, Func, Q, TextField, Sum
+from django.db.models import Sum, TextField
 from django.utils import timezone
 
 from . import hackatime
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 User = get_user_model()
 
@@ -252,50 +245,11 @@ class ProjectShip(models.Model):
     def __str__(self) -> str:
         return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
-class PathwayGroup(models.Model):
-    name = models.CharField(max_length=200)
-    start = models.DateTimeField()
-    end = models.DateTimeField()
-
-    def get_unspent_mins(self, user:User) -> float:
-        all_journals = Journal.objects.filter(project__user=user)
-        timed_journals = all_journals.filter(created_at__gte=self.start, created_at__lte=self.end)
-        earned = timed_journals.aggregate(total=Sum("reduced_minutes"))["total"] or 0
-        spent = PathwayTimeSpent.objects.filter(pathway__group=self, user=user).aggregate(total=Sum("minutes"))["total"] or 0  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
-        return earned - spent
-
-
-    class Meta:
-        """Meta class for the PathwayGroup model."""
-
-        constraints: ClassVar[list[models.BaseConstraint]] = [
-            CheckConstraint(condition=Q(start__lt=F("end")), name="pathwaygroup_start_before_end"),
-            ExclusionConstraint(
-                name="pathwaygroup_no_overlapping_ranges",
-                expressions=[(Func(F("start"), F("end"), function="tstzrange"), RangeOperators.OVERLAPS)],
-            ),
-        ]
-
-    @override
-    def __str__(self) -> str:
-        return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
-
-    def clean(self) -> None:
-        super().clean()
-        if self.start is not None and self.end is not None and self.start >= self.end:
-            msg = "Start must be before end."
-            raise ValidationError(msg)
-        overlapping = PathwayGroup.objects.filter(start__lt=self.end, end__gt=self.start).exclude(pk=self.pk)
-        if overlapping.exists():
-            msg = "This time window overlaps with an existing pathway group."
-            raise ValidationError(msg)
-
-
 class Pathway(models.Model):
-    group = models.ForeignKey("twisted_site.PathwayGroup", on_delete=models.PROTECT, related_name="pathways")
-
     name = models.CharField(max_length=200)
     min_mins = models.IntegerField(default=300)
+    start = models.DateTimeField()
+    end = models.DateTimeField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -304,13 +258,10 @@ class Pathway(models.Model):
     def __str__(self) -> str:
         return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
 
-    @property
-    def start(self) -> "datetime":
-        return self.group.start  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-
-    @property
-    def end(self) -> "datetime":
-        return self.group.end  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+    def get_unspent_mins(self, user: User) -> float:
+        total_spent = cast("Profile", user.profile).time_logged()  # pyrefly: ignore[missing-attribute]
+        spent_on_pathways = PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return total_spent - spent_on_pathways
 
     def ended(self) -> bool:
         return timezone.now() > self.end

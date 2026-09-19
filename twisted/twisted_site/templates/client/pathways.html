@@ -55,8 +55,10 @@
                                             </button>
                                         </form>
                                         {% else %}
-                                        <div class="text-lg sm:text-xl font-bold">unlock for {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
-                                        <div class="text-xs text-muted-foreground">You need {{ pathway_info.pathway.min_mins|sub:unspent_mins|minutes_to_hours_minutes }} more to unlock</div>
+                                        <button class="w-full cursor-not-allowed!">
+                                            <div class="text-lg sm:text-xl font-bold">unlock</div>
+                                            <div class="text-xs text-muted-foreground">You need {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
+                                        </button>
                                         {% endif %}
                                     </div>
                                 </div>
