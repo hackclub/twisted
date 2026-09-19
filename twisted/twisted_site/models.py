@@ -1,5 +1,3 @@
-import logging
-from requests import HTTPError
 from typing import TYPE_CHECKING, Any, cast, override
 
 from django.contrib.auth import get_user_model
@@ -8,6 +6,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import TextField
 from django.utils import timezone
+from requests import HTTPError
 
 from . import hackatime, hca
 
