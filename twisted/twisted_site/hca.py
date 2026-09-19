@@ -3,8 +3,6 @@ from typing import Literal
 
 import requests
 
-from .models import Profile
-
 HCA_BASE_URL = "https://auth.hackclub.com/api/v1"
 
 
@@ -45,10 +43,8 @@ def get_auth_headers(access_token: str, headers: dict[str, str] | None = None) -
     return {"Authorization": f"Bearer {access_token}", **headers}
 
 
-def get_user_data(profile: Profile) -> Identity:
-    access_token = profile.hca_access_token
-
-    headers = get_auth_headers(access_token)  # ty: ignore[invalid-argument-type]
+def get_user_data(access_token: str) -> Identity:
+    headers = get_auth_headers(access_token)
 
     r = requests.get(HCA_BASE_URL + "/me", headers=headers, timeout=10)
     r.raise_for_status()

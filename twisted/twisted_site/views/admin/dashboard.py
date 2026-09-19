@@ -35,11 +35,7 @@ class DashboardView(AdminView):
 
             logged_project_type[journal.project.get_project_type_display()] += hours
 
-            try:
-                iden = hca.get_user_data(journal.project.user.profile)
-                country = iden.primary_address.country if iden.primary_address else "Unknown"
-            except HTTPError:
-                country = "Unknown"
+            country = journal.project.user.profile.get_country()
 
             logged_region_hours.setdefault(country, 0)
             logged_region_hours[country] += hours
