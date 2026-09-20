@@ -97,7 +97,7 @@ def send_ship(ship: ProjectShip) -> None:
         "email": ship.project.user.email,  # pyrefly: ignore[missing-attribute]
         "name": ship.project.user.profile.slack_username,  # pyrefly: ignore[missing-attribute]
         "slack_id": ship.project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
-        "program_hours": untracked_time / 60,
+        "program_hours": 0,
     }
 
     title = ship.project.project_name
