@@ -31,6 +31,7 @@ class PathwaysView(View):
 
         for pathway in pathways:
             minutes_spent = pathway.mins_spent(cast("AbstractBaseUser", request.user))
+
             pathway_info = {
                 "pathway": pathway,
                 "minutes_spent": minutes_spent,
