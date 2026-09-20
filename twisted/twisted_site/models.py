@@ -6,8 +6,9 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Sum, TextField
 from django.utils import timezone
+from requests import HTTPError
 
-from . import hackatime
+from . import hackatime, hca
 
 User = get_user_model()
 
@@ -64,9 +65,27 @@ class Profile(models.Model):
     )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
+    country = models.CharField(max_length=20, default="", blank=True)
+    country_cached_until = models.DateTimeField(null=True, default=None)
+
     @override
     def __str__(self) -> str:
-        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]
+        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]  # ty: ignore[unresolved-attribute]
+
+    def get_country(self) -> str:
+        if self.country_cached_until is not None and self.country_cached_until > timezone.now():
+            return str(self.country)
+        try:
+            user_data = hca.get_user_data(self.hca_access_token)  # ty: ignore[invalid-argument-type]
+            country = user_data.primary_address.country if user_data.primary_address else "Unknown"
+        except HTTPError:
+            country = "Unknown"
+
+        self.country = country  # ty: ignore[invalid-assignment]
+        self.country_cached_until = timezone.now() + timezone.timedelta(hours=3)
+        self.save()
+
+        return country
 
     def shipped_projects(self) -> list["Project"]:
         return [

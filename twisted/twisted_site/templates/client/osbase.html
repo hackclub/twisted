@@ -48,4 +48,32 @@
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
         await cookieStore.set('django_timezone', timezone, { path: '/' });
     </script>
+    <script>
+        // MoveBefore polyfill for Safari (suggested by @Luke / U0BFDHWUSPM)
+        (function () {
+            // 1. Check if the native method is already supported
+            if (typeof Element.prototype.moveBefore === 'function') return;
+
+            // 2. Define the fallback function matching the moveBefore signature
+            const moveBeforeFallback = function (nodeToMove, referenceNode) {
+                if (!nodeToMove) {
+                throw new TypeError("Failed to execute 'moveBefore': 1 argument required, but only 0 present.");
+                }
+                // Element.insertBefore(node, null) behaves exactly like appendChild
+                return this.insertBefore(nodeToMove, referenceNode);
+            };
+
+            // 3. Apply the fallback across all valid ParentNode prototypes
+            if (typeof Element !== 'undefined') {
+                Element.prototype.moveBefore = moveBeforeFallback;
+            }
+            if (typeof Document !== 'undefined') {
+                Document.prototype.moveBefore = moveBeforeFallback;
+            }
+            if (typeof DocumentFragment !== 'undefined') {
+                DocumentFragment.prototype.moveBefore = moveBeforeFallback;
+            }
+        })();
+
+    </script>
 </html>
