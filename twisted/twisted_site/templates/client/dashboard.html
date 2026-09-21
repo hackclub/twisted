@@ -188,8 +188,8 @@
                     </button>
                     <button onclick="playPauseAudio()">
                         <div class="size-8">
-                            <img id="audioPauseIcon" src="https://icons.hackclub.com/api/icons/white/pause-circle-fill" alt="">
-                            <img id="audioPlayIcon" class="hidden" src="https://icons.hackclub.com/api/icons/white/play-circle-fill" alt="">
+                            <img id="audioPauseIcon" class="hidden" src="https://icons.hackclub.com/api/icons/white/pause-circle-fill" alt="">
+                            <img id="audioPlayIcon" src="https://icons.hackclub.com/api/icons/white/play-circle-fill" alt="">
                         </div>
                     </button>
                     <button onclick="audioForward(10)">
@@ -326,11 +326,6 @@
                             playPauseAudio(0)
                         } else if (savedAudioPausedPreference === '0') {
                             playPauseAudio(1)
-                            setTimeout(() => {
-                                if (audio.paused) {
-                                    location.reload()
-                                }
-                            }, 100)
                         }
                     }
                     autoStartAudio()
