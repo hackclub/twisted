@@ -124,8 +124,8 @@ def send_ship(ship: ProjectShip) -> None:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
             {
-                "at": journal.created_at.isoformat(),
-                "minutes": journal.reduced_minutes,
+                "at": journal.created_at.isoformat(),  # ty: ignore[unresolved-attribute]
+                "minutes": int(journal.reduced_minutes),  # ty: ignore[invalid-argument-type]
                 "text": content,
                 "markdown": content,
             },
@@ -144,7 +144,7 @@ def send_ship(ship: ProjectShip) -> None:
             "shipped_at": shipped_at,
             "thumbnail_url": thumbnail_url,
             "hackatime_projects": hackatime_projects,
-            "evidence": ["commits", "elapsed", "devlog"],
+            "evidence": ["devlog"],
             "journals": journals,
             "meta": meta,
         },
