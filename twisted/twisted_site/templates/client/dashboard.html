@@ -50,7 +50,7 @@
                     <span class="block text-center text-sm">Referrals</span>
                 </div>
                 {% comment %}
-            <div
+                <div
                 class="font-vintage w-fit cursor-pointer select-none"
                 data-url="{% url 'fr.discover' %}"
                 onclick="newWindow('Discover', this.dataset.url)"
@@ -127,37 +127,220 @@
                 <div id="taskbar-windows"
                      class="flex-1 flex items-center gap-1 px-2 overflow-x-auto"></div>
                 <div class="flex items-center gap-2">
-                    <button id="speaker-btn"
-                            type="button"
-                            onclick="toggleMusic()"
-                            aria-label="Toggle music"
-                            class="flex h-8 items-center border border-border bg-secondary px-2 text-secondary-foreground transition hover:bg-muted">
-                        <svg id="speaker-icon"
-                             width="20"
-                             height="16"
-                             viewBox="0 0 20 16"
-                             shape-rendering="crispEdges"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <rect x="2" y="6" width="2" height="4" fill="#E0A7FF" />
-                            <rect x="4" y="5" width="2" height="6" fill="#E0A7FF" />
-                            <rect x="6" y="4" width="2" height="8" fill="#E0A7FF" />
-                            <rect x="8" y="2" width="2" height="12" fill="#E0A7FF" />
-                            <g id="sound-waves">
-                            <rect x="12" y="5" width="2" height="6" fill="#B96CFF" />
-                            <rect x="15" y="3" width="2" height="10" fill="#B96CFF" />
-                            </g>
-                        </svg>
-                    </button>
-                    <canvas id="spectrum"
-                            width="100"
-                            height="24"
-                            class="hidden border border-border sm:block"></canvas>
                     <div id="taskbar-clock"
                          class="min-w-20 border border-border bg-background px-3 py-1.5 text-center font-mono text-xs text-foreground">
                         00:00 AM
                     </div>
                 </div>
             </nav>
+        </div>
+        <div id="musicPlayerDiv" class="bg-card p-2 border-border box-border absolute bottom-16 right-4 min-w-75" style="border-width: 1px;">
+            <div>
+                <h1 class="font-bold text-xl text-center">Twistedly</h1>
+                <p class="text-sm text-white/50 text-center">Cisco Disco</p>
+                <audio id="audioPlayer_audio" src="{% static 'audio/twistedly.mp3' %}" autoplay loop>
+                </audio>
+                <input class="h-2 w-full audio-slider" id="audioPlayer_input" type="range" min="0" max="0" step="0.1" value="0">
+                <style>
+                    .audio-slider {
+                        --fill: 0%;
+                        -webkit-appearance: none;
+                        appearance: none;
+                        background: transparent;
+                    }
+                    .audio-slider::-webkit-slider-runnable-track {
+                        height: 0.5rem;
+                        border-radius: 9999px;
+                        background: linear-gradient(to right, var(--color-accent) var(--fill), var(--color-secondary) var(--fill));
+                    }
+                    .audio-slider::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 14px;
+                        height: 14px;
+                        margin-top: -3px;
+                        border-radius: 50%;
+                        background: var(--color-accent);
+                        cursor: pointer;
+                    }
+                    .audio-slider::-moz-range-track {
+                        height: 0.5rem;
+                        border-radius: 9999px;
+                        background: var(--color-secondary);
+                    }
+                    .audio-slider::-moz-range-progress {
+                        height: 0.5rem;
+                        border-radius: 9999px;
+                        background: var(--color-accent);
+                    }
+                    .audio-slider::-moz-range-thumb {
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        border: none;
+                        background: var(--color-accent);
+                        cursor: pointer;
+                    }
+                </style>
+                <div class="flex justify-center">
+                    <button onclick="audioBackward(10)">
+                        <img class="size-8" src="https://icons.hackclub.com/api/icons/white/view-back" alt="">
+                    </button>
+                    <button onclick="playPauseAudio()">
+                        <div class="size-8">
+                            <img id="audioPauseIcon" class="hidden" src="https://icons.hackclub.com/api/icons/white/pause-circle-fill" alt="">
+                            <img id="audioPlayIcon" src="https://icons.hackclub.com/api/icons/white/play-circle-fill" alt="">
+                        </div>
+                    </button>
+                    <button onclick="audioForward(10)">
+                        <img class="size-8" src="https://icons.hackclub.com/api/icons/white/view-forward" alt="">
+                    </button>
+                </div>
+                <iframe id="audioSilence" onload="this.location = this.location" src="{% static 'audio/silence.mp3' %}" allow="autoplay" id="audio" style="display: none"></iframe>
+                <script>
+                    player = document.getElementById('musicPlayerDiv')
+                    audio = document.getElementById('audioPlayer_audio')
+                    slider = document.getElementById('audioPlayer_input')
+
+                    pauseIcon = document.getElementById('audioPauseIcon')
+                    playIcon = document.getElementById('audioPlayIcon')
+
+                    const AUDIO_PAUSED_STORAGE_KEY = 'twistedly_audio_paused'
+
+                    function saveAudioPausedPreference(paused) {
+                        try {
+                            localStorage.setItem(AUDIO_PAUSED_STORAGE_KEY, paused ? '1' : '0')
+                        } catch (_) {}
+                    }
+
+                    function loadAudioPausedPreference() {
+                        try {
+                            return localStorage.getItem(AUDIO_PAUSED_STORAGE_KEY)
+                        } catch (_) {
+                            return null
+                        }
+                    }
+
+                    function updateSliderFill() {
+                        const percent = slider.max > 0 ? (slider.value / slider.max) * 100 : 0;
+                        slider.style.setProperty('--fill', `${percent}%`);
+                    }
+
+                    audio.addEventListener('loadedmetadata', () => {
+                        slider.max = audio.duration
+                        updateSliderFill()
+                    })
+                    audio.addEventListener('timeupdate', () => {
+                        if (!slider.seeking) {
+                            slider.value = audio.currentTime;
+                        }
+                        updateSliderFill()
+                    }, 100)
+                    slider.addEventListener('input', () => {
+                        audio.currentTime = slider.value
+                        updateSliderFill()
+                    })
+                    slider.addEventListener('mousedown', () => { slider.seeking = true; });
+                    slider.addEventListener('mouseup', () => { slider.seeking = false });
+
+                    function playPauseAudio(pause=-1) {
+                        if (playerAudioCtx && playerAudioCtx.state === 'suspended') playerAudioCtx.resume();
+                        if (pause == -1) {
+                            if (audio.paused) {
+                                audio.play()
+                                playIcon.classList.add('hidden')
+                                pauseIcon.classList.remove('hidden')
+                                saveAudioPausedPreference(false)
+                            } else {
+                                audio.pause()
+                                pauseIcon.classList.add('hidden')
+                                playIcon.classList.remove('hidden')
+                                saveAudioPausedPreference(true)
+                            }
+                        } else if (pause == 0) {
+                            audio.pause()
+                            pauseIcon.classList.add('hidden')
+                            playIcon.classList.remove('hidden')
+                            saveAudioPausedPreference(true)
+                        } else {
+                            audio.muted = true
+                            audio.play()
+                            audio.muted = false
+                            playIcon.classList.add('hidden')
+                            pauseIcon.classList.remove('hidden')
+                            saveAudioPausedPreference(false)
+                        }
+                    }
+
+                    function audioBackward(seconds) {
+                        if (seconds > audio.currentTime) {
+                            audio.currentTime = 0
+                        }
+                        if (seconds < 0) {
+                            return audioForward(seconds)
+                        }
+                        audio.currentTime -= seconds
+                    }
+
+                    function audioForward(seconds) {
+                        if (seconds+audio.currentTime > audio.duration) {
+                            audio.currentTime = 0
+                        }
+                        if (seconds < 0) {
+                            return audioBackward(seconds)
+                        }
+                        audio.currentTime += seconds
+                    }
+
+                    function setBorder(width) {
+                        const borderConfig = {
+                        width: width+'px',
+                        };
+
+                        // 3. Optional: If you also want to change the width dynamically without moving the layout
+                        player.style.boxShadow = `0 0 0 ${borderConfig.width} var(--color-border)`;
+                    }
+
+                    let playerAudioCtx, playerAnalyser, playerDataArray, playerAudioConnected = false;
+
+                    function initPlayerAudioGraph() {
+                        if (playerAudioConnected) return;
+                        const AC = window.AudioContext || window.webkitAudioContext;
+                        if (!AC) return;
+                        playerAudioCtx = new AC();
+                        const source = playerAudioCtx.createMediaElementSource(audio);
+                        playerAnalyser = playerAudioCtx.createAnalyser();
+                        playerAnalyser.fftSize = 256;
+                        source.connect(playerAnalyser);
+                        playerAnalyser.connect(playerAudioCtx.destination);
+                        playerDataArray = new Uint8Array(playerAnalyser.frequencyBinCount);
+                        playerAudioConnected = true;
+                        updateBorderLoop();
+                    }
+                    initPlayerAudioGraph();
+                    
+
+                    function autoStartAudio() {
+                        const savedAudioPausedPreference = loadAudioPausedPreference()
+                        if (savedAudioPausedPreference === '1') {
+                            playPauseAudio(0)
+                        } else if (savedAudioPausedPreference === '0') {
+                            playPauseAudio(1)
+                        }
+                    }
+                    autoStartAudio()
+
+                    function updateBorderLoop() {
+                        requestAnimationFrame(updateBorderLoop);
+                        if (!playerAnalyser) return;
+                        playerAnalyser.getByteFrequencyData(playerDataArray);
+                        let sum = 0;
+                        for (let i = 0; i < playerDataArray.length; i++) sum += playerDataArray[i];
+                        const decibels = sum / playerDataArray.length;
+                        setBorder(Math.max((decibels - 30) / 5, 2));
+                    }
+                </script>
+            </div>
         </div>
     </main>
     <template id="window-template">
@@ -556,93 +739,6 @@
 
         updateClock();
         setInterval(updateClock, 1000);
-
-        const music = document.getElementById("bg-music");
-        const savedTime = parseFloat(sessionStorage.getItem("musicTime") || "0");
-        const wasPlaying = sessionStorage.getItem("musicPlaying") === "true";
-        if (savedTime) music.currentTime = savedTime;
-
-        let audioCtx,
-            analyser,
-            dataArray,
-            sourceConnected = false;
-        const canvas = document.getElementById("spectrum");
-        const ctx = canvas ? canvas.getContext("2d") : null;
-
-        function initAudioGraph() {
-            if (sourceConnected) return;
-            const AC = window.AudioContext || window.webkitAudioContext;
-            if (!AC) return;
-            audioCtx = new AC();
-            const source = audioCtx.createMediaElementSource(music);
-            analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 64;
-            source.connect(analyser);
-            analyser.connect(audioCtx.destination);
-            dataArray = new Uint8Array(analyser.frequencyBinCount);
-            sourceConnected = true;
-            drawSpectrum();
-        }
-
-        function playMusic() {
-            initAudioGraph();
-            if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-            music.play().catch(() => {});
-        }
-
-        function toggleMusic() {
-            if (music.paused) {
-                playMusic();
-            } else {
-                music.pause();
-            }
-        }
-
-        if (wasPlaying) {
-            playMusic();
-            const resumeOnce = () => {
-                playMusic();
-                document.removeEventListener("pointerdown", resumeOnce);
-                document.removeEventListener("keydown", resumeOnce);
-            };
-            document.addEventListener("pointerdown", resumeOnce, {
-                once: true
-            });
-            document.addEventListener("keydown", resumeOnce, {
-                once: true
-            });
-        }
-
-        setInterval(() => {
-            sessionStorage.setItem("musicTime", music.currentTime);
-            sessionStorage.setItem("musicPlaying", (!music.paused).toString());
-        }, 400);
-        window.addEventListener("beforeunload", () => {
-            sessionStorage.setItem("musicTime", music.currentTime);
-            sessionStorage.setItem("musicPlaying", (!music.paused).toString());
-        });
-
-        function drawSpectrum() {
-            if (!ctx) return;
-            requestAnimationFrame(drawSpectrum);
-            ctx.fillStyle = "#1E072F";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if (!analyser || music.paused) return;
-            analyser.getByteFrequencyData(dataArray);
-            const bars = 8,
-                barWidth = canvas.width / bars,
-                pixel = 3;
-            for (let i = 0; i < bars; i++) {
-                const value = dataArray[i] / 255;
-                const barHeight = Math.floor((value * canvas.height) / pixel) * pixel;
-                for (let y = 0; y < barHeight; y += pixel) {
-                    const ratio = y / canvas.height;
-                    ctx.fillStyle = ratio > 0.6 ? "#CAB3E1" : ratio > 0.3 ? "#8364A2" : "#5A4471";
-                    ctx.fillRect(i * barWidth + 1, canvas.height - y - pixel, barWidth - 2, pixel - 1);
-                }
-            }
-        }
-        drawSpectrum();
 
         setTimeout(() => {
             console.log(
