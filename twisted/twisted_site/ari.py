@@ -76,7 +76,7 @@ def send_request(
         headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
     return requests.request(
         method,
-        ARI_INGEST_ENDPOINT + endpoint,
+        f"{ARI_INGEST_ENDPOINT}{endpoint}",
         data=message_bytes,
         headers=headers,
         timeout=10,

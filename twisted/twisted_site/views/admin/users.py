@@ -131,7 +131,7 @@ class UserDetailView(AdminView):
             self.audit_log.pii = True
             self.audit_log.additional_context["permission_changed"] = f"'{key}' set to '{value}'"
             messages.success(request, f"Set permission '{key}' to '{value}' successfully.")
-            return redirect(self.request.path + "#adminperms")
+            return redirect(f"{self.request.path}#adminperms")
 
         if request.POST.get("action") == "make_admin":
             profile = as_user(user).profile

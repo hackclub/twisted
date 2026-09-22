@@ -73,7 +73,7 @@ def get_auth_headers(access_token: str, headers: dict[str, str] | None = None) -
 def get_user_data(access_token: str) -> Identity:
     headers = get_auth_headers(access_token)
 
-    r = requests.get(HCA_BASE_URL + "/me", headers=headers, timeout=10)
+    r = requests.get(f"{HCA_BASE_URL}/me", headers=headers, timeout=10)
     r.raise_for_status()
     resp = cast("_IdentityPayload", r.json()["identity"])
 

@@ -293,7 +293,7 @@
 
                     function setBorder(width) {
                         const borderConfig = {
-                        width: width+'px',
+                        width: `${width}px`,
                         };
 
                         // 3. Optional: If you also want to change the width dynamically without moving the layout
@@ -433,7 +433,7 @@
         const container = document.getElementById("windows-container");
         const clone = template.content.cloneNode(true);
         const win = clone.querySelector(".window");
-        const id = "win-" + ++windowCounter;
+        const id = `win-${++windowCounter}`;
         win.dataset.winId = id;
 
             win.querySelector(".title-bar-text").textContent = title;
@@ -555,7 +555,7 @@
 
         // Raise the window, unless it is already on top.
         function bringWindowToFront(id) {
-            const win = document.querySelector('.window[data-win-id="' + id + '"]');
+            const win = document.querySelector(`.window[data-win-id="${id}"]`);
             if (!win) return;
             if (win.style.zIndex === "100" && win.style.display !== "none") return;
             focusWindow(id);
@@ -577,7 +577,7 @@
 
     function focusWindow(id) {
         document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("bg-twisted-999!"));
-        const win = document.querySelector('.window[data-win-id="' + id + '"]');
+        const win = document.querySelector(`.window[data-win-id="${id}"]`);
 
             // Restore the window if it was minimised.
             if (win.style.display === "none") win.style.display = "";

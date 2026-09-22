@@ -95,7 +95,7 @@ class AdminView(View):
                     name="logs",
                     icon="view",
                     text="Audit Logs",
-                    href=resolve_url("admin.logs") + "?page=1",
+                    href=f"{resolve_url("admin.logs")}?page=1",
                 ),
             )
 

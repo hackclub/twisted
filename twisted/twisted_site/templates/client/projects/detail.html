@@ -55,7 +55,7 @@
                                 el.dataset.originalText = el.textContent
                             }
                             if (styled && !el.style.width) {
-                                el.style.width = el.offsetWidth + "px"
+                                el.style.width = `${el.offsetWidth}px`
                             }
                             navigator.clipboard.writeText(el.dataset.url).then(() => {
                                 clearTimeout(el._copyRevertTimeout)
@@ -134,7 +134,7 @@
                         <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
                         {% if project.user == user %}
                         <button type="button"
-                                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                 class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                             + New journal
                         </button>
@@ -150,7 +150,7 @@
                     </div>
                     {% if not project.is_shipped %}
                         <button type="button"
-                                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                 class="border border-border bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
                             + New journal
                         </button>
@@ -255,7 +255,7 @@
                             <div class="mt-1 text-sm text-muted-foreground">Your project progress will appear here... after you journal</div>
                             {% if not project.is_shipped %}
                                 <button type="button"
-                                        onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                        onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                         class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                                     + New journal
                                 </button>
