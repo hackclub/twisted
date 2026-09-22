@@ -23,7 +23,7 @@
         </div>
         <div class="flex gap-2">
             <div class="grow bg-secondary border border-border px-3 py-2 text-center shrink-0">
-                <button class="w-full h-full">
+                <button type="button" class="w-full h-full">
                     <div class="my-auto">
                         <div class="text-lg sm:text-xl font-bold">view shop</div>
                         {% if pathway_info.time_spent.unlocked %}
@@ -51,7 +51,7 @@
                 </div>
                 {% else %}
                 <div class="bg-secondary border border-border px-3 py-2 text-center shrink-0">
-                    <button class="w-full cursor-not-allowed!">
+                    <button type="button" class="w-full cursor-not-allowed!">
                         <div class="text-lg sm:text-xl font-bold">cant unlock</div>
                         <div class="text-xs text-muted-foreground">You need {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
                     </button>

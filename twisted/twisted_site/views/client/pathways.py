@@ -20,7 +20,7 @@ class PathwaysView(View):
         pathways = Pathway.objects.order_by("start").all()
 
         time_spent_lookup = {
-            ts.pathway_id: ts
+            ts.pathway_id: ts  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             for ts in PathwayTimeSpent.objects.filter(user=request.user, pathway__in=pathways)
         }
 
@@ -36,7 +36,7 @@ class PathwaysView(View):
                 "pathway": pathway,
                 "minutes_spent": minutes_spent,
                 "unlocked": minutes_spent > pathway.min_mins,
-                "time_spent": time_spent_lookup.get(pathway.id),
+                "time_spent": time_spent_lookup.get(pathway.id),  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
             }
             if pathway.in_progress():
                 current_pathway = pathway

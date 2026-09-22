@@ -97,7 +97,7 @@ class AdminView(View):
             )
 
         context["sidebar_links"] = sidebar_links
-        context["profile"] = self.request.user.profile  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        context["profile"] = self.request.user.profile  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         return context
 
     @override
@@ -113,10 +113,11 @@ class AdminView(View):
             additional_context={},
         )
 
-        perms = self.request.user.profile.staff_permissions  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        perms = self.request.user.profile.staff_permissions  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         if perms is None:
-            profile = self.request.user.profile  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-            profile.staff_permissions = ProfileStaffPermissions.objects.create()
+            profile = self.request.user.profile  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            perms = ProfileStaffPermissions.objects.create()
+            profile.staff_permissions = perms
             profile.save()
 
         self.perms = perms

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Any, cast, override
 
 from django.contrib.auth import get_user_model
@@ -70,19 +71,19 @@ class Profile(models.Model):
 
     @override
     def __str__(self) -> str:
-        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]  # ty: ignore[unresolved-attribute]
+        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]
 
     def get_country(self) -> str:
         if self.country_cached_until is not None and self.country_cached_until > timezone.now():
             return self.country  # ty: ignore[unsound-return-statement]
         try:
-            user_data = hca.get_user_data(self.hca_access_token)  # ty: ignore[invalid-argument-type]
+            user_data = hca.get_user_data(self.hca_access_token)
             country = user_data.primary_address.country if user_data.primary_address is not None else "Unknown"
         except HTTPError:
             country = "Unknown"
 
-        self.country = country  # ty: ignore[invalid-assignment]
-        self.country_cached_until = timezone.now() + timezone.timedelta(hours=3)
+        self.country = country
+        self.country_cached_until = timezone.now() + timedelta(hours=3)
         self.save()
 
         return country
@@ -277,16 +278,16 @@ class Pathway(models.Model):
     def __str__(self) -> str:
         return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
 
-    def get_unspent_mins(self, user: User) -> float:
-        total_spent = cast("Profile", user.profile).time_logged()  # pyrefly: ignore[missing-attribute]
-        spent_on_pathways = PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+    def get_unspent_mins(self, user: AbstractBaseUser) -> float:
+        total_spent = cast("Profile", user.profile).time_logged()  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        spent_on_pathways = PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0  # pyright: ignore[reportAttributeAccessIssue]
         return total_spent - spent_on_pathways
 
     def ended(self) -> bool:
         return timezone.now() > self.end
 
     def didnt_start(self) -> bool:
-        return self.start > timezone.now()
+        return self.start > timezone.now()  # ty: ignore[unsound-return-statement]
 
     def in_progress(self) -> bool:
         return not self.ended() and not self.didnt_start()
@@ -301,8 +302,8 @@ class Pathway(models.Model):
         return None
 
     def mins_spent(self, user: AbstractBaseUser) -> int:
-        time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
-        return time_spent.minutes if time_spent is not None else 0
+        time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()  # pyright: ignore[reportAttributeAccessIssue]
+        return time_spent.minutes if time_spent is not None else 0  # ty: ignore[unsound-return-statement]
 
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
@@ -313,7 +314,7 @@ class Pathway(models.Model):
 
         """
         return dict(
-            PathwayTimeSpent.objects.filter(pathway=self).values_list("user_id", "minutes"),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+            PathwayTimeSpent.objects.filter(pathway=self).values_list("user_id", "minutes"),  # pyright: ignore[reportAttributeAccessIssue]
         )
 
     def qualified_participants(self) -> list[AbstractBaseUser]:
@@ -337,6 +338,10 @@ class PathwayTimeSpent(models.Model):
         """Meta class for the PathwayTimeSpent model."""
 
         unique_together = ("pathway", "user")
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.user} - {self.pathway}"
 
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)

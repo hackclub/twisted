@@ -134,7 +134,7 @@
                 </div>
             </nav>
         </div>
-        <div id="musicPlayerDiv" class="bg-card p-2 border-border box-border absolute bottom-16 right-4 min-w-75" style="border-width: 1px;">
+        <div id="musicPlayerDiv" class="bg-card p-2 border border-border box-border absolute bottom-16 right-4 min-w-75">
             <div>
                 <h1 class="font-bold text-xl text-center">Twistedly</h1>
                 <p class="text-sm text-white/50 text-center">Cisco Disco</p>
@@ -183,20 +183,20 @@
                     }
                 </style>
                 <div class="flex justify-center">
-                    <button onclick="audioBackward(10)">
+                    <button type="button" onclick="audioBackward(10)">
                         <img class="size-8" src="https://icons.hackclub.com/api/icons/white/view-back" alt="">
                     </button>
-                    <button onclick="playPauseAudio()">
+                    <button type="button" onclick="playPauseAudio()">
                         <div class="size-8">
                             <img id="audioPauseIcon" class="hidden" src="https://icons.hackclub.com/api/icons/white/pause-circle-fill" alt="">
                             <img id="audioPlayIcon" src="https://icons.hackclub.com/api/icons/white/play-circle-fill" alt="">
                         </div>
                     </button>
-                    <button onclick="audioForward(10)">
+                    <button type="button" onclick="audioForward(10)">
                         <img class="size-8" src="https://icons.hackclub.com/api/icons/white/view-forward" alt="">
                     </button>
                 </div>
-                <iframe id="audioSilence" onload="this.location = this.location" src="{% static 'audio/silence.mp3' %}" allow="autoplay" id="audio" style="display: none"></iframe>
+                <iframe id="audioSilence" class="hidden" title="Autoplay keep-alive" onload="this.location = this.location" src="{% static 'audio/silence.mp3' %}" allow="autoplay"></iframe>
                 <script>
                     player = document.getElementById('musicPlayerDiv')
                     audio = document.getElementById('audioPlayer_audio')
@@ -365,9 +365,9 @@
             <div class="window-body min-h-0 flex-1 overflow-hidden">
                 <iframe class="w-full h-full block src-frame select-none border-0"
                         src="about:blank"
+                        title="Window content"
                         frameborder="0"></iframe>
             </div>
-        </div>
         <div class="resize-handle resize-n"></div>
         <div class="resize-handle resize-s"></div>
         <div class="resize-handle resize-e"></div>
@@ -756,6 +756,7 @@
             {% for window in startup_windows %}
                 <iframe data-href="{{ window.href }}"
                         data-title="{{ window.title }}"
+                        title="{{ window.title }}"
                         onload="
             console.log('loading...');
             newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);

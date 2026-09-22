@@ -268,7 +268,7 @@ class EditJournal(View):
         if image_count < required_image_count:
             return self.get(
                 request,
-                journal.id,
+                journal.id,  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 info=f"please add atleast {required_image_count - image_count} more image(s) to log this journal!",
                 context={"content": content},
             )
@@ -276,7 +276,7 @@ class EditJournal(View):
         if content_length < min(100, required_content_length):
             return self.get(
                 request,
-                journal.id,
+                journal.id,  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 info=f"Content length must be more than 20 characters per hour!<br>({content_length} of {required_content_length} required)",
                 context={"content": content},
             )
@@ -286,5 +286,5 @@ class EditJournal(View):
 
         log_to_channel(f":haiku: *Journal edited for {journal.project.project_name}!*\n- {journal.reduced_minutes} minutes")
 
-        return self.get(request, journal.id, context={"success": True})
+        return self.get(request, journal.id, context={"success": True})  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 

@@ -124,7 +124,7 @@ def send_ship(ship: ProjectShip) -> None:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
             {
-                "at": journal.created_at.isoformat(),  # ty: ignore[unresolved-attribute]
+                "at": journal.created_at.isoformat(),
                 "minutes": journal.reduced_minutes,
                 "text": content,
                 "markdown": content,
