@@ -80,15 +80,15 @@
                                     <img src="{{ user.profile.slack_pfp_url }}"
                                          alt=""
                                          class="w-16 h-16 rounded-lg object-cover mx-auto mb-1 -mt-12 border-2 border-border shadow-lg" />
-                                    <div class="text-absolute-white font-bold text-sm font-vintage">
+                                    <div class="font-bold text-sm font-vintage">
                                         {{ profile.slack_username|default:user.username }}
                                     </div>
-                                    <div class="text-absolute-white text-sm font-vintage">{{ profile.twists }} twists</div>
+                                    <div class="text-sm font-vintage">{{ profile.twists }} twists</div>
                                 </div>
-                                <div class="font-vintage space-y-1 text-absolute-white text-sm border-t border-twisted-800 pt-2">
+                                <div class="font-vintage space-y-1 text-sm border-t pt-2">
                                     {% if user.is_staff %}
                                         <a href="{% url 'admin.dash' %}"
-                                           class="block text-absolute-white px-2 py-1 hover:bg-twisted-800 active:bg-accent active:text-accent-foreground">Admin Panel</a>
+                                           class="block px-2 py-1 active:bg-accent active:text-accent-foreground">Admin Panel</a>
                                     {% endif %}
                                     <a href="https://docs.twisted.hackclub.com/"
                                        class="text-card-foreground px-2 py-1 w-full flex items-center justify-between hover:bg-accent hover:text-accent-foreground active:bg-accent/80 active:text-accent-foreground transition text-xl">
@@ -356,8 +356,7 @@
                     <button class="min-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary active:scale-90 active:bg-accent active:text-accent-foreground"
                             type="button"
                             aria-label="Minimise">🗕</button>
-                    <button id="max-button"
-                            class="max-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary active:scale-90 active:bg-accent active:text-accent-foreground"
+                    <button class="max-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary active:scale-90 active:bg-accent active:text-accent-foreground"
                             type="button"
                             aria-label="Maximize">🗖</button>
                     <button class="close-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-destructive hover:text-destructive-foreground active:scale-90"
@@ -547,7 +546,6 @@
         }
 
     function focusWindow(id) {
-        document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
         const win = document.querySelector('.window[data-win-id="' + id + '"]');
 
             // Restore the window if it was minimised.
@@ -566,9 +564,6 @@
             win.querySelectorAll(".resize-handle").forEach((h) => {
                 h.style.pointerEvents = "auto"
             });
-
-            const btn = document.querySelector(`#taskbar-windows button[data-win-id="${id}"]`);
-            if (btn) btn.classList.add("bg-twisted-999!");
         }
 
         function dragWindow(mywindow) {

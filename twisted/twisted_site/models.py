@@ -302,15 +302,6 @@ class Pathway(models.Model):
     def in_progress(self) -> bool:
         return not self.ended() and not self.didnt_start()
 
-    def status(self) -> str | None:
-        if self.ended():
-            return "ended"
-        if self.didnt_start():
-            return "awaiting"
-        if self.in_progress():
-            return "in progress"
-        return None
-
     def mins_spent(self, user: AbstractBaseUser) -> int:
         time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()
         return time_spent.minutes if time_spent is not None else 0  # ty: ignore[unsound-return-statement]

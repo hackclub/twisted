@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django import template
 
 register = template.Library()
@@ -20,8 +18,3 @@ def minutes_to_hours_minutes(minutes: int | str) -> str | int:
             return f"{hours}h"
         return f"{hours}h {remaining_minutes}m"
     return f"{int(minutes)}m"
-
-
-@register.filter
-def rounddelta(delta: timedelta, to: int = 1) -> timedelta:
-    return timedelta(seconds=round(delta.total_seconds(), to))
