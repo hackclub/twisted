@@ -28,7 +28,7 @@ class UploadedFile(models.Model):
     @override
     def __str__(self) -> str:
         return (
-            f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[missing-attribute]
+            f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[bad-argument-type, missing-attribute]
         )
 
 
@@ -71,7 +71,7 @@ class Profile(models.Model):
 
     @override
     def __str__(self) -> str:
-        return cast("str", self.user.username)  # pyrefly: ignore[missing-attribute]
+        return cast("str", self.user.username)  # pyrefly: ignore[bad-argument-type]
 
     def get_country(self) -> str:
         if self.country_cached_until is not None and self.country_cached_until > timezone.now():
@@ -95,13 +95,13 @@ class Profile(models.Model):
     def shipped_projects(self) -> list["Project"]:
         return [
             project
-            for project in cast("list[Project]", self.user.projects.all())  # pyrefly: ignore[missing-attribute]
+            for project in cast("list[Project]", self.user.projects.all())  # pyrefly: ignore[bad-argument-type]
             if project.is_shipped()
         ]
 
     def time_logged(self) -> int:
         time_logged = 0
-        for project in cast("list[Project]", self.user.projects.all()):  # pyrefly: ignore[missing-attribute]
+        for project in cast("list[Project]", self.user.projects.all()):  # pyrefly: ignore[bad-argument-type]
             time_logged += project.time_logged()
         return time_logged
 
@@ -164,7 +164,7 @@ class Project(models.Model):
         names = cast("list[str]", self.hackatime_project_names)
         if len(names) == 0:
             return []
-        projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[missing-attribute]
+        projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[bad-argument-type, missing-attribute]
         return [project for project in projects if project.name in names]
 
     def time_logged(self, *, include_all_minutes: bool = False) -> int:
@@ -366,4 +366,4 @@ class AuditLog(models.Model):
 
     @override
     def __str__(self) -> str:
-        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[missing-attribute]
+        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[bad-argument-type, missing-attribute]

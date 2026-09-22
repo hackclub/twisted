@@ -149,7 +149,7 @@ class SubmitProject(View):
         if project.screenshot_url == "":
             return redirect("fr.projects.detail", project_id)
 
-        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
+        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[bad-argument-type, missing-attribute]
             context["info"] = (
                 "You are not YSWS eligible yet! Please get IDVd! Get help with it at #identity-help! (if you think this is a mistake, please ask in #twisted-help)"
             )
@@ -186,7 +186,7 @@ class SubmitProject(View):
         if project.screenshot_url == "":
             return redirect("fr.projects.detail", project_id)
 
-        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
+        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[bad-argument-type, missing-attribute]
             return self.get(request, project_id)
 
         ship = ProjectShip(project=project)

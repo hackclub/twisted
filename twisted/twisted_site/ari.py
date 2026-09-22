@@ -94,9 +94,9 @@ def send_ship(ship: ProjectShip) -> None:
             untracked_time += journal.reduced_minutes
 
     maker = {
-        "email": ship.project.user.email,  # pyrefly: ignore[missing-attribute]
-        "name": ship.project.user.profile.slack_username,  # pyrefly: ignore[missing-attribute]
-        "slack_id": ship.project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
+        "email": ship.project.user.email,  # pyrefly: ignore[bad-argument-type]
+        "name": ship.project.user.profile.slack_username,  # pyrefly: ignore[bad-argument-type, missing-attribute]
+        "slack_id": ship.project.user.profile.slack_id,  # pyrefly: ignore[bad-argument-type, missing-attribute]
         "program_hours": 0,
     }
 
