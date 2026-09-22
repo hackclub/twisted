@@ -106,6 +106,17 @@
 
 	--color-destructive: #ff6b7a;
 	--color-destructive-foreground: #2a080d;
+
+	/* "OS" palette — must live in @theme for Tailwind to generate its utilities */
+	--color-twisted-200: #e0a7ff;
+	--color-twisted-400: #b96cff;
+	--color-twisted-600: #8c3ed1;
+	--color-twisted-800: #61268f;
+	--color-twisted-999: #3a1750;
+
+	--color-absolute-white: #ffffff;
+	--color-dark-black: #120817;
+	--color-surface: #2e153c;
 }
 
 button {
