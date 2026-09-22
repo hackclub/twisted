@@ -16,10 +16,9 @@
         <div>
             <h1 class="text-center font-bold">Your referral URL (case sensitive!)</h1>
             <div class="text-center">
-                <p class="text-accent hover:text-primary transition cursor-pointer" id="reflink">{{ request.scheme
-                    }}://{{
-                    request.get_host }}{% url 'homepage' %}?ref={{
-                    profile.my_referral_code|default:"error!" }}</p>
+                <p class="text-accent hover:text-primary transition cursor-pointer" id="reflink">
+                    {{ request.scheme }}://{{ request.get_host }}{% url 'homepage' %}?ref={{ profile.my_referral_code|default:"error!" }}
+                </p>
                 <div>For someone to be considered a referral, they must be ID verified and log atleast an hour.</div>
             </div>
         </div>
@@ -86,15 +85,20 @@
 </div>
 
 <script>
+    let copyAnim = false;
     document.getElementById('reflink').addEventListener('click', function () {
         const linkText = this.innerText;
-
         navigator.clipboard.writeText(linkText).then(() => {
+            if (copyAnim) {
+                this.innerText = "You've already copied it!"
+                return
+            }
             const originalText = this.innerText;
             this.innerText = "Copied to clipboard!";
-
+            copyAnim = true;
             setTimeout(() => {
                 this.innerText = originalText;
+                copyAnim = false;
             }, 1500);
         }).catch(err => {
             console.error('Could not copy text: ', err);
