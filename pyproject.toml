@@ -47,3 +47,5 @@ executionEnvironments = [{ root = "twisted" }]
 [tool.pyrefly]
 infer-with-first-use = false
 search-path = ["twisted"]
+# Migrations are generated and excluded from ruff too (see per-file-ignores above).
+project-excludes = ["**/migrations/**"]

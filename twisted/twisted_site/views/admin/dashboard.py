@@ -33,9 +33,9 @@ class DashboardView(AdminView):
 
             logged_project_type[journal.project.get_project_type_display()] += hours
 
-            country = journal.project.user.profile.get_country()
+            country = journal.project.user.profile.get_country()  # pyrefly: ignore[missing-attribute]
 
-            logged_region_hours.setdefault(country, 0)
+            _ = logged_region_hours.setdefault(country, 0)
             logged_region_hours[country] += hours
 
             if journal.project.is_shipped():

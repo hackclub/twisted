@@ -111,7 +111,7 @@ def send_ship(ship: ProjectShip) -> None:
 
     thumbnail_url = ship.project.screenshot_url
 
-    hackatime_projects = ship.project.hackatime_project_names  # pyrefly: ignore[missing-attribute]
+    hackatime_projects = ship.project.hackatime_project_names
 
     meta = {
         "project_url": f"https://twisted.hackclub.com/dashboard/?project={ship.project.id}",
@@ -125,7 +125,7 @@ def send_ship(ship: ProjectShip) -> None:
         journals.append(
             {
                 "at": journal.created_at.isoformat(),  # ty: ignore[unresolved-attribute]
-                "minutes": int(journal.reduced_minutes),  # ty: ignore[invalid-argument-type]
+                "minutes": journal.reduced_minutes,
                 "text": content,
                 "markdown": content,
             },

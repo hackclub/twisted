@@ -228,18 +228,25 @@ class DeleteJournal(View):
         if journal.type != "untracked":
             return redirect("dashboard")
 
-        journal.delete()
+        _ = journal.delete()
 
         return self.get(request, journal_id=None, context={"success": True})
 
 
 class EditJournal(View):
-    def get(self, request:HttpRequest, id:int, info:str|None=None, context:str|None=None) -> HttpResponse:
+    def get(
+        self,
+        request: HttpRequest,
+        id: int,
+        info: str | None = None,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         journal = Journal.objects.get(id=id)
         if journal.project.user != request.user:
             return redirect("fr.projects.detail", journal.project.id)
-        context = context or {}
-        if info:
+        if context is None:
+            context = TemplateContext()
+        if info is not None:
             context["info"] = info
         context["journal"] = journal
         return render(request, "client/projects/journal/edit.html", context)

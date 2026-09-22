@@ -55,7 +55,7 @@ class PathwaysView(View):
                 "profile": profile,
                 "pathways": pathways,
                 "current_pathways": current_pathways,
-                "unspent_mins": current_pathway.get_unspent_mins(request.user) if current_pathway else None,
+                "unspent_mins": current_pathway.get_unspent_mins(cast("AbstractBaseUser", request.user)) if current_pathway is not None else None,
                 "past_pathways": past_pathways,
                 "future_pathways": future_pathways,
             },
@@ -78,11 +78,11 @@ class UnlockPathway(View):
         if already_unlocked:
             return redirect("fr.pathways")
 
-        unspent_mins = pathway.get_unspent_mins(request.user)
+        unspent_mins = pathway.get_unspent_mins(cast("AbstractBaseUser", request.user))  # ty: ignore[redundant-cast]
         if unspent_mins < pathway.min_mins:
             return redirect("fr.pathways")
 
-        PathwayTimeSpent.objects.update_or_create(
+        _ = PathwayTimeSpent.objects.update_or_create(
             pathway=pathway,
             user=request.user,
             defaults={"unlocked": True, "minutes": pathway.min_mins},

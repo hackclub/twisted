@@ -74,10 +74,10 @@ class Profile(models.Model):
 
     def get_country(self) -> str:
         if self.country_cached_until is not None and self.country_cached_until > timezone.now():
-            return str(self.country)
+            return self.country  # ty: ignore[unsound-return-statement]
         try:
             user_data = hca.get_user_data(self.hca_access_token)  # ty: ignore[invalid-argument-type]
-            country = user_data.primary_address.country if user_data.primary_address else "Unknown"
+            country = user_data.primary_address.country if user_data.primary_address is not None else "Unknown"
         except HTTPError:
             country = "Unknown"
 
@@ -302,7 +302,7 @@ class Pathway(models.Model):
 
     def mins_spent(self, user: AbstractBaseUser) -> int:
         time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
-        return time_spent.minutes if time_spent else 0
+        return time_spent.minutes if time_spent is not None else 0
 
     def mins_spent_per_participant(self) -> dict[int, int]:
         """

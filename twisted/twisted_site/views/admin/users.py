@@ -73,7 +73,7 @@ class UserDetailView(AdminView):
 
         context["user"] = user
         try:
-            context["staff_perms"] = model_to_dict(user.profile.staff_permissions)
+            context["staff_perms"] = model_to_dict(user.profile.staff_permissions)  # pyrefly: ignore[missing-attribute]
         except AttributeError:
             context["staff_perms"] = None
 
@@ -110,12 +110,12 @@ class UserDetailView(AdminView):
             )
             return resp
         if request.POST.get("action") == "change_permissions":
-            if not request.user.profile.staff_permissions.superuser:
+            if not request.user.profile.staff_permissions.superuser:  # pyrefly: ignore[missing-attribute]
                 messages.error(request, "You are not allowed to change the permissions!")
                 return redirect(self.request.path)
             key:str = request.POST["key"] # pyright: ignore[reportAssignmentType]
             value = request.POST.get("value") == "True"
-            perms = user.profile.staff_permissions
+            perms = user.profile.staff_permissions  # pyrefly: ignore[missing-attribute]
             setattr(perms, key, value)
             perms.save()
             self.audit_log.pii = True
@@ -124,12 +124,12 @@ class UserDetailView(AdminView):
             return redirect(self.request.path+"#adminperms")
 
         if request.POST.get("action") == "make_admin":
-            profile = user.profile
+            profile = user.profile  # pyrefly: ignore[missing-attribute]
             profile.is_staff = True
             profile.staff_permissions = ProfileStaffPermissions.objects.create()
             self.audit_log.pii = True
             self.audit_log.additional_context["permission_changed"] = "Made user an admin"
-            messages.success(request, f"Made @{user.profile.slack_username} an admin.")
+            messages.success(request, f"Made @{user.profile.slack_username} an admin.")  # pyrefly: ignore[missing-attribute]
             profile.save()
 
         return redirect(self.request.path)
