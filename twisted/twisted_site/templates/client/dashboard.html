@@ -463,6 +463,14 @@
             document.getElementById("taskbar-windows").appendChild(taskBtn);
 
         realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
+        // Clicking anywhere in the window (not just the title bar) raises it.
+        realWin.addEventListener("pointerdown", () => bringWindowToFront(id));
+
+        // The iframe fills the window body, so observe clicks inside its document too.
+        const srcFrame = realWin.querySelector(".src-frame");
+        srcFrame.addEventListener("load", () => bindFrameFocus(srcFrame, id));
+        bindFrameFocus(srcFrame, id);
+
         dragWindow(realWin);
         initResizeHandles(realWin);
         focusWindow(id);
@@ -543,6 +551,28 @@
             win.style.bottom = `${taskbarHeight}px`;
             win.style.width = "auto";
             win.style.height = "auto";
+        }
+
+        // Raise the window, unless it is already on top.
+        function bringWindowToFront(id) {
+            const win = document.querySelector('.window[data-win-id="' + id + '"]');
+            if (!win) return;
+            if (win.style.zIndex === "100" && win.style.display !== "none") return;
+            focusWindow(id);
+        }
+
+        // Clicks inside a frame's document don't bubble up to the parent, so bind each
+        // same-origin frame document to raise its window as well.
+        function bindFrameFocus(frame, id) {
+            let frameDoc;
+            try {
+                frameDoc = frame.contentDocument;
+            } catch (_) {
+                return; // Cross-origin frames can't be observed.
+            }
+            if (!frameDoc || frameDoc.__twistedFocusBound) return;
+            frameDoc.__twistedFocusBound = true;
+            frameDoc.addEventListener("pointerdown", () => bringWindowToFront(id), true);
         }
 
     function focusWindow(id) {
