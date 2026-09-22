@@ -280,7 +280,7 @@ class Pathway(models.Model):
 
     def get_unspent_mins(self, user: AbstractBaseUser) -> float:
         total_spent = cast("Profile", user.profile).time_logged()  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-        spent_on_pathways = PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0  # pyright: ignore[reportAttributeAccessIssue]
+        spent_on_pathways = PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0
         return total_spent - spent_on_pathways
 
     def ended(self) -> bool:
@@ -302,7 +302,7 @@ class Pathway(models.Model):
         return None
 
     def mins_spent(self, user: AbstractBaseUser) -> int:
-        time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()  # pyright: ignore[reportAttributeAccessIssue]
+        time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()
         return time_spent.minutes if time_spent is not None else 0  # ty: ignore[unsound-return-statement]
 
     def mins_spent_per_participant(self) -> dict[int, int]:
@@ -314,7 +314,7 @@ class Pathway(models.Model):
 
         """
         return dict(
-            PathwayTimeSpent.objects.filter(pathway=self).values_list("user_id", "minutes"),  # pyright: ignore[reportAttributeAccessIssue]
+            PathwayTimeSpent.objects.filter(pathway=self).values_list("user_id", "minutes"),
         )
 
     def qualified_participants(self) -> list[AbstractBaseUser]:

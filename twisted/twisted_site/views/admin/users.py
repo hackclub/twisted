@@ -113,7 +113,7 @@ class UserDetailView(AdminView):
             if not request.user.profile.staff_permissions.superuser:  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
                 messages.error(request, "You are not allowed to change the permissions!")
                 return redirect(self.request.path)
-            key:str = request.POST["key"] # pyright: ignore[reportAssignmentType]
+            key:str = request.POST["key"]
             value = request.POST.get("value") == "True"
             perms = user.profile.staff_permissions  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             setattr(perms, key, value)
