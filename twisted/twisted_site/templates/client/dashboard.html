@@ -8,14 +8,13 @@
         <div class="relative z-10">
             <div class="flex flex-col flex-wrap content-start gap-3 w-full h-full overflow-y-hidden p-5">
                 {% if user.profile.is_staff %}
-                    <div class="font-vintage w-fit cursor-pointer select-none">
-                        <a href="{% url 'admin.dash' %}">
-                            <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🛡️</div>
-                            <span class="text-white block text-center text-sm">Admin</span>
-                        </a>
-                    </div>
+                    <a class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
+                       href="{% url 'admin.dash' %}">
+                        <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🛡️</div>
+                        <span class="block text-center text-sm">Admin</span>
+                    </a>
                 {% endif %}
-                <a class="font-vintage w-fit cursor-pointer select-none"
+                <a class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                    href="https://docs.twisted.hackclub.com/"
                    target="_blank">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
@@ -23,7 +22,7 @@
                     </div>
                     <span class="block text-center text-sm">Docs</span>
                 </a>
-                <div class="font-vintage w-fit cursor-pointer select-none"
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                      data-url="{% url 'fr.projects' %}"
                      onclick="newWindow('Projects', this.dataset.url)">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center">
@@ -31,7 +30,7 @@
                     </div>
                     <span class="block text-center text-sm">Projects</span>
                 </div>
-                <div class="font-vintage w-fit cursor-pointer select-none"
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                      data-url="{% url 'fr.pathways' %}"
                      onclick="newWindow('Pathways', this.dataset.url)">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
@@ -41,7 +40,7 @@
                     </div>
                     <span class="block text-center text-sm">Pathways</span>
                 </div>
-                <div class="font-vintage w-fit cursor-pointer select-none"
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                      data-url="{% url 'fr.referrals' %}"
                      onclick="newWindow('Referrals', this.dataset.url)">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
