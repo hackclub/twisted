@@ -78,7 +78,11 @@ class Profile(models.Model):
             return self.country  # ty: ignore[unsound-return-statement]
         try:
             user_data = hca.get_user_data(self.hca_access_token)
-            country = user_data.primary_address.country if user_data.primary_address is not None else "Unknown"
+            country = (
+                user_data.primary_address.country
+                if user_data.primary_address is not None
+                else "Unknown"
+            )
         except HTTPError:
             country = "Unknown"
 
@@ -265,6 +269,7 @@ class ProjectShip(models.Model):
     def __str__(self) -> str:
         return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
+
 class Pathway(models.Model):
     name = models.CharField(max_length=200)
     min_mins = models.IntegerField(default=300)
@@ -280,7 +285,9 @@ class Pathway(models.Model):
 
     def get_unspent_mins(self, user: AbstractBaseUser) -> float:
         total_spent = cast("Profile", user.profile).time_logged()  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-        spent_on_pathways = PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0
+        spent_on_pathways = (
+            PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0
+        )
         return total_spent - spent_on_pathways
 
     def ended(self) -> bool:
@@ -334,7 +341,7 @@ class PathwayTimeSpent(models.Model):
     minutes = models.IntegerField(default=0)
     golden_twists = models.IntegerField(default=0)
 
-    class Meta: #meta :loll:
+    class Meta:  # meta :loll:
         """Meta class for the PathwayTimeSpent model."""
 
         unique_together = ("pathway", "user")
@@ -342,6 +349,7 @@ class PathwayTimeSpent(models.Model):
     @override
     def __str__(self) -> str:
         return f"{self.user} - {self.pathway}"
+
 
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)

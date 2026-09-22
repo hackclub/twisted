@@ -26,12 +26,16 @@ class UsersView(AdminView):
         context["user_count"] = User.objects.count()
         if request.GET.get("search") not in (None, ""):
             query: str = request.GET["search"]
-            context["users"] = User.objects.filter(
-                Q(profile__slack_username__icontains=query)
-                | Q(profile__slack_id__icontains=query)
-                | Q(first_name__icontains=query)
-                | Q(last_name__icontains=query),
-            ).order_by("profile__slack_username").all()[:50]
+            context["users"] = (
+                User.objects.filter(
+                    Q(profile__slack_username__icontains=query)
+                    | Q(profile__slack_id__icontains=query)
+                    | Q(first_name__icontains=query)
+                    | Q(last_name__icontains=query),
+                )
+                .order_by("profile__slack_username")
+                .all()[:50]
+            )
             context["search"] = True
         else:
             context["users"] = User.objects.order_by("profile__slack_username").all()[:75]
@@ -113,7 +117,7 @@ class UserDetailView(AdminView):
             if not request.user.profile.staff_permissions.superuser:  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
                 messages.error(request, "You are not allowed to change the permissions!")
                 return redirect(self.request.path)
-            key:str = request.POST["key"]
+            key: str = request.POST["key"]
             value = request.POST.get("value") == "True"
             perms = user.profile.staff_permissions  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             setattr(perms, key, value)
@@ -121,7 +125,7 @@ class UserDetailView(AdminView):
             self.audit_log.pii = True
             self.audit_log.additional_context["permission_changed"] = f"'{key}' set to '{value}'"
             messages.success(request, f"Set permission '{key}' to '{value}' successfully.")
-            return redirect(self.request.path+"#adminperms")
+            return redirect(self.request.path + "#adminperms")
 
         if request.POST.get("action") == "make_admin":
             profile = user.profile  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]

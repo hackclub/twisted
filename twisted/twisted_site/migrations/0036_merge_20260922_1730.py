@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0034_profile_country_profile_country_cached_until'),
-        ('twisted_site', '0035_remove_pathwaygroup'),
+        ("twisted_site", "0034_profile_country_profile_country_cached_until"),
+        ("twisted_site", "0035_remove_pathwaygroup"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -55,7 +55,11 @@ class PathwaysView(View):
                 "profile": profile,
                 "pathways": pathways,
                 "current_pathways": current_pathways,
-                "unspent_mins": current_pathway.get_unspent_mins(cast("AbstractBaseUser", request.user)) if current_pathway is not None else None,
+                "unspent_mins": current_pathway.get_unspent_mins(
+                    cast("AbstractBaseUser", request.user)
+                )
+                if current_pathway is not None
+                else None,
                 "past_pathways": past_pathways,
                 "future_pathways": future_pathways,
             },
@@ -73,7 +77,9 @@ class UnlockPathway(View):
             return redirect("fr.pathways")
 
         already_unlocked = PathwayTimeSpent.objects.filter(
-            pathway=pathway, user=request.user, unlocked=True,
+            pathway=pathway,
+            user=request.user,
+            unlocked=True,
         ).exists()
         if already_unlocked:
             return redirect("fr.pathways")

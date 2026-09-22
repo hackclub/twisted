@@ -88,7 +88,9 @@ class NewProjectHackatimeJournal(View):
         )
         journal.save()
 
-        log_to_channel(f":haiku: *New journal for {project.project_name}!*\n- {journal.reduced_minutes} minutes")
+        log_to_channel(
+            f":haiku: *New journal for {project.project_name}!*\n- {journal.reduced_minutes} minutes"
+        )
 
         return self.get(request, project_id, context={"success": True})
 
@@ -251,7 +253,7 @@ class EditJournal(View):
         context["journal"] = journal
         return render(request, "client/projects/journal/edit.html", context)
 
-    def post(self, request:HttpRequest, id:int) -> HttpResponse:
+    def post(self, request: HttpRequest, id: int) -> HttpResponse:
         journal = Journal.objects.get(id=id)
 
         if journal.project.user != request.user:
@@ -284,7 +286,8 @@ class EditJournal(View):
         journal.content = content
         journal.save()
 
-        log_to_channel(f":haiku: *Journal edited for {journal.project.project_name}!*\n- {journal.reduced_minutes} minutes")
+        log_to_channel(
+            f":haiku: *Journal edited for {journal.project.project_name}!*\n- {journal.reduced_minutes} minutes"
+        )
 
         return self.get(request, journal.id, context={"success": True})  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
-

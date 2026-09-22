@@ -10,7 +10,6 @@ def copy_group_dates_to_pathway(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("twisted_site", "0034_pathwaygroup_squashed_0036_pathwaytimespent_golden_twists_and_more"),
     ]

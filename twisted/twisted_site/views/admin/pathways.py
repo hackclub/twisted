@@ -19,7 +19,6 @@ class PathwayListView(AdminView):
         else:
             return HttpResponse("err")
 
-
         context = self.get_context_data(page="pathways")
         context["pathways"] = Pathway.objects.all().order_by("start")
 

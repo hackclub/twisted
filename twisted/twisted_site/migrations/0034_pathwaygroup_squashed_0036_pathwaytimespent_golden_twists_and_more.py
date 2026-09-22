@@ -57,7 +57,6 @@ def backfill_group_names(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("twisted_site", "0034_pathwaygroup"),
         ("twisted_site", "0035_pathwaygroup_name"),
@@ -73,7 +72,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="PathwayGroup",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("start", models.DateTimeField()),
                 ("end", models.DateTimeField()),
             ],
@@ -85,7 +89,12 @@ class Migration(migrations.Migration):
                     ),
                     django.contrib.postgres.constraints.ExclusionConstraint(
                         expressions=[
-                            (models.Func(models.F("start"), models.F("end"), function="tstzrange"), "&&"),
+                            (
+                                models.Func(
+                                    models.F("start"), models.F("end"), function="tstzrange"
+                                ),
+                                "&&",
+                            ),
                         ],
                         name="pathwaygroup_no_overlapping_ranges",
                     ),
@@ -95,10 +104,25 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="PathwayTimeSpent",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("minutes", models.IntegerField(default=0)),
-                ("pathway", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="twisted_site.pathway")),
-                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "pathway",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="twisted_site.pathway"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
             ],
             options={
                 "unique_together": {("pathway", "user")},

@@ -65,7 +65,10 @@ class AdminView(View):
         if self.perms.manage_shop:
             sidebar_links.append(
                 SidebarLink(
-                    name="shop", icon="bag-add", text="Shop", href=resolve_url("admin.shop"),
+                    name="shop",
+                    icon="bag-add",
+                    text="Shop",
+                    href=resolve_url("admin.shop"),
                 ),
             )
         if self.perms.view_review:
