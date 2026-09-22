@@ -28,7 +28,7 @@ class DashboardView(AdminView):
             hours = journal.reduced_minutes / 60
             hours_logged += hours
 
-            date = journal.created_at.date().strftime("%a, %d %b")
+            date = journal.created_at.date().isoformat()
             hours_logged_chart[date] = hours_logged_chart.get(date, 0) + hours
 
             logged_project_type[journal.project.get_project_type_display()] += hours

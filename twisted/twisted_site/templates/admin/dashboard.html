@@ -1,6 +1,20 @@
 <c-base>
     <c-slot name="head">
         <script src="https://www.gstatic.com/charts/loader.js"></script>
+        <script>
+            // AreaChart needs a real date axis (it rejects a string domain), so build a
+            // typed DataTable from the [["Date", "Hours"], ...] payload.
+            function hoursDateData(raw) {
+                var data = new google.visualization.DataTable();
+                data.addColumn('date', 'Date');
+                data.addColumn('number', 'Hours');
+                (raw || []).slice(1).forEach(function (row) {
+                    var parts = String(row[0]).split('-');
+                    data.addRow([new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])), row[1]]);
+                });
+                return data;
+            }
+        </script>
     </c-slot>
     <c-ui.card class="bg-zinc-900 mb-4">
         <h3 class="text-lg font-semibold mb-2">Welcome back, {{ user.profile.slack_username }}!</h3>
@@ -49,11 +63,14 @@
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
-                                var data = google.visualization.arrayToDataTable({{ hours_logged_chart|safe }});
+                                var data = hoursDateData({{ hours_logged_chart|safe }});
 
                                 var options = {
                                     vAxis: {
                                         minValue: 0
+                                    },
+                                    hAxis: {
+                                        format: 'EEE, d MMM'
                                     },
                                     animation: {
                                         duration: 250,
@@ -165,11 +182,14 @@
                             google.charts.setOnLoadCallback(drawChart);
 
                             function drawChart() {
-                                var data = google.visualization.arrayToDataTable({{ hours_shipped_chart|safe }});
+                                var data = hoursDateData({{ hours_shipped_chart|safe }});
 
                                 var options = {
                                     vAxis: {
                                         minValue: 0
+                                    },
+                                    hAxis: {
+                                        format: 'EEE, d MMM'
                                     },
                                     animation: {
                                         duration: 250,
