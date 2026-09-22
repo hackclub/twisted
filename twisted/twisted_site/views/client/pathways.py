@@ -56,7 +56,7 @@ class PathwaysView(View):
                 "pathways": pathways,
                 "current_pathways": current_pathways,
                 "unspent_mins": current_pathway.get_unspent_mins(
-                    cast("AbstractBaseUser", request.user)
+                    cast("AbstractBaseUser", request.user),
                 )
                 if current_pathway is not None
                 else None,
