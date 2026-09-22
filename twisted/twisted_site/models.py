@@ -140,6 +140,7 @@ PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}
 
 
 class Project(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="projects")
 
     project_name = models.CharField(max_length=50)
@@ -220,6 +221,7 @@ JOURNAL_TYPES = {
 
 
 class Journal(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     project = models.ForeignKey(Project, on_delete=models.PROTECT, related_name="journals")
     type = models.CharField(max_length=100, choices=JOURNAL_TYPES)
 
@@ -271,6 +273,7 @@ class ProjectShip(models.Model):
 
 
 class Pathway(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     name = models.CharField(max_length=200)
     min_mins = models.IntegerField(default=300)
     start = models.DateTimeField()
@@ -334,6 +337,7 @@ class Pathway(models.Model):
 
 
 class PathwayTimeSpent(models.Model):
+    pathway_id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     pathway = models.ForeignKey("twisted_site.Pathway", on_delete=models.CASCADE)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
 

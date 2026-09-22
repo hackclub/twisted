@@ -117,13 +117,13 @@ class ProjectSettings(View):
         project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
 
-        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         hackatime_names = ", ".join(project.hackatime_project_names)
         log_to_channel(
             f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(hackatime_names)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}",
         )
 
-        return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return redirect("fr.projects.detail", project.id)
 
 
 class SubmitProject(View):
@@ -171,7 +171,7 @@ class SubmitProject(View):
 
         project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
-            return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+            return redirect("fr.projects.detail", project.id)
 
         if project.is_shipped():
             return self.get(
@@ -197,9 +197,9 @@ class SubmitProject(View):
             _ = ship.delete()
             raise
 
-        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         log_to_channel(
             f":shipitparrot: Project *<{project_url}|{project.project_name}> shipped with *{project.time_logged()} minutes*",
         )
 
-        return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return redirect("fr.projects.detail", project.id)

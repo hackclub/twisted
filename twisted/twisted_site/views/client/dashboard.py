@@ -24,7 +24,7 @@ class DashboardView(View):
             project = get_object_or_404(Project, id=project_id)
             startup_windows.append(
                 {
-                    "href": resolve_url("fr.projects.detail", project.id),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+                    "href": resolve_url("fr.projects.detail", project.id),
                     "title": project.project_name,
                 },
             )
