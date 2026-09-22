@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponseBase
 from django.shortcuts import redirect, resolve_url
 from django.views import View
 
-from twisted_site.models import AuditLog, ProfileStaffPermissions
+from twisted_site.models import AuditLog, ProfileStaffPermissions, as_user
 
 
 @dataclass
@@ -100,14 +100,14 @@ class AdminView(View):
             )
 
         context["sidebar_links"] = sidebar_links
-        context["profile"] = self.request.user.profile  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        context["profile"] = as_user(self.request.user).profile
         return context
 
     @override
     def dispatch(self, request: HttpRequest, *args: object, **kwargs: object) -> HttpResponseBase:
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        if not as_user(request.user).profile.is_staff:
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,
@@ -116,9 +116,9 @@ class AdminView(View):
             additional_context={},
         )
 
-        perms = self.request.user.profile.staff_permissions  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        perms = as_user(self.request.user).profile.staff_permissions
         if perms is None:
-            profile = self.request.user.profile  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            profile = as_user(self.request.user).profile
             perms = ProfileStaffPermissions.objects.create()
             profile.staff_permissions = perms
             profile.save()

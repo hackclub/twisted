@@ -1,6 +1,5 @@
 from itertools import chain
 from operator import attrgetter
-from typing import cast
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
@@ -8,7 +7,13 @@ from django.views import View
 from requests import HTTPError, RequestException
 
 from twisted_site import ari, hackatime
-from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip, TemplateContext
+from twisted_site.models import (
+    PROJECT_TYPE_CHOICES,
+    Project,
+    ProjectShip,
+    TemplateContext,
+    as_user,
+)
 from twisted_site.slack import log_to_channel
 
 
@@ -25,7 +30,7 @@ class ProjectDetail(View):
 
         context = TemplateContext()
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
         context["profile"] = profile
 
         project = get_object_or_404(Project, id=project_id)
@@ -78,7 +83,7 @@ class ProjectSettings(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
         context["profile"] = profile
 
         try:
@@ -149,7 +154,7 @@ class SubmitProject(View):
         if project.screenshot_url == "":
             return redirect("fr.projects.detail", project_id)
 
-        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[bad-argument-type, missing-attribute]
+        if not as_user(project.user).profile.ysws_eligible:
             context["info"] = (
                 "You are not YSWS eligible yet! Please get IDVd! Get help with it at #identity-help! (if you think this is a mistake, please ask in #twisted-help)"
             )
@@ -186,7 +191,7 @@ class SubmitProject(View):
         if project.screenshot_url == "":
             return redirect("fr.projects.detail", project_id)
 
-        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[bad-argument-type, missing-attribute]
+        if not as_user(project.user).profile.ysws_eligible:
             return self.get(request, project_id)
 
         ship = ProjectShip(project=project)

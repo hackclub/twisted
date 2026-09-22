@@ -15,7 +15,7 @@ from django.shortcuts import redirect
 from django.views import View
 
 from twisted_site import hackatime
-from twisted_site.models import Profile
+from twisted_site.models import Profile, as_user
 from twisted_site.slack import log_to_channel, slack_bot
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,8 @@ oauth.register(
 class LoginView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         if (
-            request.user.is_authenticated and request.user.profile.hackatime_access_token  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            request.user.is_authenticated
+            and as_user(request.user).profile.hackatime_access_token != ""
         ):
             return redirect("dashboard")
 
@@ -158,7 +159,7 @@ class HackatimeCallbackView(View):
         if os.environ.get("LOGIN_ENABLED") == "false":
             return JsonResponse("not allowed!")
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
 
         state = request.GET["state"]
         if not hmac.compare_digest(state, profile.hackatime_state):

@@ -1,12 +1,12 @@
 import secrets
 import string
-from typing import Any, cast
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
-from twisted_site.models import Profile
+from twisted_site.models import Profile, as_user
 
 
 # Create your views here.
@@ -17,7 +17,7 @@ class ReferralsView(View):
 
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
         context["profile"] = profile
 
         if profile.my_referral_code == "":

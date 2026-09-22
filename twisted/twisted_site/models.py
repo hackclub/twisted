@@ -1,11 +1,11 @@
 from datetime import timedelta
-from typing import Any, cast, override
+from typing import Any, Protocol, cast, override
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Sum, TextField
+from django.db.models import QuerySet, Sum, TextField
 from django.utils import timezone
 from requests import HTTPError
 
@@ -28,7 +28,7 @@ class UploadedFile(models.Model):
     @override
     def __str__(self) -> str:
         return (
-            f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"  # pyrefly: ignore[bad-argument-type, missing-attribute]
+            f"{self.cdn_response['filename']} uploaded by {as_user(self.uploaded_by).profile.slack_username}"
         )
 
 
@@ -71,7 +71,7 @@ class Profile(models.Model):
 
     @override
     def __str__(self) -> str:
-        return cast("str", self.user.username)  # pyrefly: ignore[bad-argument-type]
+        return as_user(self.user).username
 
     def get_country(self) -> str:
         if self.country_cached_until is not None and self.country_cached_until > timezone.now():
@@ -95,13 +95,13 @@ class Profile(models.Model):
     def shipped_projects(self) -> list["Project"]:
         return [
             project
-            for project in cast("list[Project]", self.user.projects.all())  # pyrefly: ignore[bad-argument-type]
+            for project in as_user(self.user).projects.all()
             if project.is_shipped()
         ]
 
     def time_logged(self) -> int:
         time_logged = 0
-        for project in cast("list[Project]", self.user.projects.all()):  # pyrefly: ignore[bad-argument-type]
+        for project in as_user(self.user).projects.all():
             time_logged += project.time_logged()
         return time_logged
 
@@ -164,7 +164,7 @@ class Project(models.Model):
         names = cast("list[str]", self.hackatime_project_names)
         if len(names) == 0:
             return []
-        projects = hackatime.projects(self.user.profile.hackatime_access_token)  # pyrefly: ignore[bad-argument-type, missing-attribute]
+        projects = hackatime.projects(as_user(self.user).profile.hackatime_access_token)
         return [project for project in projects if project.name in names]
 
     def time_logged(self, *, include_all_minutes: bool = False) -> int:
@@ -287,7 +287,7 @@ class Pathway(models.Model):
         return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
 
     def get_unspent_mins(self, user: AbstractBaseUser) -> float:
-        total_spent = cast("Profile", user.profile).time_logged()  # ty: ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        total_spent = as_user(user).profile.time_logged()
         spent_on_pathways = (
             PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0
         )
@@ -366,4 +366,27 @@ class AuditLog(models.Model):
 
     @override
     def __str__(self) -> str:
-        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"  # pyrefly: ignore[bad-argument-type, missing-attribute]
+        return f"Audit log for {as_user(self.user).profile.slack_username}. PII: {self.pii}"
+
+
+class _ProjectsManager(Protocol):
+    def all(self) -> QuerySet[Project]: ...
+
+
+class UserWithProfile(Protocol):
+    """
+    The built-in user model plus the relations this project adds to it.
+
+    Reverse relations (and concrete fields like `username` on `get_user_model()`)
+    cannot be resolved by pyrefly/ty/pyright without the django-stubs mypy plugin,
+    so access goes through this protocol instead of per-tool ignore comments.
+    """
+
+    profile: Profile
+    projects: _ProjectsManager
+    username: str
+    email: str
+
+
+def as_user(user: object) -> UserWithProfile:
+    return cast("UserWithProfile", user)

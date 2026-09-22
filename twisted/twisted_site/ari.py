@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import requests
 from django.conf import settings
 
-from .models import Journal, Project, ProjectShip
+from .models import Journal, Project, ProjectShip, as_user
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -94,9 +94,9 @@ def send_ship(ship: ProjectShip) -> None:
             untracked_time += journal.reduced_minutes
 
     maker = {
-        "email": ship.project.user.email,  # pyrefly: ignore[bad-argument-type]
-        "name": ship.project.user.profile.slack_username,  # pyrefly: ignore[bad-argument-type, missing-attribute]
-        "slack_id": ship.project.user.profile.slack_id,  # pyrefly: ignore[bad-argument-type, missing-attribute]
+        "email": as_user(ship.project.user).email,
+        "name": as_user(ship.project.user).profile.slack_username,
+        "slack_id": as_user(ship.project.user).profile.slack_id,
         "program_hours": 0,
     }
 

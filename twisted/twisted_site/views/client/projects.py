@@ -1,14 +1,10 @@
-from typing import TYPE_CHECKING, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
-from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project
+from twisted_site.models import PROJECT_TYPE_CHOICES, Project, as_user
 from twisted_site.slack import log_to_channel
-
-if TYPE_CHECKING:
-    from django.db.models import QuerySet
 
 
 # Create your views here.
@@ -17,9 +13,9 @@ class ListProjects(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
 
-        projects = cast("QuerySet[Project]", request.user.projects.all())  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        projects = as_user(request.user).projects.all()
 
         return render(
             request,
@@ -56,7 +52,7 @@ class CreateProject(View):
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
 
         log_to_channel(
-            f"*{request.user.profile.slack_username}* created a <{project_url}|new project>!\n- *Name*: {project_name}\n- *Description*: {project_description}\n- {project_type.title()}",  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            f"*{as_user(request.user).profile.slack_username}* created a <{project_url}|new project>!\n- *Name*: {project_name}\n- *Description*: {project_description}\n- {project_type.title()}",
         )
 
         return redirect("fr.projects.detail", project.id)

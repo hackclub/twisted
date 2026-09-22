@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
-from twisted_site.models import Pathway, PathwayTimeSpent, Profile
+from twisted_site.models import Pathway, PathwayTimeSpent, as_user
 
 if TYPE_CHECKING:
     from django.contrib.auth.base_user import AbstractBaseUser
@@ -16,7 +16,7 @@ class PathwaysView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
         pathways = Pathway.objects.order_by("start").all()
 
         time_spent_lookup = {

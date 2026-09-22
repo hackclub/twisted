@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from twisted_site.models import Journal
+from twisted_site.models import Journal, as_user
 
 from .admin import AdminView
 
@@ -34,7 +34,7 @@ class DashboardView(AdminView):
 
             logged_project_type[journal.project.get_project_type_display()] += hours
 
-            country = journal.project.user.profile.get_country()  # pyrefly: ignore[bad-argument-type, missing-attribute]
+            country = as_user(journal.project.user).profile.get_country()
 
             _ = logged_region_hours.setdefault(country, 0)
             logged_region_hours[country] += hours
