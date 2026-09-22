@@ -55,7 +55,7 @@ class PathwaysView(View):
                 "profile": profile,
                 "pathways": pathways,
                 "current_pathways": current_pathways,
-                "unspent_mins": current_pathway.get_unspent_mins(request.user),
+                "unspent_mins": current_pathway.get_unspent_mins(request.user) if current_pathway else None,
                 "past_pathways": past_pathways,
                 "future_pathways": future_pathways,
             },
