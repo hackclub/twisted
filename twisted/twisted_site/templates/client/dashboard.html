@@ -220,6 +220,14 @@
                         }
                     }
 
+                    function syncPlayPauseIcons() {
+                        // Keep the button in sync with the real playback state (including autoplay on first load).
+                        playIcon.classList.toggle('hidden', !audio.paused)
+                        pauseIcon.classList.toggle('hidden', audio.paused)
+                    }
+                    audio.addEventListener('play', syncPlayPauseIcons)
+                    audio.addEventListener('pause', syncPlayPauseIcons)
+
                     function updateSliderFill() {
                         const percent = slider.max > 0 ? (slider.value / slider.max) * 100 : 0;
                         slider.style.setProperty('--fill', `${percent}%`);
@@ -247,26 +255,18 @@
                         if (pause == -1) {
                             if (audio.paused) {
                                 audio.play()
-                                playIcon.classList.add('hidden')
-                                pauseIcon.classList.remove('hidden')
                                 saveAudioPausedPreference(false)
                             } else {
                                 audio.pause()
-                                pauseIcon.classList.add('hidden')
-                                playIcon.classList.remove('hidden')
                                 saveAudioPausedPreference(true)
                             }
                         } else if (pause == 0) {
                             audio.pause()
-                            pauseIcon.classList.add('hidden')
-                            playIcon.classList.remove('hidden')
                             saveAudioPausedPreference(true)
                         } else {
                             audio.muted = true
                             audio.play()
                             audio.muted = false
-                            playIcon.classList.add('hidden')
-                            pauseIcon.classList.remove('hidden')
                             saveAudioPausedPreference(false)
                         }
                     }
@@ -328,6 +328,7 @@
                         }
                     }
                     autoStartAudio()
+                    syncPlayPauseIcons()
 
                     function updateBorderLoop() {
                         requestAnimationFrame(updateBorderLoop);
