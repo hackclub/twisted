@@ -48,6 +48,17 @@
                     </div>
                     <span class="block text-center text-sm">Referrals</span>
                 </div>
+                <div class="font-vintage w-fit cursor-pointer select-none"
+                     data-url="{% url 'fr.shop' %}"
+                     onclick="newWindow('Shop', this.dataset.url)">
+                    <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
+                        <span class="pl-1">
+                            🛒
+                        </span>
+                        <!-- <img class="size-10" src="{% static 'icons/gift.png' %}" alt="" /> -->
+                    </div>
+                    <span class="block text-center text-sm">Shop</span>
+                </div>
                 {% comment %}
                 <div
                 class="font-vintage w-fit cursor-pointer select-none"

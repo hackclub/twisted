@@ -77,6 +77,8 @@ urlpatterns = [
         name="fr.referrals",
     ),
     path("dashboard/frame/discover/", client.DiscoverView.as_view(), name="fr.discover"),
+    path("dashboard/frame/shop/", client.ShopView.as_view(), name="fr.shop"),
+
     path("admin/", admin.DashboardView.as_view(), name="admin.dash"),
     path("admin/users/", admin.UsersView.as_view(), name="admin.users"),
     path(
@@ -97,6 +99,7 @@ urlpatterns = [
     ),
     path("admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"),
     path("admin/shop/", admin.ShopView.as_view(), name="admin.shop"),
+    path("admin/shop/regions/", admin.ShopRegionsView.as_view(), name="admin.shop.regions"),
     path("admin/review/", admin.ReviewView.as_view(), name="admin.review"),
     path(
         "admin/announcements/",

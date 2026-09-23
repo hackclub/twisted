@@ -23,10 +23,13 @@ class AdminView(View):
     perms: ProfileStaffPermissions  # pyright: ignore[reportUninitializedInstanceVariable]
     allowed = False
 
-    def get_context_data(self, page: str, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
+    page = None
+    subpage = None
+
+    def get_context_data(self, page: str | None = None, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
-        context["page"] = page
-        context["subpage"] = subpage
+        context["page"] = page or self.page
+        context["subpage"] = subpage or self.subpage
         sidebar_links = [
             SidebarLink(
                 name="dashboard",

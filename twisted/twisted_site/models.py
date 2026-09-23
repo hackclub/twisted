@@ -69,6 +69,8 @@ class Profile(models.Model):
     country = models.CharField(max_length=20, default="", blank=True)
     country_cached_until = models.DateTimeField(null=True, default=None)
 
+    region = models.ForeignKey("twisted_site.ShopRegion", on_delete=models.PROTECT, null=True, default=None)
+
     @override
     def __str__(self) -> str:
         return as_user(self.user).username
@@ -345,6 +347,30 @@ class PathwayTimeSpent(models.Model):
     def __str__(self) -> str:
         return f"{self.user} - {self.pathway}"
 
+
+class ShopRegion(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=200)
+
+class ShopItemRegionalPricing(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    region = models.ForeignKey('twisted_site.ShopRegion', related_name="prices", on_delete=models.PROTECT)
+    item = models.ForeignKey('twisted_site.ShopItem', related_name="prices", on_delete=models.PROTECT)
+
+    price = models.IntegerField()
+
+class ShopItem(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    pathway = models.ForeignKey("twisted_site.Pathway", on_delete=models.PROTECT, related_name="shop")
+
+    item_name = models.CharField(max_length=500)
+    item_description = models.TextField()
 
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
