@@ -159,9 +159,19 @@ class HackatimeCallbackView(View):
         if os.environ.get("LOGIN_ENABLED") == "false":
             return JsonResponse("not allowed!")
 
+        if request.user.is_anonymous:
+            return redirect("login")
+
         profile = as_user(request.user).profile
 
-        state = request.GET["state"]
+        state = request.GET.get("state")
+        code = request.GET.get("code")
+        if state in (None, "") or code in (None, ""):
+            return JsonResponse(
+                {"error": "Missing OAuth state or authorization code"},
+                status=400,
+            )
+
         if not hmac.compare_digest(state, profile.hackatime_state):
             profile.hackatime_state = ""
             profile.save()
