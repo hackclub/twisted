@@ -7,7 +7,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import QuerySet, Sum, TextField
 from django.utils import timezone
-from requests import HTTPError
+from requests import RequestException
 
 from . import hackatime, hca
 
@@ -85,7 +85,7 @@ class Profile(models.Model):
                 if user_data.primary_address is not None
                 else "Unknown"
             )
-        except HTTPError:
+        except RequestException:
             country = "Unknown"
 
         self.country = country
