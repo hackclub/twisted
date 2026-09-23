@@ -78,6 +78,69 @@ class AdminAuthorizationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_non_superuser_cannot_change_user_permissions(self) -> None:
+        target_user = User.objects.create_user(username="target")
+        target_permissions = ProfileStaffPermissions.objects.create()
+        target_profile = Profile.objects.create(
+            user=target_user, staff_permissions=target_permissions,
+        )
+        detail_url = reverse(
+            "admin.users.detail",
+            kwargs={"user_id": target_user.pk},
+        )
+
+        response = self.client.post(
+            detail_url,
+            {"action": "change_permissions", "key": "view_users", "value": "True"},
+        )
+
+        self.assertRedirects(response, reverse("admin.dash"))
+        target_profile.refresh_from_db()
+        target_permissions.refresh_from_db()
+        self.assertFalse(target_permissions.view_users)
+        self.assertIsNotNone(target_profile.staff_permissions)
+
+    def test_superuser_can_toggle_user_allowlist(self) -> None:
+        self.permissions.superuser = True
+        self.permissions.save(update_fields=("superuser",))
+        target_user = User.objects.create_user(username="allow-target")
+        target_profile = Profile.objects.create(user=target_user, is_allowed=False)
+        detail_url = reverse(
+            "admin.users.detail",
+            kwargs={"user_id": target_user.pk},
+        )
+
+        response = self.client.post(detail_url, {"action": "toggle_is_allowed"})
+
+        self.assertEqual(response.status_code, 302)
+        target_profile.refresh_from_db()
+        self.assertTrue(target_profile.is_allowed)
+
+    def test_superuser_can_change_permission_and_make_admin(self) -> None:
+        self.permissions.superuser = True
+        self.permissions.save(update_fields=("superuser",))
+        target_user = User.objects.create_user(username="permission-target")
+        target_permissions = ProfileStaffPermissions.objects.create()
+        target_profile = Profile.objects.create(
+            user=target_user, staff_permissions=target_permissions,
+        )
+        detail_url = reverse(
+            "admin.users.detail",
+            kwargs={"user_id": target_user.pk},
+        )
+
+        _ = self.client.post(
+            detail_url,
+            {"action": "change_permissions", "key": "view_users", "value": "True"},
+        )
+        target_permissions.refresh_from_db()
+        self.assertTrue(target_permissions.view_users)
+        _ = self.client.post(detail_url, {"action": "make_admin"})
+
+        target_profile.refresh_from_db()
+        self.assertTrue(target_profile.is_staff)
+        self.assertIsNotNone(target_profile.staff_permissions)
+
     def test_logout_all_requires_superuser_and_does_not_delete_sessions(self) -> None:
         session = SessionStore()
         _ = session.create()
