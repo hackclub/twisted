@@ -363,8 +363,16 @@ class ShopItemRegionalPricing(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    region = models.ForeignKey('twisted_site.ShopRegion', related_name="prices", on_delete=models.PROTECT)
-    item = models.ForeignKey('twisted_site.ShopItem', related_name="prices", on_delete=models.PROTECT)
+    region = models.ForeignKey(
+        "twisted_site.ShopRegion",
+        related_name="prices",
+        on_delete=models.PROTECT,
+    )
+    item = models.ForeignKey(
+        "twisted_site.ShopItem",
+        related_name="prices",
+        on_delete=models.PROTECT,
+    )
 
     price = models.IntegerField()
 
