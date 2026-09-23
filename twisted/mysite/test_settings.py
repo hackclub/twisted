@@ -1,4 +1,5 @@
 # ruff: noqa: E402
+# pyright: reportConstantRedefinition=false
 """Deterministic settings for the automated test suite."""
 
 import os
@@ -35,7 +36,7 @@ _TEST_ENVIRONMENT = {
 }
 
 for _name, _value in _TEST_ENVIRONMENT.items():
-    os.environ.setdefault(_name, _value)
+    _ = os.environ.setdefault(_name, _value)
 
 from mysite.settings import *  # noqa: F403
 

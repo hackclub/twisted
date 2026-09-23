@@ -1,3 +1,5 @@
+from typing import cast
+
 from django.conf import settings
 from django.db import connection
 from django.test import SimpleTestCase, TestCase
@@ -10,8 +12,9 @@ class TestSettingsTests(SimpleTestCase):
         self.assertFalse(settings.DEBUG)
         self.assertFalse(settings.DEBUG_REVIEW)
         self.assertFalse(settings.SECURE_SSL_REDIRECT)
+        storages = cast("dict[str, dict[str, str]]", settings.STORAGES)
         self.assertEqual(
-            settings.STORAGES["staticfiles"]["BACKEND"],
+            storages["staticfiles"]["BACKEND"],
             "django.contrib.staticfiles.storage.StaticFilesStorage",
         )
 
