@@ -35,7 +35,7 @@ class PathwaysView(View):
             pathway_info = {
                 "pathway": pathway,
                 "minutes_spent": minutes_spent,
-                "unlocked": minutes_spent > pathway.min_mins,
+                "unlocked": minutes_spent >= pathway.min_mins,
                 "time_spent": time_spent_lookup.get(pathway.id),
             }
             if pathway.in_progress():
