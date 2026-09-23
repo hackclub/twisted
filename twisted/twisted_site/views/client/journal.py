@@ -50,7 +50,15 @@ class NewProjectHackatimeJournal(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        reduced_minutes = min(project.hackatime_time_unjournaled(), HACKATIME_MAX_LOGGABLE_MINUTES)
+        available_minutes = project.hackatime_time_unjournaled()
+        if available_minutes <= 0:
+            return self.get(
+                request,
+                project_id,
+                info="There is no unjournaled Hackatime time available.",
+            )
+
+        reduced_minutes = min(available_minutes, HACKATIME_MAX_LOGGABLE_MINUTES)
 
         if project.is_shipped():
             return redirect("fr.projects.detail", project_id)
@@ -83,7 +91,7 @@ class NewProjectHackatimeJournal(View):
             project=project,
             type="hackatime",
             content=content,
-            minutes_worked=project.hackatime_time_unjournaled(),
+            minutes_worked=available_minutes,
             reduced_minutes=reduced_minutes,
         )
         journal.save()
