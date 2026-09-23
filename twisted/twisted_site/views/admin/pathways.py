@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from twisted_site.models import Pathway, User
+from twisted_site.models import Pathway, User, ShopItem, ShopRegion
 
 from .admin import AdminView
 
@@ -166,4 +166,41 @@ class PathwayDetailView(AdminView):
         context["participants"] = participants
         context["qualified_count"] = sum(1 for p in participants if p["qualified"])
 
+        context["shop_items"] = ShopItem.objects.filter(pathway=pathway)
+        context["shop_regions"] = ShopRegion.objects.all()
+
         return render(request, "admin/pathways/detail.html", context=context)
+
+    def post(self, request:HttpRequest, pathway_id) -> HttpResponse:
+        if self.perms.manage_shop:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
+        pathway = get_object_or_404(Pathway, id=pathway_id)
+
+        if request.POST.get("action") == "new_listing":
+            item_name = request.POST["name"]
+            item_description = request.POST["description"]
+            ShopItem.objects.create(
+                pathway = pathway,
+                item_name = item_name,
+                item_description = item_description,
+            )
+            messages.success(request, f"Created new shop listing for {item_name}")
+            return redirect(request.path_info)
+
+        return redirect(request.path_info)
+
+class PathwayShopItemDetailView(AdminView):
+    def get(self, request: HttpRequest, listing_id: int) -> HttpResponse:
+        context = self.get_context_data()
+        if self.perms.view_pathways:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
+        item = ShopItem.objects.get(id=listing_id)
+        context["item"] = item
+
+        return render(request, "admin/pathways/listing.html", context)

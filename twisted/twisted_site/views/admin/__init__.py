@@ -6,6 +6,7 @@ from .pathways import (
     PathwayCreateView,
     PathwayDetailView,
     PathwayListView,
+    PathwayShopItemDetailView,
 )
 from .review import ReviewView
 from .shop import ShopRegionsView, ShopView
@@ -19,6 +20,7 @@ __all__ = [
     "PathwayCreateView",
     "PathwayDetailView",
     "PathwayListView",
+    "PathwayShopItemDetailView",
     "ReviewView",
     "ShopRegionsView",
     "ShopView",

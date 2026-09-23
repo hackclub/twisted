@@ -93,6 +93,11 @@ urlpatterns = [
         name="admin.pathways.detail",
     ),
     path(
+        "admin/pathways/_shopitems/<int:listing_id>/",
+        admin.PathwayShopItemDetailView.as_view(),
+        name="admin.pathways.shopitems",
+    ),
+    path(
         "admin/pathways/new/",
         admin.PathwayCreateView.as_view(),
         name="admin.pathways.create",

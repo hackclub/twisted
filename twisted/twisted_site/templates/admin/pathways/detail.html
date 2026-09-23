@@ -96,5 +96,121 @@
                 </c-ui.card>
             {% endif %}
         </div>
+
+        <div class="mt-4">
+            <h2 class="text-lg font-semibold mb-2">Shop listings</h2>
+            {% if shop_items %}
+                <c-ui.card class="bg-ink-900 p-0">
+                    <c-ui.button popovertarget="createNewShopItem">Create new listing</c-ui.button>
+                    <c-ui.table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Last updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <div id="id"></div>
+                            {% for item in shop_items %}
+                                <tr hx-get="{% url 'admin.pathways.shopitems' item.id %}" 
+                                    hx-target="#listing-{{ item.id }}" 
+                                    hx-trigger="click"
+                                    hx-swap="innerHTML"
+                                    hx-on::after-request="document.getElementById('listing-{{ item.id }}').showPopover()"
+                                >
+                                    <td>
+                                        {{ item.item_name }}
+                                    </td>
+                                    <td>{{ item.item_description }}</td>
+                                    <td class="min-w-32">
+                                        {{ item.updated_at }}
+                                    </td>
+                                </tr>
+                                <!-- Native Popover Element -->
+                                <div id="listing-{{ item.id }}" popover>
+                                    <div class="flex h-full justify-center overflow-hidden">
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </c-ui.table>
+                </c-ui.card>
+            {% else %}
+                <c-ui.card class="bg-ink-900">
+                    <h1 class="text-lg font-bold">No shop items yet</h1>
+                    <p>Create a new shop item.</p>
+                    <c-ui.button popovertarget="createNewShopItem">Create new listing</c-ui.button>
+                </c-ui.card>
+            {% endif %}
+            <div id="createNewShopItem" popover class="bg-black/40 w-full h-full overflow-hidden">
+                <div class="flex h-full justify-center overflow-hidden">
+                    <c-ui.card class="my-auto w-1/2 flex flex-col max-h-9/10" padding="sm">
+                        <div class="flex">
+                            <div class="text-white text-xl font-bold my-auto grow">
+                                New shop listing for {{ pathway.name }} 
+                            </div>
+                            <c-ui.button variant="ghost" size="sm" class="text-xl" popovertarget="createNewShopItem">
+                                &times;
+                            </c-ui.button>
+                        </div>
+                        <div class="overflow-auto grow">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="new_listing">
+                                <div>
+                                    <c-ui.input name="name" label="Item name" placeholder="Stickers" />
+                                </div>
+                                <div class="mt-4">
+                                    <c-ui.textarea name="description" height="xs" label="Item description" placeholder="Cool stickers!" />
+                                </div>
+                                <div class="mt-4">
+                                    <c-ui.label>Regions and availability</c-ui.label>
+                                    <c-ui.table>
+                                        <thead>
+                                            <th>Available</th>
+                                            <th>Region</th>
+                                            <th>Price</th>
+                                        </thead>
+                                        <tbody>
+                                        {% for region in shop_regions %}
+                                            <tr>
+                                                <td>
+                                                    <c-ui.switch name="region-{{ region.id }}-checkbox" />
+                                                </td>
+                                                <td class="text-white">
+                                                    {{ region.name }}
+                                                </td>
+                                                <td>
+                                                    <c-ui.input name="region-{{ region.id }}-price" type="number" />
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </c-ui.table>
+                                </div>
+                                <c-ui.button type="submit">
+                                    Submit
+                                </c-ui.button>
+                            </form>
+                        </div>
+                    </c-ui.checkbox>
+                </div>
+            </div>
+            <script>                
+                function popoverCloser(elem) {
+                    elem.addEventListener('click', function(event) {
+                        // Check if the click happened directly on the parent, not a child
+                        if (event.target == elem.querySelector('div')) {
+                            console.log('yope')
+                            elem.togglePopover()
+                            console.log('yope')
+                        }
+                    });
+                }
+                newShopItemPopover = document.getElementById("createNewShopItem")
+                popoverCloser(newShopItemPopover)
+            </script>
+        </div>
     </div>
 </c-base>
