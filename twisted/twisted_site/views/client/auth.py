@@ -173,7 +173,6 @@ class HackatimeCallbackView(View):
         profile.hackatime_state = ""
         profile.save()
 
-        code = request.GET["code"]
         hackatime_client_id = os.environ["HACKATIME_CLIENT_ID"]
         hackatime_client_secret = os.environ["HACKATIME_CLIENT_SECRET"]
         hackatime_redirect_uri = os.environ["HACKATIME_REDIRECT_URI"]
