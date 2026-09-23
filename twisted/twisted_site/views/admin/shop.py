@@ -43,7 +43,8 @@ class ShopRegionsView(AdminView):
         action = request.POST.get("action")
 
         if action == "create":
-            name = (request.POST.get("name") or "").strip()
+            submitted_name = request.POST.get("name")
+            name = submitted_name.strip() if submitted_name is not None else ""
             if name == "":
                 messages.error(request, "Region name cannot be empty!")
                 return redirect("admin.shop.regions")
@@ -56,7 +57,8 @@ class ShopRegionsView(AdminView):
 
         elif action == "update":
             region = get_object_or_404(ShopRegion, id=request.POST.get("region_id"))
-            name = (request.POST.get("name") or "").strip()
+            submitted_name = request.POST.get("name")
+            name = submitted_name.strip() if submitted_name is not None else ""
             if name == "":
                 messages.error(request, "Region name cannot be empty!")
                 return redirect("admin.shop.regions")
