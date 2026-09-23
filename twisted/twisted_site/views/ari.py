@@ -194,7 +194,12 @@ class AriView(View):
         ):
             return HttpResponse(status=401)
 
-        data = json.loads(body)
+        try:
+            data = json.loads(body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return HttpResponseBadRequest("Malformed JSON payload")
+        if not isinstance(data, dict):
+            return HttpResponseBadRequest("JSON payload must be an object")
 
         external_id = cast("str | None", data.get("external_id"))
         if external_id in (None, ""):
