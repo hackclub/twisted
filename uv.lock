@@ -530,15 +530,15 @@ wheels = [
 
 [[package]]
 name = "django-cotton-ui"
-version = "0.3.2"
+version = "0.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "django-cotton" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/94/d8/0ca995941a12df896c83a58aefc6614a040e4a8fe87d533227236a5c6558/django_cotton_ui-0.3.2.tar.gz", hash = "sha256:71a82c7940b9581299fbe741420c24f2a7ac91f84f2c28ad42de361cd89c6516", size = 173126, upload-time = "2026-07-07T12:57:22.715Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/1f/b6d7a98ab5d5aa02a9359fce73926b9deecd7ef68111e12da11a7dcbdb9a/django_cotton_ui-0.3.3.tar.gz", hash = "sha256:8c856758be574abfaad266b6157626d2b9c003d9961b2b33d49dd54b021a64bc", size = 173130, upload-time = "2026-09-14T10:59:20.124Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d2/61/1de040c48796f16afdaae9ab4fd5c6683b819c02a06f77563dcfb0e9fdb6/django_cotton_ui-0.3.2-py3-none-any.whl", hash = "sha256:0a05d6f733553929389071786a9524335782c7f9d3e1ca8fe4234cdf80488bf2", size = 214320, upload-time = "2026-07-07T12:57:23.837Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/f8/7c74d6096be4dd993fbd0a5b07ef15a87e92deaa2c1db83f17aa128f2a15/django_cotton_ui-0.3.3-py3-none-any.whl", hash = "sha256:c8854b8c0d6b8dbed1acc83f4729bb7573243de79d21ab0e3f1c16f93ca90636", size = 214367, upload-time = "2026-09-14T10:59:21.534Z" },
 ]
 
 [[package]]
@@ -1321,7 +1321,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.43.66" },
     { name = "django", specifier = ">=6.0.7" },
     { name = "django-cotton", specifier = ">=2.7.2" },
-    { name = "django-cotton-ui", specifier = ">=0.3.2" },
+    { name = "django-cotton-ui", specifier = ">=0.3.3" },
     { name = "django-extensions", specifier = ">=4.1" },
     { name = "django-google-charts", specifier = ">=0.1.1" },
     { name = "django-htmx", specifier = ">=1.29.0" },
