@@ -3,15 +3,17 @@ from io import BytesIO
 from typing import cast, override
 from unittest.mock import patch
 
+from botocore.exceptions import ClientError
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
 from django.http import HttpResponse
-from django.test import Client, TestCase
+from django.test import Client, SimpleTestCase, TestCase
 from django.urls import reverse
 from PIL import Image
 
 from twisted_site.models import Profile, UploadedFile
+from twisted_site.views import image_upload
 
 _MAX_FILE_BYTES = 10 * 1024 * 1024
 
@@ -148,3 +150,48 @@ class ImageUploadTests(TestCase):
 
         self.assertEqual(self.response_json(response)["status"], "error")
         self.assertFalse(UploadedFile.objects.exists())
+
+
+class R2UploaderTests(SimpleTestCase):
+    def test_upload_fileobj_uses_safe_generated_key(self) -> None:
+        file = SimpleUploadedFile("My Proof.PNG", b"png", content_type="image/png")
+        with (
+            patch.dict(
+                "os.environ",
+                {"R2_BUCKET": "test-bucket", "R2_PUBLIC_URL": "https://cdn.example"},
+            ),
+            patch("twisted_site.views.image_upload.uuid4", return_value="fixed-id"),
+            patch("twisted_site.views.image_upload.s3") as s3,
+        ):
+            result = image_upload.file_uploader(file)
+
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["name"], "My Proof")
+        self.assertEqual(result["link"], "https://cdn.example/fixed-id-3/my-proof.png")
+        s3.upload_fileobj.assert_called_once_with(
+            file,
+            "test-bucket",
+            "fixed-id-3/my-proof.png",
+            ExtraArgs={"ContentType": "image/png"},
+        )
+
+    def test_r2_client_error_is_returned_as_upload_error(self) -> None:
+        error = ClientError(
+            {"Error": {"Code": "AccessDenied", "Message": "Denied"}},
+            "PutObject",
+        )
+        file = SimpleUploadedFile("proof.png", b"png", content_type="image/png")
+        with patch("twisted_site.views.image_upload.s3.upload_fileobj", side_effect=error):
+            result = image_upload.file_uploader(file)
+
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["error"], "Could not upload file")
+
+    def test_missing_filename_is_rejected(self) -> None:
+        file = SimpleUploadedFile("proof.png", b"png", content_type="image/png")
+        file.name = None
+
+        result = image_upload.file_uploader(file)
+
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["error"], "Uploaded file is missing a filename")
