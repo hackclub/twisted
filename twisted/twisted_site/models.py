@@ -27,9 +27,9 @@ class UploadedFile(models.Model):
 
     @override
     def __str__(self) -> str:
-        return (
-            f"{self.cdn_response['filename']} uploaded by {as_user(self.uploaded_by).profile.slack_username}"
-        )
+        cdn_response = cast("dict[str, str]", self.cdn_response)
+        filename = cdn_response.get("name", "upload")
+        return f"{filename} uploaded by {as_user(self.uploaded_by).profile.slack_username}"
 
 
 # Create your models here.
