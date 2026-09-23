@@ -76,6 +76,31 @@ class SubmitProjectTests(TestCase):
         self.assertFalse(ProjectShip.objects.filter(project=self.project).exists())
         send_ship.assert_not_called()
 
+    def test_ineligible_user_cannot_submit(self) -> None:
+        self.profile.ysws_eligible = False
+        self.profile.save(update_fields=("ysws_eligible",))
+        with (
+            patch("twisted_site.views.client.project.ari.send_ship") as send_ship,
+            patch("twisted_site.views.client.project.log_to_channel"),
+        ):
+            response = self.client.post(self.ship_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(ProjectShip.objects.filter(project=self.project).exists())
+        send_ship.assert_not_called()
+
+    def test_shipped_project_cannot_be_submitted_twice(self) -> None:
+        _ = ProjectShip.objects.create(project=self.project)
+        with (
+            patch("twisted_site.views.client.project.ari.send_ship") as send_ship,
+            patch("twisted_site.views.client.project.log_to_channel"),
+        ):
+            response = self.client.post(self.ship_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ProjectShip.objects.filter(project=self.project).count(), 1)
+        send_ship.assert_not_called()
+
     def test_submission_requires_playable_and_screenshot_urls(self) -> None:
         invalid_values = (
             ("", "https://example.com/screenshot.png"),

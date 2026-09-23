@@ -46,6 +46,38 @@ class AdminAuthorizationTests(TestCase):
         profile.refresh_from_db()
         self.assertIsNotNone(profile.staff_permissions)
 
+    def test_staff_without_granular_permissions_cannot_open_admin_pages(self) -> None:
+        protected_pages = (
+            "admin.users",
+            "admin.pathways",
+            "admin.review",
+            "admin.announcements",
+            "admin.logs",
+            "admin.fulfillment",
+            "admin.shop",
+        )
+        for page in protected_pages:
+            with self.subTest(page=page):
+                response = self.client.get(reverse(page))
+
+                self.assertRedirects(response, reverse("admin.dash"))
+
+    def test_view_users_permission_grants_user_administration_access(self) -> None:
+        self.permissions.view_users = True
+        self.permissions.save(update_fields=("view_users",))
+
+        response = self.client.get(reverse("admin.users"))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_audit_logs_permission_grants_audit_access(self) -> None:
+        self.permissions.view_auditlogs = True
+        self.permissions.save(update_fields=("view_auditlogs",))
+
+        response = self.client.get(f"{reverse('admin.logs')}?page=1")
+
+        self.assertEqual(response.status_code, 200)
+
     def test_logout_all_requires_superuser_and_does_not_delete_sessions(self) -> None:
         session = SessionStore()
         _ = session.create()

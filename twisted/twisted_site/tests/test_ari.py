@@ -190,8 +190,7 @@ class AriWebhookTests(TestCase):
         )
         self.ship = ProjectShip.objects.create(project=self.project)
 
-    def post_webhook(self, payload: dict[str, object]) -> HttpResponse:
-        body = json.dumps(payload).encode()
+    def post_raw_webhook(self, body: bytes) -> HttpResponse:
         timestamp = str(_NOW)
         delivery_id = "delivery-webhook-test"
         expected_signature = _webhook_signature(body, timestamp, delivery_id)
@@ -216,6 +215,9 @@ class AriWebhookTests(TestCase):
                     ),
                 ),
             )
+
+    def post_webhook(self, payload: dict[str, object]) -> HttpResponse:
+        return self.post_raw_webhook(json.dumps(payload).encode())
 
     def test_rejects_invalid_signature_without_changing_ship(self) -> None:
         with (
@@ -281,6 +283,114 @@ class AriWebhookTests(TestCase):
         self.ship.refresh_from_db()
         self.assertEqual(self.ship.status, "pending")
         send_blocks.assert_not_called()
+
+    def test_ship_updated_event_updates_project_fields(self) -> None:
+        with patch("twisted_site.views.ari.send_blocks") as send_blocks:
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "ship.updated",
+                    "ship": {
+                        "title": "Reviewed title",
+                        "description": "Reviewed description",
+                        "track": "hardware",
+                        "thumbnail_url": "https://example.com/new.png",
+                        "repo_url": "https://github.com/example/repo",
+                        "demo_url": "https://example.com/new-demo",
+                        "hackatime_projects": ["New Project"],
+                    },
+                    "changes": [],
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.project_name, "Reviewed title")
+        self.assertEqual(self.project.project_type, "hardware")
+        self.assertEqual(self.project.hackatime_project_names, ["New Project"])
+        send_blocks.assert_called_once()
+
+    def test_review_changes_event_requests_changes(self) -> None:
+        with patch("twisted_site.views.ari.send_blocks") as send_blocks:
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "review.changes",
+                    "decision": "changes",
+                    "review": {"note_to_maker": "Please revise"},
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.ship.refresh_from_db()
+        self.assertEqual(self.ship.status, "requested_changes")
+        self.assertEqual(self.ship.note_to_maker, "Please revise")
+        send_blocks.assert_called_once()
+
+    def test_review_rejected_event_records_rejection(self) -> None:
+        with patch("twisted_site.views.ari.send_blocks"):
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "review.rejected",
+                    "review": {
+                        "note_to_maker": "Not eligible",
+                        "audit_note": "Requirements not met",
+                        "justification": {},
+                    },
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.ship.refresh_from_db()
+        self.assertEqual(self.ship.status, "rejected")
+        self.assertEqual(self.ship.note_to_maker, "Not eligible")
+
+    def test_reverted_and_requeued_events_reset_pending_status(self) -> None:
+        for event in ("review.reverted", "review.requeued"):
+            with self.subTest(event=event):
+                self.ship.status = "approved"
+                self.ship.save(update_fields=("status",))
+                with patch("twisted_site.views.ari.send_blocks"):
+                    response = self.post_webhook(
+                        {
+                            "external_id": f"twisted-{self.project.pk}",
+                            "event": event,
+                        },
+                    )
+
+                self.assertEqual(response.status_code, 200)
+                self.ship.refresh_from_db()
+                self.assertEqual(self.ship.status, "pending")
+
+    def test_event_without_ship_returns_bad_request(self) -> None:
+        _ = self.ship.delete()
+
+        response = self.post_webhook(
+            {
+                "external_id": f"twisted-{self.project.pk}",
+                "event": "review.changes",
+                "decision": "changes",
+                "review": {"note_to_maker": "Cannot process"},
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_malformed_signed_json_returns_bad_request(self) -> None:
+        response = self.post_raw_webhook(b"not-json")
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_external_id_returns_bad_request(self) -> None:
+        response = self.post_webhook(
+            {
+                "external_id": "twisted-not-an-id",
+                "event": "review.approved",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     def test_unknown_event_is_ignored(self) -> None:
         with patch("twisted_site.views.ari.send_blocks") as send_blocks:

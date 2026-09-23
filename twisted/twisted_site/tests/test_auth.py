@@ -35,12 +35,36 @@ class HackatimeCallbackTests(TestCase):
     def test_state_mismatch_is_rejected_and_state_is_cleared(self) -> None:
         response = self.client.get(
             reverse("hackatime_callback"),
-            {"state": "wrong-state"},
+            {"state": "wrong-state", "code": "unused-code"},
         )
 
         self.assertEqual(response.status_code, 200)
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.hackatime_state, "")
+
+    def test_anonymous_callback_redirects_to_login(self) -> None:
+        self.client.logout()
+
+        response = self.client.get(
+            reverse("hackatime_callback"),
+            {"state": "expected-state", "code": "authorization-code"},
+        )
+
+        self.assertRedirects(response, reverse("login"), fetch_redirect_response=False)
+
+    def test_missing_oauth_parameters_return_bad_request(self) -> None:
+        invalid_parameters: tuple[dict[str, str], ...] = (
+            {},
+            {"state": "expected-state"},
+            {"code": "authorization-code"},
+        )
+        for parameters in invalid_parameters:
+            with self.subTest(parameters=parameters):
+                response = self.client.get(reverse("hackatime_callback"), parameters)
+
+                self.assertEqual(response.status_code, 400)
+                self.profile.refresh_from_db()
+                self.assertEqual(self.profile.hackatime_state, "expected-state")
 
     def test_valid_callback_stores_token_and_cannot_be_replayed(self) -> None:
         me = MeResponse(

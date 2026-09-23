@@ -95,6 +95,28 @@ class HackatimeJournalWorkflowTests(JournalContentMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Journal.objects.exists())
 
+    def test_hackatime_journal_requires_available_unlogged_time(self) -> None:
+        _ = Journal.objects.create(
+            project=self.project,
+            type="hackatime",
+            content="Existing work",
+            minutes_worked=181,
+            reduced_minutes=181,
+        )
+        self.hackatime_projects = [
+            HackatimeProject(
+                name="Hackatime Journal",
+                total_seconds=0,
+                most_recent_heartbeat=datetime(2026, 1, 1, tzinfo=UTC),
+                languages=[],
+            ),
+        ]
+
+        response = self.post_journal(self.content(words=60, images=2))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Journal.objects.filter(project=self.project).count(), 1)
+
     def test_non_owner_cannot_create_hackatime_journal(self) -> None:
         self.client.force_login(self.other_user)
 
@@ -171,6 +193,16 @@ class UntrackedJournalWorkflowTests(JournalContentMixin, TestCase):
         response = self.post_journal(-1, self.content(words=100, images=0))
 
         self.assertEqual(response.status_code, 200)
+        self.assertFalse(Journal.objects.exists())
+
+    def test_non_owner_cannot_create_untracked_journal(self) -> None:
+        other_user = User.objects.create_user(username="untracked-other")
+        _ = Profile.objects.create(user=other_user)
+        self.client.force_login(other_user)
+
+        response = self.post_journal(30, self.content(words=60, images=0))
+
+        self.assertRedirects(response, reverse("dashboard"))
         self.assertFalse(Journal.objects.exists())
 
     def test_software_project_is_redirected_to_hackatime_journal(self) -> None:
@@ -254,6 +286,40 @@ class JournalMutationTests(JournalContentMixin, TestCase):
             reverse("fr.projects.detail", kwargs={"project_id": self.project.pk}),
         )
         self.assertTrue(Journal.objects.filter(pk=self.journal.pk).exists())
+
+    def test_hackatime_journal_cannot_be_deleted(self) -> None:
+        journal = Journal.objects.create(
+            project=self.project,
+            type="hackatime",
+            content="Hackatime evidence",
+            minutes_worked=30,
+            reduced_minutes=30,
+        )
+        delete_url = reverse(
+            "fr.projects.journals.delete",
+            kwargs={"journal_id": journal.pk},
+        )
+
+        response = self.client.post(delete_url)
+
+        self.assertRedirects(response, reverse("dashboard"))
+        self.assertTrue(Journal.objects.filter(pk=journal.pk).exists())
+
+    def test_shipped_project_journal_cannot_be_edited(self) -> None:
+        _ = ProjectShip.objects.create(project=self.project)
+        new_content = self.content(words=20, images=1)
+
+        get_response = self.client.get(self.edit_url())
+        post_response = self.client.post(self.edit_url(), {"content": new_content})
+
+        detail_url = reverse(
+            "fr.projects.detail",
+            kwargs={"project_id": self.project.pk},
+        )
+        self.assertRedirects(get_response, detail_url)
+        self.assertRedirects(post_response, detail_url)
+        self.journal.refresh_from_db()
+        self.assertEqual(self.journal.content, "Original content")
 
     def test_edit_still_requires_evidence_and_prose(self) -> None:
         with patch("twisted_site.views.client.journal.log_to_channel"):
