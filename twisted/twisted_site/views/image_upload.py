@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
 from django.http import HttpRequest, JsonResponse
 from django.utils.text import slugify
+from PIL import Image, UnidentifiedImageError
 
 from twisted_site.models import UploadedFile
 
