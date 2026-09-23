@@ -74,9 +74,11 @@ def send_request(
     else:
         message_bytes = None
         headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
+    base_url = ARI_INGEST_ENDPOINT.rstrip("/")
+    url = f"{base_url}/{endpoint.lstrip('/')}" if endpoint != "" else base_url
     return requests.request(
         method,
-        f"{ARI_INGEST_ENDPOINT}{endpoint}",
+        url,
         data=message_bytes,
         headers=headers,
         timeout=10,
