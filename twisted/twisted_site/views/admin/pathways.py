@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from twisted_site.models import Pathway, User, ShopItem, ShopRegion
+from twisted_site.models import Pathway, ShopItem, ShopRegion, User
 
 from .admin import AdminView
 
@@ -171,7 +171,7 @@ class PathwayDetailView(AdminView):
 
         return render(request, "admin/pathways/detail.html", context=context)
 
-    def post(self, request:HttpRequest, pathway_id) -> HttpResponse:
+    def post(self, request: HttpRequest, pathway_id: int) -> HttpResponse:
         if self.perms.manage_shop:
             self.allowed = True
         else:
@@ -182,7 +182,7 @@ class PathwayDetailView(AdminView):
         if request.POST.get("action") == "new_listing":
             item_name = request.POST["name"]
             item_description = request.POST["description"]
-            ShopItem.objects.create(
+            _ = ShopItem.objects.create(
                 pathway = pathway,
                 item_name = item_name,
                 item_description = item_description,
