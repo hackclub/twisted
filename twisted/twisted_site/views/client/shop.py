@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views import View
 
-from twisted_site.models import Pathway, Profile, Project, ShopRegion
+from twisted_site.models import Pathway, Profile, ShopRegion, as_user
 
 PROJECTS_PER_PAGE = 120
 
@@ -15,7 +15,7 @@ class ShopView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        context = {}
+        context: dict[str, object] = {}
 
         regions = ShopRegion.objects.all()
         context["regions"] = regions
@@ -33,7 +33,7 @@ class ShopView(View):
             return redirect("homepage")
 
         if request.POST.get("action") == "setRegion":
-            profile: Profile = self.request.user.profile
+            profile: Profile = as_user(request.user).profile
             profile.region = ShopRegion.objects.get(id=request.POST["region"])
             profile.save()
 
