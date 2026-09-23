@@ -349,6 +349,8 @@ class PathwayTimeSpent(models.Model):
 
 
 class ShopRegion(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
