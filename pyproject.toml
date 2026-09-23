@@ -13,6 +13,7 @@ dependencies = [
     "django-tailwind[cookiecutter,honcho,reload]>=4.5.0",
     "gunicorn>=26.0.0",
     "psycopg[binary]>=3.3.4",
+    "pillow>=11.3.0",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
     "slack-bolt>=1.30.0",
@@ -38,7 +39,7 @@ ignore = ["A002", "C901", "CPY001", "D100", "D101", "D102", "D103", "D104", "D10
 
 [tool.ruff.lint.per-file-ignores]
 "*/migrations/*.py" = ["RUF012", "ALL"]
-"*/tests/*.py" = ["PT009", "PT027"]
+"*/tests/*.py" = ["PT009", "PT027", "S106"]
 
 [tool.pyright]
 venvPath = "."

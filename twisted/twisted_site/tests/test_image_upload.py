@@ -1,4 +1,5 @@
 import json
+from io import BytesIO
 from typing import cast, override
 from unittest.mock import patch
 
@@ -8,6 +9,7 @@ from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
 from django.http import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
+from PIL import Image
 
 from twisted_site.models import Profile, UploadedFile
 
@@ -21,7 +23,7 @@ class ImageUploadTests(TestCase):
     @override
     def setUp(self) -> None:
         self.user = User.objects.create_user(username="uploader")
-        self.profile = Profile.objects.create(user=self.user)
+        self.profile = Profile.objects.create(user=self.user, slack_username="Uploader")
         self.client = Client()
         self.client.force_login(self.user)
 
@@ -40,9 +42,15 @@ class ImageUploadTests(TestCase):
     def response_json(self, response: HttpResponse) -> dict[str, object]:
         return cast("dict[str, object]", json.loads(response.content))
 
+    def png_bytes(self) -> bytes:
+        output = BytesIO()
+        image = Image.new("RGB", (2, 2), color="red")
+        _ = image.save(output, format="PNG")
+        return output.getvalue()
+
     def test_anonymous_upload_is_rejected(self) -> None:
         self.client.logout()
-        file = SimpleUploadedFile("proof.png", b"image", content_type="image/png")
+        file = SimpleUploadedFile("proof.png", self.png_bytes(), content_type="image/png")
 
         response = self.upload(file)
 
@@ -73,8 +81,38 @@ class ImageUploadTests(TestCase):
         uploader.assert_not_called()
         self.assertFalse(UploadedFile.objects.exists())
 
+    def test_spoofed_image_content_is_rejected(self) -> None:
+        file = SimpleUploadedFile(
+            "proof.png",
+            b"<script>alert(1)</script>",
+            content_type="image/png",
+        )
+        with patch("twisted_site.views.image_upload.file_uploader") as uploader:
+            response = self.upload(file)
+
+        body = self.response_json(response)
+        self.assertEqual(body["status"], "error")
+        self.assertIn("not a valid image", str(body["reason"]))
+        uploader.assert_not_called()
+        self.assertFalse(UploadedFile.objects.exists())
+
+    def test_image_extension_must_match_detected_format(self) -> None:
+        file = SimpleUploadedFile(
+            "proof.svg",
+            self.png_bytes(),
+            content_type="image/png",
+        )
+        with patch("twisted_site.views.image_upload.file_uploader") as uploader:
+            response = self.upload(file)
+
+        body = self.response_json(response)
+        self.assertEqual(body["status"], "error")
+        self.assertIn("extension", str(body["reason"]))
+        uploader.assert_not_called()
+        self.assertFalse(UploadedFile.objects.exists())
+
     def test_successful_upload_is_recorded(self) -> None:
-        file = SimpleUploadedFile("proof.png", b"image", content_type="image/png")
+        file = SimpleUploadedFile("proof.png", self.png_bytes(), content_type="image/png")
         uploader_result = {
             "status": "ok",
             "link": "https://uploads.example/proof.png",
@@ -98,9 +136,10 @@ class ImageUploadTests(TestCase):
         self.assertEqual(uploaded_file.link, uploader_result["link"])
         self.assertEqual(uploaded_file.filesize, len(file))
         self.assertEqual(uploaded_file.uploaded_thru, "test")
+        self.assertEqual(str(uploaded_file), "proof uploaded by Uploader")
 
     def test_uploader_failure_does_not_create_database_record(self) -> None:
-        file = SimpleUploadedFile("proof.png", b"image", content_type="image/png")
+        file = SimpleUploadedFile("proof.png", self.png_bytes(), content_type="image/png")
         with patch(
             "twisted_site.views.image_upload.file_uploader",
             return_value={"status": "error", "error": "R2 unavailable"},
