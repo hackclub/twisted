@@ -1,5 +1,5 @@
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
@@ -35,9 +35,17 @@ class CreateProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project_name: str = request.POST["name"]
-        project_description: str = request.POST["description"]
-        project_type: str = request.POST["type"]
+        submitted_name = request.POST.get("name")
+        submitted_description = request.POST.get("description")
+        project_name = submitted_name.strip() if submitted_name is not None else ""
+        project_description = (
+            submitted_description.strip() if submitted_description is not None else ""
+        )
+        project_type = request.POST.get("type")
+        project_type = project_type if project_type is not None else ""
+
+        if project_name == "" or project_description == "" or project_type == "":
+            return HttpResponseBadRequest("Name, description, and type are required")
 
         if project_type not in PROJECT_TYPE_CHOICES:
             return HttpResponse("naughty! you arent supposed to do this!")
