@@ -354,6 +354,11 @@ class ShopRegion(models.Model):
 
     name = models.CharField(max_length=200)
 
+    @override
+    def __str__(self) -> str:
+        return self.name  # ty: ignore[unsound-return-statement]
+
+
 class ShopItemRegionalPricing(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -363,6 +368,11 @@ class ShopItemRegionalPricing(models.Model):
 
     price = models.IntegerField()
 
+    @override
+    def __str__(self) -> str:
+        return f"{self.item} in {self.region}: {self.price}"
+
+
 class ShopItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -371,6 +381,11 @@ class ShopItem(models.Model):
 
     item_name = models.CharField(max_length=500)
     item_description = models.TextField()
+
+    @override
+    def __str__(self) -> str:
+        return self.item_name  # ty: ignore[unsound-return-statement]
+
 
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
