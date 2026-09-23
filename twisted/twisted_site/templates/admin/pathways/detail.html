@@ -151,7 +151,7 @@
                                 New shop listing for {{ pathway.name }} 
                             </div>
                             <c-ui.button variant="ghost" size="sm" class="text-xl" popovertarget="createNewShopItem">
-                                &times;
+                                ×
                             </c-ui.button>
                         </div>
                         <div class="overflow-auto grow">
@@ -194,21 +194,19 @@
                                 </c-ui.button>
                             </form>
                         </div>
-                    </c-ui.checkbox>
+                    </c-ui.card>
                 </div>
             </div>
-            <script>                
+            <script>
                 function popoverCloser(elem) {
                     elem.addEventListener('click', function(event) {
                         // Check if the click happened directly on the parent, not a child
                         if (event.target == elem.querySelector('div')) {
-                            console.log('yope')
                             elem.togglePopover()
-                            console.log('yope')
                         }
                     });
                 }
-                newShopItemPopover = document.getElementById("createNewShopItem")
+                const newShopItemPopover = document.getElementById("createNewShopItem")
                 popoverCloser(newShopItemPopover)
             </script>
         </div>
