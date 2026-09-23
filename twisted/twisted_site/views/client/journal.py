@@ -119,7 +119,7 @@ class NewProjectUntrackedJournal(View):
             return redirect("dashboard")
 
         if project.project_type == "software":
-            return redirect("fr.projects.journals.new.hackatime")
+            return redirect("fr.projects.journals.new.hackatime", project_id=project_id)
 
         context["project"] = project
 
@@ -143,7 +143,7 @@ class NewProjectUntrackedJournal(View):
             return redirect("dashboard")
 
         if project.project_type == "software":
-            return redirect("fr.projects.journals.new.hackatime")
+            return redirect("fr.projects.journals.new.hackatime", project_id=project_id)
 
         content = request.POST["content"]
         time_logged = int(request.POST["time_logged"])
