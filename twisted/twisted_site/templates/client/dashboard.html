@@ -325,7 +325,9 @@
                         if (savedAudioPausedPreference === '1') {
                             playPauseAudio(0)
                         } else if (savedAudioPausedPreference === '0') {
-                            playPauseAudio(1)
+                            document.addEventListener("click", () => {
+                                playPauseAudio(1)
+                            }, { once: true });
                         }
                     }
                     autoStartAudio()
