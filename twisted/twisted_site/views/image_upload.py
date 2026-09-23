@@ -16,6 +16,44 @@ from twisted_site.models import UploadedFile
 logger = logging.getLogger(__name__)
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif"}
+CONTENT_TYPE_FORMATS = {
+    "PNG": "image/png",
+    "JPEG": "image/jpeg",
+    "WEBP": "image/webp",
+    "GIF": "image/gif",
+}
+CONTENT_TYPE_EXTENSIONS = {
+    "image/png": {".png"},
+    "image/jpeg": {".jpg", ".jpeg"},
+    "image/webp": {".webp"},
+    "image/gif": {".gif"},
+}
+
+
+def validate_image(file: "DjangoUploadedFile[bytes]") -> str | None:
+    try:
+        file.seek(0)
+        with Image.open(file) as image:
+            image_format = image.format
+            image.verify()
+    except (UnidentifiedImageError, OSError, SyntaxError, ValueError):
+        file.seek(0)
+        return "File contents are not a valid image"
+    finally:
+        file.seek(0)
+
+    normalized_format = image_format if image_format is not None else ""
+    expected_content_type = CONTENT_TYPE_FORMATS.get(normalized_format)
+    content_type = file.content_type if file.content_type is not None else ""
+    filename = file.name if file.name is not None else ""
+    extension = Path(filename).suffix.lower()
+    if expected_content_type != content_type:
+        return "Image contents do not match the declared content type"
+    allowed_extensions = CONTENT_TYPE_EXTENSIONS.get(content_type, set())
+    if extension not in allowed_extensions:
+        return "Image extension does not match its content type"
+    return None
+
 
 s3 = boto3.client(
     "s3",
@@ -55,6 +93,10 @@ def upload_file(request: HttpRequest) -> JsonResponse:
     file_size_mb = file.size / (1024 * 1024)
     if file_size_mb > max_file_mb:
         return JsonResponse({"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"})
+
+    validation_error = validate_image(file)
+    if validation_error is not None:
+        return JsonResponse({"status": "error", "reason": validation_error})
 
     response_data = file_uploader(file)
     # Handle upload errors
