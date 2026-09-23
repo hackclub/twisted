@@ -252,6 +252,8 @@ class EditJournal(View):
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
         journal = Journal.objects.get(id=id)
+        if journal.project.is_shipped():
+            return redirect("fr.projects.detail", project_id=journal.project.id)
         if journal.project.user != request.user:
             return redirect("fr.projects.detail", journal.project.id)
         if context is None:
@@ -264,6 +266,8 @@ class EditJournal(View):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         journal = Journal.objects.get(id=id)
 
+        if journal.project.is_shipped():
+            return redirect("fr.projects.detail", project_id=journal.project.id)
         if journal.project.user != request.user:
             return redirect("fr.projects.detail", journal.project.id)
 
