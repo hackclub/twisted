@@ -65,7 +65,7 @@ jobs:
 
             - name: Run tests with coverage
               run: |
-                  uv run coverage run twisted/manage.py test --settings=mysite.test_settings --verbosity 2
+                  uv run coverage run twisted/manage.py test twisted_site common --settings=mysite.test_settings --verbosity 2
                   uv run coverage report
                   uv run coverage xml -o coverage.xml
 

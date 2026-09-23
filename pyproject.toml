@@ -38,7 +38,7 @@ ignore = ["A002", "C901", "CPY001", "D100", "D101", "D102", "D103", "D104", "D10
 
 [tool.ruff.lint.per-file-ignores]
 "*/migrations/*.py" = ["RUF012", "ALL"]
-"*/tests/*.py" = ["PT009"]
+"*/tests/*.py" = ["PT009", "PT027"]
 
 [tool.pyright]
 venvPath = "."
