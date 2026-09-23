@@ -80,7 +80,7 @@ class ShopRegionsView(AdminView):
             self.audit_log.additional_context["region_name"] = region.name
 
             try:
-                region.delete()
+                _ = region.delete()
             except ProtectedError:
                 messages.error(
                     request,
