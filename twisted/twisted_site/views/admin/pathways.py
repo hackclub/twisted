@@ -74,7 +74,7 @@ class PathwayCreateView(AdminView):
             return HttpResponse("err")
 
         pathway_name: str | None = request.POST.get("name")
-        min_mins = int(request.POST.get("mins", "0"))
+        min_mins_raw = request.POST.get("mins", "0")
 
         start_date: str | None = request.POST.get("startDate")
         start_time: str | None = request.POST.get("startTime")
@@ -84,7 +84,7 @@ class PathwayCreateView(AdminView):
 
         errcontext: dict[str, Any] = {  # pyrefly: ignore[explicit-any]
             "pathway_name": pathway_name,
-            "min_mins": min_mins,
+            "min_mins": min_mins_raw,
             "start_date": start_date,
             "start_time": start_time,
             "end_date": end_date,
@@ -93,6 +93,11 @@ class PathwayCreateView(AdminView):
 
         if pathway_name in (None, ""):
             return self.get(request, "No pathway name typed!", errcontext)
+
+        try:
+            min_mins = int(min_mins_raw)
+        except ValueError:
+            return self.get(request, "Minimum minutes must be a whole number!", errcontext)
 
         if min_mins <= 0:
             return self.get(request, "Minimum minutes must be greater than zero!", errcontext)
