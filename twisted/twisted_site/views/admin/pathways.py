@@ -116,12 +116,17 @@ class PathwayCreateView(AdminView):
 
         current_tz_offset = datetime.now(timezone.get_current_timezone()).strftime("%z")
 
-        start = datetime.strptime(
-            f"{start_date} {start_time} {current_tz_offset}",
-            "%Y-%m-%d %H:%M %z",
-        )
-
-        end = datetime.strptime(f"{end_date} {end_time} {current_tz_offset}", "%Y-%m-%d %H:%M %z")
+        try:
+            start = datetime.strptime(
+                f"{start_date} {start_time} {current_tz_offset}",
+                "%Y-%m-%d %H:%M %z",
+            )
+            end = datetime.strptime(
+                f"{end_date} {end_time} {current_tz_offset}",
+                "%Y-%m-%d %H:%M %z",
+            )
+        except ValueError:
+            return self.get(request, "Start and end must be valid dates and times!", errcontext)
 
         if start >= end:
             return self.get(request, "Start must be before end!", errcontext)
