@@ -268,28 +268,61 @@ class PathwayShopItemDetailView(AdminView):
             self.allowed = True
         else:
             return HttpResponse("err")
-        item = ShopItem.objects.get(id=listing_id)
-        item.item_name = request.POST["name"]
-        item.item_description = request.POST["description"]
-        item.stock = int(request.POST["stock"])
-        item.image_url = request.POST.get("image_url", "")
+        item = get_object_or_404(ShopItem, id=listing_id)
+        item_name = request.POST.get("name", item.item_name).strip()
+        item_description = request.POST.get("description", item.item_description).strip()
+        stock_raw = request.POST.get("stock", str(item.stock)).strip() or "0"
+        image_url = request.POST.get("image_url", item.image_url).strip()
+
+        if not item_name or not item_description:
+            messages.error(request, "Item name and description are required!")
+            return redirect("admin.pathways.detail", item.pathway.id)
+        try:
+            stock = int(stock_raw)
+        except ValueError:
+            messages.error(request, "Item stock must be a whole number!")
+            return redirect("admin.pathways.detail", item.pathway.id)
+        if stock < 0:
+            messages.error(request, "Item stock cannot be negative!")
+            return redirect("admin.pathways.detail", item.pathway.id)
+
+        regional_prices: list[tuple[ShopRegion, int | None]] = []
+        for region in ShopRegion.objects.all():
+            price_raw = request.POST.get(f"region-{region.id}-price", "").strip()
+            if not price_raw:
+                regional_prices.append((region, None))
+                continue
+            try:
+                price = int(price_raw)
+            except ValueError:
+                messages.error(request, f"Price for {region.name} must be a whole number!")
+                return redirect("admin.pathways.detail", item.pathway.id)
+            if price < 0:
+                messages.error(request, f"Price for {region.name} cannot be negative!")
+                return redirect("admin.pathways.detail", item.pathway.id)
+            regional_prices.append((region, price))
+
+        item.item_name = item_name
+        item.item_description = item_description
+        item.stock = stock
+        item.image_url = image_url
         item.save()
 
-        for region in ShopRegion.objects.all():
-            new_price = request.POST[f"region-{region.id}-price"]
-            listing = item.prices.filter(region=region)
+        for region, new_price in regional_prices:
+            listing = item.prices.filter(region=region)  # pyrefly: ignore[missing-attribute]
             listing = listing.get() if listing else None
-            if listing and new_price:
-                listing.price = new_price
-                listing.save()
-                continue
-            if not listing and new_price:
-                ShopItemRegionalPricing.objects.create(region=region, item=item, price=new_price)
-                continue
-
-            if listing and not new_price:
+            if new_price is not None:
+                if listing is None:
+                    ShopItemRegionalPricing.objects.create(
+                        region=region,
+                        item=item,
+                        price=new_price,
+                    )
+                else:
+                    listing.price = new_price
+                    listing.save()
+            elif listing is not None:
                 listing.delete()
-
 
         messages.success(request, f"Updated item '{item.item_name}'!")
         return redirect("admin.pathways.detail", item.pathway.id)
