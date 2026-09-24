@@ -16,6 +16,8 @@ from twisted_site.models import (
 )
 from twisted_site.slack import log_to_channel
 
+logger = getLogger(__name__)
+
 
 def _or_none(value: str) -> str:
     """Renders an optional display string, falling back to "None"."""
@@ -46,12 +48,24 @@ class ProjectDetail(View):
         context["second_pass_status"] = "pending"
 
         if project.latest_ship() is not None:
-            try:
-                status = ari.get_project_status(project)
-                context["first_pass_status"], context["second_pass_status"] = (
-                    ari.ship_passes_from_status(status)
-                )
-            except RequestException:
+            if ari.is_configured():
+                try:
+                    status = ari.get_project_status(project)
+                    context["first_pass_status"], context["second_pass_status"] = (
+                        ari.ship_passes_from_status(status)
+                    )
+                except RequestException:
+                    logger.warning("Unable to load ARI status for project %s", project.id)
+                    context["first_pass_status"] = "unavailable"
+                    context["second_pass_status"] = "unavailable"
+                except Exception:
+                    logger.exception(
+                        "Unexpected error loading ARI status for project %s",
+                        project.id,
+                    )
+                    context["first_pass_status"] = "unavailable"
+                    context["second_pass_status"] = "unavailable"
+            else:
                 context["first_pass_status"] = "unavailable"
                 context["second_pass_status"] = "unavailable"
 
@@ -194,13 +208,25 @@ class SubmitProject(View):
         if not as_user(project.user).profile.ysws_eligible:
             return self.get(request, project_id)
 
+        if not ari.is_configured():
+            context["info"] = (
+                "The project submission service is temporarily unavailable. "
+                "Your project was not submitted; please try again later."
+            )
+            return self.get(request, project_id, context=context)
+
         ship = ProjectShip(project=project)
         ship.save()
         try:
             ari.send_ship(ship)
         except Exception:
             _ = ship.delete()
-            raise
+            logger.exception("Failed to submit project %s to ARI", project.id)
+            context["info"] = (
+                "The project submission service is temporarily unavailable. "
+                "Your project was not submitted; please try again later."
+            )
+            return self.get(request, project_id, context=context)
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         log_to_channel(
