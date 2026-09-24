@@ -8,7 +8,7 @@ from django.views import View
 from twisted_site.models import Journal, Project, TemplateContext
 from twisted_site.slack import log_to_channel
 
-HACKATIME_MAX_LOGGABLE_MINUTES = 6 * 60
+HACKATIME_MAX_LOGGABLE_MINUTES = 999 * 60
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
 
 
