@@ -245,18 +245,20 @@ class PathwayShopItemDetailView(AdminView):
         else:
             return HttpResponse("err")
 
-        item = ShopItem.objects.get(id=listing_id)
+        item = get_object_or_404(ShopItem, id=listing_id)
         context["item"] = item
 
         regions = []
 
         for region in ShopRegion.objects.all():
-            listing = item.prices.filter(region=region)
+            listing = item.prices.filter(region=region)  # pyrefly: ignore[missing-attribute]
             listing = listing.get() if listing else None
-            regions.append({
-                "region": region,
-                "listing": listing,
-            })
+            regions.append(
+                {
+                    "region": region,
+                    "listing": listing,
+                },
+            )
         context["regions"] = regions
 
         return render(request, "admin/pathways/listing.html", context)
