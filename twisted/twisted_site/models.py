@@ -392,6 +392,10 @@ class ShopItem(models.Model):
     item_name = models.CharField(max_length=500)
     item_description = models.TextField()
 
+    stock = models.IntegerField(default=999)
+
+    image_url = models.CharField(max_length=500, blank=True, default="")
+
     @override
     def __str__(self) -> str:
         return self.item_name  # ty: ignore[unsound-return-statement]
