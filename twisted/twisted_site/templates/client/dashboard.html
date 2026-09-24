@@ -436,6 +436,20 @@
                     if (!safeSrc) return;
                     newWindow(data.title, safeSrc, w, h);
                 }
+                if (data.action === "refresh-projects") {
+                    document.querySelectorAll(".window").forEach((win) => {
+                        const frame = win.querySelector(".src-frame");
+                        if (!frame) return;
+                        try {
+                            const path = new URL(frame.src, window.location.origin).pathname;
+                            if (path === "{% url 'fr.projects' %}") {
+                                frame.src = frame.src;
+                            }
+                        } catch (_) {
+                            // Ignore malformed frame URLs.
+                        }
+                    });
+                }
             },
             false,
         );

@@ -270,4 +270,12 @@
             <span>{{ project.time_logged|minutes_to_hours_minutes }} logged</span>
         </div>
     </div>
+    <script>
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: "internal",
+                action: "refresh-projects"
+            }, window.location.origin);
+        }
+    </script>
 {% endblock body %}
