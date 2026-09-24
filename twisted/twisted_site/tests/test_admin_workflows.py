@@ -107,9 +107,27 @@ class AdminWorkflowTests(TestCase):
         )
 
         self.assertRedirects(response, detail_url)
-        self.assertTrue(
-            ShopItem.objects.filter(pathway=pathway, item_name="Sticker").exists(),
+        item = ShopItem.objects.get(pathway=pathway, item_name="Sticker")
+        self.assertEqual(item.stock, 999)
+
+    def test_pathway_detail_listing_rejects_missing_fields(self) -> None:
+        pathway = Pathway.objects.create(
+            name="Invalid listing pathway",
+            min_mins=60,
+            start=datetime(2026, 10, 1, 9, tzinfo=UTC),
+            end=datetime(2026, 10, 8, 17, tzinfo=UTC),
         )
+        detail_url = reverse(
+            "admin.pathways.detail",
+            kwargs={"pathway_id": pathway.pk},
+        )
+
+        response = self.client.post(detail_url, {"action": "new_listing"})
+
+        self.assertRedirects(response, detail_url, fetch_redirect_response=False)
+        response = self.client.get(detail_url)
+        self.assertContains(response, "Item name and description are required!")
+        self.assertFalse(ShopItem.objects.filter(pathway=pathway).exists())
 
     def test_pathway_detail_listing_creation_requires_shop_permission(self) -> None:
         self.permissions.manage_shop = False
@@ -132,6 +150,13 @@ class AdminWorkflowTests(TestCase):
 
         self.assertRedirects(response, reverse("admin.dash"))
         self.assertFalse(ShopItem.objects.exists())
+
+    def test_invalid_shop_listing_returns_not_found(self) -> None:
+        response = self.client.get(
+            reverse("admin.pathways.shopitems", kwargs={"listing_id": 999}),
+        )
+
+        self.assertEqual(response.status_code, 404)
 
     def test_shop_listing_detail_requires_pathway_view_permission(self) -> None:
         pathway = Pathway.objects.create(
