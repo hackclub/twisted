@@ -14,3 +14,7 @@ follow these steps!
 2. run `uv run manage.py migrate`
 3. run `docker compose up db`
 4. run `uv run manage.py tailwind dev` in a new terminal
+
+### testing
+1. run `cd twisted`
+2. run `uv run manage.py test --settings mysite.test_settings`
