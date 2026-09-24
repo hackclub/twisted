@@ -23,7 +23,7 @@
         </div>
         <div class="flex gap-2">
             <div class="grow bg-secondary border border-border px-3 py-2 text-center shrink-0">
-                <button type="button" class="w-full h-full">
+                <button onclick="createWindow('shop', this.dataset.url)" data-url="{% url 'fr.shop' %}?pathway={{ pathway_info.pathway.id }}" type="button" class="w-full h-full">
                     <div class="my-auto">
                         <div class="text-lg sm:text-xl font-bold">view shop</div>
                         {% if pathway_info.time_spent.unlocked %}

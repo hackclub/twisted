@@ -201,7 +201,7 @@
                                     <td>
                                         {{ item.item_name }}
                                     </td>
-                                    <td>{{ item.item_description }}</td>
+                                    <td>{{ item.item_description|truncatechars:20 }}</td>
                                     <td>
                                         {{ item.stock }}
                                     </td>
