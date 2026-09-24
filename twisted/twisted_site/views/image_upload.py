@@ -142,10 +142,10 @@ def _upload_fileobj(
                 "ContentType": content_type,
             },
         )
-
-        return {
+        link = f"{os.environ['R2_PUBLIC_URL'].rstrip('/')}/{stored_name}"
+        return {  # noqa: TRY300
             "status": "ok",
-            "link": f"{os.environ['R2_PUBLIC_URL']}/{stored_name}",
+            "link": link,
             "name": original_filename,
             "size": size,
         }

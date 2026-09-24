@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from twisted_site.models import Pathway, ShopItem, ShopRegion, User
+from twisted_site.models import Pathway, ShopItem, ShopRegion, User, ShopItemRegionalPricing
 
 from .admin import AdminView
 
@@ -188,15 +188,24 @@ class PathwayDetailView(AdminView):
             return HttpResponse("err")
 
         pathway = get_object_or_404(Pathway, id=pathway_id)
-
         if request.POST.get("action") == "new_listing":
             item_name = request.POST["name"]
             item_description = request.POST["description"]
-            _ = ShopItem.objects.create(
+            stock = request.POST["stock"]
+            image_url = request.POST.get("image_url", "")
+            shop_item = ShopItem.objects.create(
                 pathway = pathway,
                 item_name = item_name,
                 item_description = item_description,
+                stock = stock,
+                image_url = image_url,
             )
+            for region in ShopRegion.objects.all():
+                price = request.POST[f"region-{region.id}-price"]
+                if not price:
+                    continue
+                price = int(price)
+                ShopItemRegionalPricing.objects.create(region=region, item=shop_item, price=price)
             messages.success(request, f"Created new shop listing for {item_name}")
             return redirect(request.path_info)
 
@@ -213,4 +222,46 @@ class PathwayShopItemDetailView(AdminView):
         item = ShopItem.objects.get(id=listing_id)
         context["item"] = item
 
+        regions = []
+
+        for region in ShopRegion.objects.all():
+            listing = item.prices.filter(region=region)
+            listing = listing.get() if listing else None
+            regions.append({
+                "region": region,
+                "listing": listing,
+            })
+        context["regions"] = regions
+
         return render(request, "admin/pathways/listing.html", context)
+
+    def post(self, request: HttpRequest, listing_id: int) -> HttpResponse:
+        if self.perms.manage_shop:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+        item = ShopItem.objects.get(id=listing_id)
+        item.item_name = request.POST["name"]
+        item.item_description = request.POST["description"]
+        item.stock = int(request.POST["stock"])
+        item.image_url = request.POST.get("image_url", "")
+        item.save()
+
+        for region in ShopRegion.objects.all():
+            new_price = request.POST[f"region-{region.id}-price"]
+            listing = item.prices.filter(region=region)
+            listing = listing.get() if listing else None
+            if listing and new_price:
+                listing.price = new_price
+                listing.save()
+                continue
+            if not listing and new_price:
+                ShopItemRegionalPricing.objects.create(region=region, item=item, price=new_price)
+                continue
+
+            if listing and not new_price:
+                listing.delete()
+
+
+        messages.success(request, f"Updated item '{item.item_name}'!")
+        return redirect("admin.pathways.detail", item.pathway.id)

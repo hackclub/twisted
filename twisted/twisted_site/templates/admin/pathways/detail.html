@@ -1,5 +1,77 @@
 {% load time_filters %}
 <c-base>
+    <script>
+        function popoverCloser(elem) {
+            elem.addEventListener('click', function(event) {
+                // Check if the click happened directly on the parent, not a child
+                if (event.target == elem.querySelector('div')) {
+                    elem.togglePopover()
+                }
+            });
+        }
+        function randomTextEngine(elem, items, delay=1000) {
+            return setInterval(() => {
+                elem.innerText = items[Math.floor(Math.random() * items.length)]
+            }, delay)
+        }
+
+        function setupShopItemImagePaste({ scope, fileInput, urlField, preview, status }) {
+            function uploadImage(file) {
+                status.textContent = "Uploading..."
+
+                const formData = new FormData()
+                formData.append("csrfmiddlewaretoken", "{{ csrf_token }}")
+                formData.append("file", file)
+                formData.append("ref", "shop_item")
+
+                fetch("{% url 'misc.upload_file' %}", {
+                        method: "POST",
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status === "ok") {
+                            urlField.value = result.link
+                            preview.src = result.link
+                            preview.classList.remove("hidden")
+                            status.textContent = ""
+                        } else {
+                            status.textContent = `Error: ${result.reason || result.error}`
+                        }
+                    })
+                    .catch(() => {
+                        status.textContent = "Error: upload failed"
+                    })
+            }
+
+            fileInput.addEventListener("change", () => {
+                const file = fileInput.files[0]
+                if (!file) {
+                    return
+                }
+                uploadImage(file)
+            })
+
+            // Reassigning onpaste (rather than addEventListener) means re-running this
+            // setup after an htmx swap replaces the handler instead of stacking another one.
+            scope.onpaste = (event) => {
+                const items = (event.clipboardData || window.clipboardData).items
+
+                for (let i = 0; i < items.length; i++) {
+                    if (!items[i].type.startsWith("image/")) {
+                        continue
+                    }
+
+                    const blob = items[i].getAsFile()
+                    if (blob) {
+                        uploadImage(blob)
+                    }
+
+                    break
+                }
+            }
+        }
+    </script>
     <div>
         <c-ui.breadcrumbs>
             <c-ui.breadcrumbs.item href="{% url 'admin.dash' %}">Admin</c-ui.breadcrumbs.item>
@@ -105,8 +177,10 @@
                     <c-ui.table>
                         <thead>
                             <tr>
+                                <th>Image</th>
                                 <th>Name</th>
                                 <th>Description</th>
+                                <th>Stock</th>
                                 <th>Last updated</th>
                             </tr>
                         </thead>
@@ -117,21 +191,41 @@
                                     hx-target="#listing-{{ item.id }}" 
                                     hx-trigger="click"
                                     hx-swap="innerHTML"
-                                    hx-on::after-request="document.getElementById('listing-{{ item.id }}').showPopover()"
+                                    hx-on::before-request="document.getElementById('listing-{{ item.id }}').showPopover()"
                                 >
+                                    <td>
+                                        {% if item.image_url %}
+                                            <img src="{{ item.image_url }}" alt="" class="size-10 object-cover border border-ink-700 bg-ink-950">
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {{ item.item_name }}
                                     </td>
                                     <td>{{ item.item_description }}</td>
+                                    <td>
+                                        {{ item.stock }}
+                                    </td>
                                     <td class="min-w-32">
                                         {{ item.updated_at }}
                                     </td>
                                 </tr>
                                 <!-- Native Popover Element -->
-                                <div id="listing-{{ item.id }}" popover>
-                                    <div class="flex h-full justify-center overflow-hidden">
+                                <div id="listing-{{ item.id }}" popover class="h-full w-full bg-black/40 overflow-hidden">
+                                    <div class="flex w-full h-full">
+                                        <div class="text-white mx-auto my-auto">
+                                            <c-ui.spinner class="size-10 mx-auto mb-5" />
+                                            <h2 class="text-4xl font-bold">
+                                                Loading...
+                                            </h2>
+                                            <p class="text-center">
+                                                Kaboom
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
+                                <script>
+                                    popoverCloser(document.getElementById("listing-{{ item.id }}"))
+                                </script>
                             {% endfor %}
                         </tbody>
                     </c-ui.table>
@@ -164,20 +258,30 @@
                                 <div class="mt-4">
                                     <c-ui.textarea name="description" height="xs" label="Item description" placeholder="Cool stickers!" />
                                 </div>
+                                <div>
+                                    <c-ui.input name="stock" label="Item stock" placeholder="999" value="999" />
+                                </div>
+                                <div class="mt-4" id="createShopItemImageField">
+                                    <c-ui.label>Item image</c-ui.label>
+                                    <img id="createShopItemImagePreview"
+                                         alt=""
+                                         class="hidden max-h-32 w-auto border border-ink-700 object-contain bg-ink-950 mb-2">
+                                    <input id="createShopItemImageInput" type="file" accept="image/*" class="text-white">
+                                    <p class="text-xs text-ink-400">or paste an image anywhere in this dialog</p>
+                                    <p id="createShopItemImageStatus" class="text-xs text-ink-400"></p>
+                                    <input type="hidden" name="image_url" id="createShopItemImageUrl" value="">
+                                </div>
                                 <div class="mt-4">
                                     <c-ui.label>Regions and availability</c-ui.label>
+                                    <p class="text-white">Leave price blank for no availability</p>
                                     <c-ui.table>
                                         <thead>
-                                            <th>Available</th>
                                             <th>Region</th>
                                             <th>Price</th>
                                         </thead>
                                         <tbody>
                                         {% for region in shop_regions %}
                                             <tr>
-                                                <td>
-                                                    <c-ui.switch name="region-{{ region.id }}-checkbox" />
-                                                </td>
                                                 <td class="text-white">
                                                     {{ region.name }}
                                                 </td>
@@ -185,12 +289,22 @@
                                                     <c-ui.input name="region-{{ region.id }}-price" type="number" />
                                                 </td>
                                             </tr>
-                                            {% endfor %}
+                                        {% empty %}
+                                            <tr>
+                                                <td>
+                                                </td>
+                                                <td class="text-white">
+                                                    No regions found :(
+                                                </td>
+                                                <td>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
                                         </tbody>
                                     </c-ui.table>
                                 </div>
                                 <c-ui.button type="submit">
-                                    Submit
+                                    Create!
                                 </c-ui.button>
                             </form>
                         </div>
@@ -198,16 +312,16 @@
                 </div>
             </div>
             <script>
-                function popoverCloser(elem) {
-                    elem.addEventListener('click', function(event) {
-                        // Check if the click happened directly on the parent, not a child
-                        if (event.target == elem.querySelector('div')) {
-                            elem.togglePopover()
-                        }
-                    });
-                }
                 const newShopItemPopover = document.getElementById("createNewShopItem")
                 popoverCloser(newShopItemPopover)
+
+                setupShopItemImagePaste({
+                    scope: newShopItemPopover,
+                    fileInput: document.getElementById("createShopItemImageInput"),
+                    urlField: document.getElementById("createShopItemImageUrl"),
+                    preview: document.getElementById("createShopItemImagePreview"),
+                    status: document.getElementById("createShopItemImageStatus"),
+                })
             </script>
         </div>
     </div>
