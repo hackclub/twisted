@@ -23,7 +23,7 @@
                 </div>
                 <div class="flex shrink-0 flex-wrap gap-1">
                     {% if project.user == request.user %}
-                        {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged > 60 %}
+                        {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged >= 60 %}
                             {% if not project.is_shipped %}
                                 <a href="{% url 'fr.projects.ship' project.id %}"
                                    class="inline-block border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
