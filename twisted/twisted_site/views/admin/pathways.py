@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from twisted_site.models import Pathway, ShopItem, ShopRegion, User, ShopItemRegionalPricing
+from twisted_site.models import Pathway, ShopItem, ShopItemRegionalPricing, ShopRegion, User
 
 from .admin import AdminView
 
@@ -189,27 +189,53 @@ class PathwayDetailView(AdminView):
 
         pathway = get_object_or_404(Pathway, id=pathway_id)
         if request.POST.get("action") == "new_listing":
-            item_name = request.POST["name"]
-            item_description = request.POST["description"]
-            stock = request.POST["stock"]
-            image_url = request.POST.get("image_url", "")
-            shop_item = ShopItem.objects.create(
-                pathway = pathway,
-                item_name = item_name,
-                item_description = item_description,
-                stock = stock,
-                image_url = image_url,
-            )
+            item_name = request.POST.get("name", "").strip()
+            item_description = request.POST.get("description", "").strip()
+            stock_raw = request.POST.get("stock", "").strip() or "999"
+            image_url = request.POST.get("image_url", "").strip()
+
+            if not item_name or not item_description:
+                messages.error(request, "Item name and description are required!")
+                return redirect(request.path_info)
+
+            try:
+                stock = int(stock_raw)
+            except ValueError:
+                messages.error(request, "Item stock must be a whole number!")
+                return redirect(request.path_info)
+            if stock < 0:
+                messages.error(request, "Item stock cannot be negative!")
+                return redirect(request.path_info)
+
+            regional_prices: list[tuple[ShopRegion, int]] = []
             for region in ShopRegion.objects.all():
-                price = request.POST[f"region-{region.id}-price"]
-                if not price:
+                price_raw = request.POST.get(f"region-{region.id}-price", "").strip()
+                if not price_raw:
                     continue
-                price = int(price)
+                try:
+                    price = int(price_raw)
+                except ValueError:
+                    messages.error(request, f"Price for {region.name} must be a whole number!")
+                    return redirect(request.path_info)
+                if price < 0:
+                    messages.error(request, f"Price for {region.name} cannot be negative!")
+                    return redirect(request.path_info)
+                regional_prices.append((region, price))
+
+            shop_item = ShopItem.objects.create(
+                pathway=pathway,
+                item_name=item_name,
+                item_description=item_description,
+                stock=stock,
+                image_url=image_url,
+            )
+            for region, price in regional_prices:
                 ShopItemRegionalPricing.objects.create(region=region, item=shop_item, price=price)
             messages.success(request, f"Created new shop listing for {item_name}")
             return redirect(request.path_info)
 
         return redirect(request.path_info)
+
 
 class PathwayShopItemDetailView(AdminView):
     def get(self, request: HttpRequest, listing_id: int) -> HttpResponse:
