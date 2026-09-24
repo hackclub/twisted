@@ -6,12 +6,15 @@
             <div class="grow">
                 <span class="text-sm text-muted-foreground">Pathway
                     <form method="get" id="pathwaySelectForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="setRegion">
-                        <select class="bg-background p-2 border border-border" name="pathway" id="pathwaySelect" data-value="{{ request.GET.pathway }}">
+                        <select class="bg-background p-2 border border-border" name="pathway" id="pathwaySelect" data-value="{{ pathway.id }}">
                             <option value="" class="bg-background border border-border" selected disabled>Select an option</option>
-                            {% for pathway in pathways %}
-                                <option value="{{ pathway.id }}" class="bg-background border-b border-border focus:bg-red-500">{{ pathway.name }}</option>
+                            {% if pathway %}
+                            <option value="{{ pathway.id }}" class="bg-background border-b border-border focus:bg-red-500">{{ pathway.name }}</option>
+                            {% endif %}
+                            {% for iterpathway in pathways %}
+                            {% if iterpathway != pathway %}
+                            <option value="{{ iterpathway.id }}" class="bg-background border-b border-border focus:bg-red-500">{{ iterpathway.name }}</option>
+                            {% endif %}
                             {% endfor %}
                         </select>
                         <script>
@@ -53,44 +56,46 @@
         </div>
         <div class="sunken-panel min-h-0 flex-1 overflow-y-auto bg-background p-3">
             {% if user.profile.region %}
+                {% if pathway_timespent %}
+                <div class="p-2 bg-card group hover:bg-secondary border border-border mb-2">
+                    {{ pathway_timespent.golden_twists }} golden twists for this pathway
+                </div>
+                {% endif %}
+                {% if shop_items %}
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {% for project in projects %}
-                        <input type="hidden"
-                               value="{{ project.project_name }}"
-                               id="discover-project-{{ project.id }}">
-                        <div class="group flex cursor-pointer flex-col gap-2 border border-border bg-card p-3 select-none hover:bg-secondary"
-                             data-project-id="{{ project.id }}"
-                             data-project-url="{% url 'fr.projects.detail' project.id %}">
-                            <div class="flex items-start justify-between gap-2">
-                                <h3 class="wrap-break-word text-sm font-bold text-card-foreground group-hover:text-secondary-foreground">
-                                    {{ project.project_name }}
-                                </h3>
-                                <div class="flex shrink-0 flex-wrap justify-end gap-1">
-                                    {% if project.is_approved %}
-                                        <span class="border border-success bg-success/20 px-2 py-0.5 text-xs text-success">shipped</span>
-                                    {% endif %}
-                                    <span class="border border-border group-hover:bg-muted bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
-                                        {{ project.time_logged|minutes_to_hours_minutes }}
-                                    </span>
-                                    <span class="border border-border group-hover:bg-muted bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
-                                        {{ project.get_project_type_display }}
-                                    </span>
-                                </div>
+                    {% for listing in shop_items %}
+                        <div class="group flex cursor-pointer flex-col gap-2 border border-border bg-card p-3 select-none hover:bg-secondary">
+                            <div class="mx-auto inline-block">
+                                {% if listing.item.image_url %}
+                                <img class="size-15" src="{{ listing.item.image_url }}" alt="📦">
+                                {% else %}
+                                <p class="pt-3 text-5xl size-15">
+                                    📦
+                                </p>
+                                {% endif %}
                             </div>
-                            <p class="line-clamp-3 text-xs text-muted-foreground group-hover:text-secondary-foreground/80">
-                                {{ project.project_description }}
-                            </p>
-                            <div class="mt-auto flex items-center gap-2 border-t border-border pt-2">
-                                <img src="{{ project.user.profile.slack_pfp_url }}"
-                                     alt=""
-                                     class="h-5 w-5 shrink-0 rounded-sm border border-border object-cover">
-                                <span class="truncate text-xs text-muted-foreground group-hover:text-secondary-foreground/80">
-                                    {{ project.user.profile.slack_username|default:project.user.username }}
-                                </span>
+                            <div class="text-center">
+                                <div class="font-bold text-lg">
+                                    {{ listing.item.item_name }}
+                                </div>
+                                <div class="mt-2">
+                                    {{ listing.item.item_description|truncatechars:30 }}
+                                </div>
+                                <div class="mt-2">
+                                    {{ listing.price.price }} twist{{ listing.price.price|pluralize }}
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
+                {% else %}
+                <div class="flex h-full items-center justify-center">
+                    <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                        <div class="text-lg font-bold">No shop items here yet :c</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Check back later or select a different pathway</div>
+                    </div>
+                </div>
+                {% endif %}
             {% else %}
             <div class="h-full">
                 <div class="absolute right-4 justify-end">
