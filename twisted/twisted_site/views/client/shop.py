@@ -1,10 +1,17 @@
-from collections.abc import Iterable
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
 
-from twisted_site.models import Pathway, Profile, ShopRegion, ShopItem, as_user
+from twisted_site.models import (
+    Pathway,
+    PathwayTimeSpent,
+    Profile,
+    ShopItem,
+    ShopItemRegionalPricing,
+    ShopRegion,
+    as_user,
+)
 
 PROJECTS_PER_PAGE = 120
 
@@ -20,25 +27,36 @@ class ShopView(View):
         context["regions"] = regions
         pathways = Pathway.objects.filter(start__lt=timezone.now(), pathwaytimespent__user=request.user, pathwaytimespent__unlocked=True)
         context["pathways"] = pathways
-        shop_items = []
+        shop_items: list[ShopItem] = []
         pathway_id = request.GET.get("pathway", "")
         if pathway_id.isnumeric():
-            context["pathway"] = pathway = Pathway.objects.get(id=int(pathway_id))
-            shop_items: Iterable[ShopItem] = pathway.shop.all()  # pyright: ignore[reportAttributeAccessIssue] # ty: ignore[unresolved-attribute]
-            if pathway.pathwaytimespent_set.filter(user=request.user):
-                context["pathway_timespent"] = pathway.pathwaytimespent_set.get(user=request.user)
+            pathway = Pathway.objects.get(id=int(pathway_id))
+            context["pathway"] = pathway
+            shop_items = list(ShopItem.objects.filter(pathway=pathway))
+            pathway_timespent = PathwayTimeSpent.objects.filter(
+                pathway=pathway,
+                user=request.user,
+            ).first()
+            if pathway_timespent is not None:
+                context["pathway_timespent"] = pathway_timespent
 
-        parsed_shop_items = []
+        parsed_shop_items: list[dict[str, object]] = []
+        profile = as_user(request.user).profile
         for item in shop_items:
-            pricelist = item.prices.filter(region=request.user.profile.region)
-            if not pricelist:
+            if item.stock <= 0:
                 continue
-            if not item.stock:
+            region = profile.region
+            if region is None:
                 continue
-            pricelist = pricelist.get()
+            price = ShopItemRegionalPricing.objects.filter(
+                item=item,
+                region=region,
+            ).first()
+            if price is None:
+                continue
             parsed_shop_items.append({
                 "item": item,
-                "price": pricelist,
+                "price": price,
             })
         context["shop_items"] = parsed_shop_items
         return render(
