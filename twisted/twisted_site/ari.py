@@ -20,6 +20,11 @@ ARI_WEBHOOK_SECRET = cast("str", settings.ARI_WEBHOOK_SECRET)
 WEBHOOK_MAX_AGE_SECONDS = 5 * 60
 
 
+def is_configured() -> bool:
+    """Return whether outbound ARI submissions can be sent."""
+    return settings.DEBUG_REVIEW or bool(ARI_INGEST_ENDPOINT and ARI_SIGNING_SECRET)
+
+
 def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, signature: str) -> bool:
     """
     Verifies an outbound delivery from Ari.
