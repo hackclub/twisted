@@ -11,6 +11,11 @@ from twisted_site.models import Pathway, ShopItem, ShopItemRegionalPricing, Shop
 from .admin import AdminView
 
 
+def _post_text(request: HttpRequest, key: str, default: str = "") -> str:
+    value = request.POST.get(key)
+    return default if value is None else value
+
+
 # Create your views here.
 class PathwayListView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -189,12 +194,14 @@ class PathwayDetailView(AdminView):
 
         pathway = get_object_or_404(Pathway, id=pathway_id)
         if request.POST.get("action") == "new_listing":
-            item_name = request.POST.get("name", "").strip()
-            item_description = request.POST.get("description", "").strip()
-            stock_raw = request.POST.get("stock", "").strip() or "999"
-            image_url = request.POST.get("image_url", "").strip()
+            item_name = _post_text(request, "name").strip()
+            item_description = _post_text(request, "description").strip()
+            stock_raw = _post_text(request, "stock", "999").strip()
+            if stock_raw == "":
+                stock_raw = "999"
+            image_url = _post_text(request, "image_url").strip()
 
-            if not item_name or not item_description:
+            if item_name == "" or item_description == "":
                 messages.error(request, "Item name and description are required!")
                 return redirect(request.path_info)
 
@@ -209,8 +216,8 @@ class PathwayDetailView(AdminView):
 
             regional_prices: list[tuple[ShopRegion, int]] = []
             for region in ShopRegion.objects.all():
-                price_raw = request.POST.get(f"region-{region.id}-price", "").strip()
-                if not price_raw:
+                price_raw = _post_text(request, f"region-{region.id}-price").strip()
+                if price_raw == "":
                     continue
                 try:
                     price = int(price_raw)
@@ -230,7 +237,7 @@ class PathwayDetailView(AdminView):
                 image_url=image_url,
             )
             for region, price in regional_prices:
-                ShopItemRegionalPricing.objects.create(region=region, item=shop_item, price=price)
+                _ = ShopItemRegionalPricing.objects.create(region=region, item=shop_item, price=price)
             messages.success(request, f"Created new shop listing for {item_name}")
             return redirect(request.path_info)
 
@@ -248,11 +255,10 @@ class PathwayShopItemDetailView(AdminView):
         item = get_object_or_404(ShopItem, id=listing_id)
         context["item"] = item
 
-        regions = []
+        regions: list[dict[str, object]] = []
 
         for region in ShopRegion.objects.all():
-            listing = item.prices.filter(region=region)  # pyrefly: ignore[missing-attribute]
-            listing = listing.get() if listing else None
+            listing = ShopItemRegionalPricing.objects.filter(item=item, region=region).first()
             regions.append(
                 {
                     "region": region,
@@ -269,12 +275,14 @@ class PathwayShopItemDetailView(AdminView):
         else:
             return HttpResponse("err")
         item = get_object_or_404(ShopItem, id=listing_id)
-        item_name = request.POST.get("name", item.item_name).strip()
-        item_description = request.POST.get("description", item.item_description).strip()
-        stock_raw = request.POST.get("stock", str(item.stock)).strip() or "0"
-        image_url = request.POST.get("image_url", item.image_url).strip()
+        item_name = _post_text(request, "name", item.item_name).strip()
+        item_description = _post_text(request, "description", item.item_description).strip()
+        stock_raw = _post_text(request, "stock", str(item.stock)).strip()
+        if stock_raw == "":
+            stock_raw = "0"
+        image_url = _post_text(request, "image_url", item.image_url).strip()
 
-        if not item_name or not item_description:
+        if item_name == "" or item_description == "":
             messages.error(request, "Item name and description are required!")
             return redirect("admin.pathways.detail", item.pathway.id)
         try:
@@ -288,8 +296,8 @@ class PathwayShopItemDetailView(AdminView):
 
         regional_prices: list[tuple[ShopRegion, int | None]] = []
         for region in ShopRegion.objects.all():
-            price_raw = request.POST.get(f"region-{region.id}-price", "").strip()
-            if not price_raw:
+            price_raw = _post_text(request, f"region-{region.id}-price").strip()
+            if price_raw == "":
                 regional_prices.append((region, None))
                 continue
             try:
@@ -309,11 +317,10 @@ class PathwayShopItemDetailView(AdminView):
         item.save()
 
         for region, new_price in regional_prices:
-            listing = item.prices.filter(region=region)  # pyrefly: ignore[missing-attribute]
-            listing = listing.get() if listing else None
+            listing = ShopItemRegionalPricing.objects.filter(item=item, region=region).first()
             if new_price is not None:
                 if listing is None:
-                    ShopItemRegionalPricing.objects.create(
+                    _ = ShopItemRegionalPricing.objects.create(
                         region=region,
                         item=item,
                         price=new_price,
@@ -322,7 +329,7 @@ class PathwayShopItemDetailView(AdminView):
                     listing.price = new_price
                     listing.save()
             elif listing is not None:
-                listing.delete()
+                _ = listing.delete()
 
         messages.success(request, f"Updated item '{item.item_name}'!")
         return redirect("admin.pathways.detail", item.pathway.id)
