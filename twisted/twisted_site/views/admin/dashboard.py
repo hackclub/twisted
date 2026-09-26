@@ -25,7 +25,7 @@ class DashboardView(AdminView):
 
         hours_shipped = 0
         hours_shipped_chart: dict[str, float] = {}
-        for journal in Journal.objects.all().prefetch_related("project"):
+        for journal in Journal.objects.order_by("created_at").prefetch_related("project"):
             hours = journal.reduced_minutes / 60
             hours_logged += hours
 
