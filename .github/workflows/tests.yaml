@@ -1,0 +1,78 @@
+name: tests
+
+on:
+    push:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: tests-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test:
+        name: Django tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_DB: twisted_test
+                    POSTGRES_USER: twisted_test
+                    POSTGRES_PASSWORD: twisted_test
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U twisted_test -d twisted_test"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        env:
+            DJANGO_SETTINGS_MODULE: mysite.test_settings
+            POSTGRES_DB: twisted_test
+            POSTGRES_HOST: 127.0.0.1
+            POSTGRES_PASSWORD: twisted_test
+            POSTGRES_PORT: 5432
+            POSTGRES_USER: twisted_test
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+
+            - name: Set up uv
+              uses: astral-sh/setup-uv@v6
+              with:
+                  enable-cache: true
+
+            - name: Install dependencies
+              run: uv sync --frozen --dev
+
+            - name: Run Django checks
+              run: |
+                  uv run python twisted/manage.py check --settings=mysite.test_settings
+                  uv run python twisted/manage.py makemigrations --check --dry-run --settings=mysite.test_settings
+
+            - name: Run tests with coverage
+              run: |
+                  uv run coverage run twisted/manage.py test twisted_site common --settings=mysite.test_settings --verbosity 2
+                  uv run coverage report
+                  uv run coverage xml -o coverage.xml
+
+            - name: Upload coverage report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: python-coverage
+                  path: coverage.xml
+                  if-no-files-found: ignore

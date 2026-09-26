@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponseBase
 from django.shortcuts import redirect, resolve_url
 from django.views import View
 
-from twisted_site.models import AuditLog, ProfileStaffPermissions
+from twisted_site.models import AuditLog, ProfileStaffPermissions, as_user
 
 
 @dataclass
@@ -23,10 +23,13 @@ class AdminView(View):
     perms: ProfileStaffPermissions  # pyright: ignore[reportUninitializedInstanceVariable]
     allowed = False
 
-    def get_context_data(self, page: str, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
+    page: str | None = None
+    subpage: str | None = None
+
+    def get_context_data(self, page: str | None = None, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
-        context["page"] = page
-        context["subpage"] = subpage
+        context["page"] = page if page is not None else self.page
+        context["subpage"] = subpage if subpage is not None else self.subpage
         sidebar_links = [
             SidebarLink(
                 name="dashboard",
@@ -65,7 +68,10 @@ class AdminView(View):
         if self.perms.manage_shop:
             sidebar_links.append(
                 SidebarLink(
-                    name="shop", icon="bag-add", text="Shop", href=resolve_url("admin.shop"),
+                    name="shop",
+                    icon="bag-add",
+                    text="Shop",
+                    href=resolve_url("admin.shop"),
                 ),
             )
         if self.perms.view_review:
@@ -92,19 +98,19 @@ class AdminView(View):
                     name="logs",
                     icon="view",
                     text="Audit Logs",
-                    href=resolve_url("admin.logs") + "?page=1",
+                    href=f"{resolve_url("admin.logs")}?page=1",
                 ),
             )
 
         context["sidebar_links"] = sidebar_links
-        context["profile"] = self.request.user.profile  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        context["profile"] = as_user(self.request.user).profile
         return context
 
     @override
     def dispatch(self, request: HttpRequest, *args: object, **kwargs: object) -> HttpResponseBase:
         if request.user.is_anonymous:
             return redirect("homepage")
-        if not request.user.profile.is_staff:  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        if not as_user(request.user).profile.is_staff:
             return redirect("dashboard")
         self.audit_log = AuditLog(
             user=request.user,
@@ -113,10 +119,11 @@ class AdminView(View):
             additional_context={},
         )
 
-        perms = self.request.user.profile.staff_permissions  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        perms = as_user(self.request.user).profile.staff_permissions
         if perms is None:
-            profile = self.request.user.profile  # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-            profile.staff_permissions = ProfileStaffPermissions.objects.create()
+            profile = as_user(self.request.user).profile
+            perms = ProfileStaffPermissions.objects.create()
+            profile.staff_permissions = perms
             profile.save()
 
         self.perms = perms

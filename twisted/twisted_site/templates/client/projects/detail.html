@@ -23,7 +23,7 @@
                 </div>
                 <div class="flex shrink-0 flex-wrap gap-1">
                     {% if project.user == request.user %}
-                        {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged > 60 %}
+                        {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged >= 60 %}
                             {% if not project.is_shipped %}
                                 <a href="{% url 'fr.projects.ship' project.id %}"
                                    class="inline-block border border-primary bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
@@ -55,7 +55,7 @@
                                 el.dataset.originalText = el.textContent
                             }
                             if (styled && !el.style.width) {
-                                el.style.width = el.offsetWidth + "px"
+                                el.style.width = `${el.offsetWidth}px`
                             }
                             navigator.clipboard.writeText(el.dataset.url).then(() => {
                                 clearTimeout(el._copyRevertTimeout)
@@ -89,7 +89,7 @@
                 </div>
             </div>
             {% if project.is_shipped %}{% endif %}
-            {% if project.user == request.user %}
+            {% if project.user == request.user and not project.is_shipped %}
                 {% if not project.hackatime_project_names and project.project_type != "hardware" %}
                     <div class="mb-3 border border-warning bg-warning/10 p-3">
                         <div class="font-bold text-warning">Hackatime project not linked yet</div>
@@ -134,7 +134,7 @@
                         <div class="mt-1 text-sm text-muted-foreground">Log atleast 60 minutes before shipping your project.</div>
                         {% if project.user == user %}
                         <button type="button"
-                                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                 class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                             + New journal
                         </button>
@@ -150,7 +150,7 @@
                     </div>
                     {% if not project.is_shipped %}
                         <button type="button"
-                                onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                 class="border border-border bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
                             + New journal
                         </button>
@@ -255,7 +255,7 @@
                             <div class="mt-1 text-sm text-muted-foreground">Your project progress will appear here... after you journal</div>
                             {% if not project.is_shipped %}
                                 <button type="button"
-                                        onclick="createWindow('journal: ' + document.getElementById('project-title').value, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
+                                        onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                         class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
                                     + New journal
                                 </button>
@@ -270,4 +270,12 @@
             <span>{{ project.time_logged|minutes_to_hours_minutes }} logged</span>
         </div>
     </div>
+    <script>
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: "internal",
+                action: "refresh-projects"
+            }, window.location.origin);
+        }
+    </script>
 {% endblock body %}

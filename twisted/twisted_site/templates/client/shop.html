@@ -1,0 +1,135 @@
+{% extends "client/osbase.html" %}
+{% load static time_filters %}
+{% block body %}
+    <div class="flex h-full w-full flex-col bg-surface text-foreground font-vintage">
+        <div class="flex shrink-0 items-center gap-4 border-b border-border bg-card px-3 py-2">
+            <div class="grow">
+                <span class="text-sm text-muted-foreground">Pathway
+                    <form method="get" id="pathwaySelectForm">
+                        <select class="bg-background p-2 border border-border" name="pathway" id="pathwaySelect" data-value="{{ pathway.id }}">
+                            <option value="" class="bg-background border border-border" selected disabled>Select an option</option>
+                            {% if pathway %}
+                            <option value="{{ pathway.id }}" class="bg-background border-b border-border focus:bg-red-500">{{ pathway.name }}</option>
+                            {% endif %}
+                            {% for iterpathway in pathways %}
+                            {% if iterpathway != pathway %}
+                            <option value="{{ iterpathway.id }}" class="bg-background border-b border-border focus:bg-red-500">{{ iterpathway.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        <script>
+                            pathwaySelect = document.getElementById('pathwaySelect')
+                            pathwaySelect.value = pathwaySelect.dataset.value
+                            pathwaySelect.addEventListener('change', () => {
+                                document.getElementById('pathwaySelectForm').submit()
+                            })
+                        </script>
+                    </form>
+                </span>
+            </div>
+            <div>
+                <span class="text-sm text-muted-foreground">Your Region
+                    <form method="post" id="regionSelectForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="setRegion">
+                        <select
+                            class="bg-background p-2 border border-border"
+                            name="region"
+                            id="regionSelect"
+                            data-value="{{ user.profile.region.id }}">
+                            <option value="" class="bg-background border border-border" selected disabled>Select an option</option>
+                            {% for region in regions %}
+                                <option value="{{ region.id }}" class="bg-background border-b border-border">{{ region.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <script>
+                            regionSelect = document.getElementById("regionSelect")
+                            regionSelect.value = regionSelect.dataset.value
+                            regionSelect.addEventListener('change', () => {
+                                form = document.getElementById('regionSelectForm')
+                                form.requestSubmit()
+                            })
+                        </script>
+                    </form>
+                </span>
+            </div>
+        </div>
+        <div class="sunken-panel min-h-0 flex-1 overflow-y-auto bg-background p-3">
+            {% if user.profile.region %}
+                {% if pathway_timespent %}
+                <div class="p-2 bg-card group hover:bg-secondary border border-border mb-2">
+                    {{ pathway_timespent.golden_twists }} golden twists for this pathway
+                </div>
+                {% endif %}
+                {% if shop_items %}
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {% for listing in shop_items %}
+                        <div class="group flex cursor-pointer flex-col gap-2 border border-border bg-card p-3 select-none hover:bg-secondary">
+                            <div class="mx-auto inline-block">
+                                {% if listing.item.image_url %}
+                                <img class="size-15" src="{{ listing.item.image_url }}" alt="📦">
+                                {% else %}
+                                <p class="pt-3 text-5xl size-15">
+                                    📦
+                                </p>
+                                {% endif %}
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-lg">
+                                    {{ listing.item.item_name }}
+                                </div>
+                                <div class="mt-2">
+                                    {{ listing.item.item_description|truncatechars:30 }}
+                                </div>
+                                <div class="mt-2">
+                                    {{ listing.price.price }} twist{{ listing.price.price|pluralize }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="flex h-full items-center justify-center">
+                    <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                        <div class="text-lg font-bold">No shop items here yet :c</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Check back later or select a different pathway</div>
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="h-full">
+                <div class="absolute right-4 justify-end">
+                    <div class="ml-auto text-right">
+                        <div>
+                            ^^^^
+                        </div>
+                        <div>
+                            select a region here!
+                        </div>
+                    </div>
+                </div>
+                <div class="flex h-full items-center justify-center">
+                    <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                        <div class="text-lg font-bold">No region selected</div>
+                        <div class="mt-1 text-sm text-muted-foreground">Please select a region to get started.</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll("[data-project-id]").forEach((project) => {
+            project.addEventListener("click", () => {
+                const title = document.getElementById(
+                    `discover-project-${project.dataset.projectId}`
+                ).value;
+
+                createWindow(
+                    title,
+                    project.dataset.projectUrl
+                );
+            });
+        });
+    </script>
+{% endblock body %}

@@ -1,10 +1,10 @@
-from typing import Any, cast
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 
-from twisted_site.models import Profile, Project
+from twisted_site.models import Project, as_user
 
 
 # Create your views here.
@@ -12,7 +12,7 @@ class DashboardView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
-        profile = cast("Profile", self.request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(self.request.user).profile
 
         context: dict[str, Any] = {"profile": profile}  # pyrefly: ignore[explicit-any]
 
@@ -24,7 +24,7 @@ class DashboardView(View):
             project = get_object_or_404(Project, id=project_id)
             startup_windows.append(
                 {
-                    "href": resolve_url("fr.projects.detail", project.id),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+                    "href": resolve_url("fr.projects.detail", project.id),
                     "title": project.project_name,
                 },
             )

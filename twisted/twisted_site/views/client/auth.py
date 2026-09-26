@@ -15,7 +15,7 @@ from django.shortcuts import redirect
 from django.views import View
 
 from twisted_site import hackatime
-from twisted_site.models import Profile
+from twisted_site.models import Profile, as_user
 from twisted_site.slack import log_to_channel, slack_bot
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,8 @@ oauth.register(
 class LoginView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         if (
-            request.user.is_authenticated and request.user.profile.hackatime_access_token  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            request.user.is_authenticated
+            and as_user(request.user).profile.hackatime_access_token != ""
         ):
             return redirect("dashboard")
 
@@ -158,9 +159,19 @@ class HackatimeCallbackView(View):
         if os.environ.get("LOGIN_ENABLED") == "false":
             return JsonResponse("not allowed!")
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        if request.user.is_anonymous:
+            return redirect("login")
 
-        state = request.GET["state"]
+        profile = as_user(request.user).profile
+
+        state = request.GET.get("state")
+        code = request.GET.get("code")
+        if state in (None, "") or code in (None, ""):
+            return JsonResponse(
+                {"error": "Missing OAuth state or authorization code"},
+                status=400,
+            )
+
         if not hmac.compare_digest(state, profile.hackatime_state):
             profile.hackatime_state = ""
             profile.save()
@@ -172,7 +183,6 @@ class HackatimeCallbackView(View):
         profile.hackatime_state = ""
         profile.save()
 
-        code = request.GET["code"]
         hackatime_client_id = os.environ["HACKATIME_CLIENT_ID"]
         hackatime_client_secret = os.environ["HACKATIME_CLIENT_SECRET"]
         hackatime_redirect_uri = os.environ["HACKATIME_REDIRECT_URI"]

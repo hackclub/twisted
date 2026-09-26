@@ -1,6 +1,6 @@
 from itertools import chain
+from logging import getLogger
 from operator import attrgetter
-from typing import cast
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
@@ -8,8 +8,16 @@ from django.views import View
 from requests import HTTPError, RequestException
 
 from twisted_site import ari, hackatime
-from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project, ProjectShip, TemplateContext
+from twisted_site.models import (
+    PROJECT_TYPE_CHOICES,
+    Project,
+    ProjectShip,
+    TemplateContext,
+    as_user,
+)
 from twisted_site.slack import log_to_channel
+
+logger = getLogger(__name__)
 
 
 def _or_none(value: str) -> str:
@@ -25,7 +33,7 @@ class ProjectDetail(View):
 
         context = TemplateContext()
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
         context["profile"] = profile
 
         project = get_object_or_404(Project, id=project_id)
@@ -41,12 +49,24 @@ class ProjectDetail(View):
         context["second_pass_status"] = "pending"
 
         if project.latest_ship() is not None:
-            try:
-                status = ari.get_project_status(project)
-                context["first_pass_status"], context["second_pass_status"] = (
-                    ari.ship_passes_from_status(status)
-                )
-            except RequestException:
+            if ari.is_configured():
+                try:
+                    status = ari.get_project_status(project)
+                    context["first_pass_status"], context["second_pass_status"] = (
+                        ari.ship_passes_from_status(status)
+                    )
+                except RequestException:
+                    logger.warning("Unable to load ARI status for project %s", project.id)
+                    context["first_pass_status"] = "unavailable"
+                    context["second_pass_status"] = "unavailable"
+                except Exception:
+                    logger.exception(
+                        "Unexpected error loading ARI status for project %s",
+                        project.id,
+                    )
+                    context["first_pass_status"] = "unavailable"
+                    context["second_pass_status"] = "unavailable"
+            else:
                 context["first_pass_status"] = "unavailable"
                 context["second_pass_status"] = "unavailable"
 
@@ -78,7 +98,7 @@ class ProjectSettings(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
         context["profile"] = profile
 
         try:
@@ -117,13 +137,13 @@ class ProjectSettings(View):
         project.screenshot_url = request.POST.get("screenshot_url", "")
         project.save()
 
-        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         hackatime_names = ", ".join(project.hackatime_project_names)
         log_to_channel(
             f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(hackatime_names)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}",
         )
 
-        return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return redirect("fr.projects.detail", project.id)
 
 
 class SubmitProject(View):
@@ -149,7 +169,7 @@ class SubmitProject(View):
         if project.screenshot_url == "":
             return redirect("fr.projects.detail", project_id)
 
-        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
+        if not as_user(project.user).profile.ysws_eligible:
             context["info"] = (
                 "You are not YSWS eligible yet! Please get IDVd! Get help with it at #identity-help! (if you think this is a mistake, please ask in #twisted-help)"
             )
@@ -171,7 +191,7 @@ class SubmitProject(View):
 
         project = get_object_or_404(Project, id=project_id)
         if project.user != request.user:
-            return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+            return redirect("fr.projects.detail", project.id)
 
         if project.is_shipped():
             return self.get(
@@ -186,8 +206,15 @@ class SubmitProject(View):
         if project.screenshot_url == "":
             return redirect("fr.projects.detail", project_id)
 
-        if not project.user.profile.ysws_eligible:  # pyrefly: ignore[missing-attribute]
+        if not as_user(project.user).profile.ysws_eligible:
             return self.get(request, project_id)
+
+        if not ari.is_configured():
+            context["info"] = (
+                "The project submission service is temporarily unavailable. "
+                "Your project was not submitted; please try again later."
+            )
+            return self.get(request, project_id, context=context)
 
         ship = ProjectShip(project=project)
         ship.save()
@@ -195,11 +222,16 @@ class SubmitProject(View):
             ari.send_ship(ship)
         except Exception:
             _ = ship.delete()
-            raise
+            logger.exception("Failed to submit project %s to ARI", project.id)
+            context["info"] = (
+                "The project submission service is temporarily unavailable. "
+                "Your project was not submitted; please try again later."
+            )
+            return self.get(request, project_id, context=context)
 
-        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         log_to_channel(
             f":shipitparrot: Project *<{project_url}|{project.project_name}> shipped with *{project.time_logged()} minutes*",
         )
 
-        return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return redirect("fr.projects.detail", project.id)
