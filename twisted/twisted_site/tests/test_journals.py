@@ -183,8 +183,8 @@ class UntrackedJournalWorkflowTests(JournalContentMixin, TestCase):
         self.assertEqual(journal.minutes_worked, 30)
         self.assertEqual(journal.reduced_minutes, 30)
 
-    def test_untracked_journal_cannot_exceed_sixty_minutes(self) -> None:
-        response = self.post_journal(61, self.content(words=100, images=0))
+    def test_untracked_journal_cannot_exceed_180_minutes(self) -> None:
+        response = self.post_journal(181, self.content(words=100, images=0))
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Journal.objects.exists())
