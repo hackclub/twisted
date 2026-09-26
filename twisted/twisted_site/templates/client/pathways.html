@@ -12,40 +12,18 @@
             {% endif %}
             {% if current_pathways %}
                 <section class="mb-5">
-                    <div class="flex items-center gap-2 mb-3">
+                    <div class="flex items-center gap-2">
                         <div class="h-px bg-border flex-1"></div>
                         <h1 class="text-lg sm:text-xl font-bold whitespace-nowrap">Current Pathway{{ current_pathways|pluralize }}</h1>
                         <div class="h-px bg-border flex-1"></div>
                     </div>
+                    <div class="text-center mb-3">
+                        <p>You have <b>{{ unspent_mins|minutes_to_hours_minutes }}</b> to spend.</p>
+                    </div>
                     <div class="grid gap-3">
-                        {% for pathway_info in current_pathways %}
-                            <div class="bg-background border border-primary p-3 sm:p-4 shadow-sm">
-                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                    <div class="flex-1 min-w-0">
-                                        <h2 class="text-xl sm:text-2xl font-bold truncate">
-                                            {{ pathway_info.pathway.name|default:"none! please dm @kavyansh." }}
-                                        </h2>
-                                        <div class="text-sm text-muted-foreground mt-1">
-                                            Started
-                                            <span class="underline decoration-dotted"
-                                                  title="{{ pathway_info.pathway.start }}">
-                                                {{ pathway_info.pathway.start|naturaltime }}
-                                            </span>
-                                            <span class="mx-1">•</span>
-                                            Ends
-                                            <span class="underline decoration-dotted"
-                                                  title="{{ pathway_info.pathway.end }}">
-                                                {{ pathway_info.pathway.end|naturaltime }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="bg-secondary border border-border px-3 py-2 text-center shrink-0">
-                                        <div class="text-lg sm:text-xl font-bold">{{ pathway_info.minutes_spent|minutes_to_hours_minutes }}</div>
-                                        <div class="text-xs text-muted-foreground">of {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
+                    {% for pathway_info in current_pathways %}
+                        <c-client.pathway-card :pathway_info="pathway_info" />
+                    {% endfor %}
                     </div>
                 </section>
             {% endif %}
@@ -58,30 +36,9 @@
                             <div class="h-px bg-border flex-1"></div>
                         </div>
                         <div class="grid gap-2">
-                            {% for pathway_info in future_pathways %}
-                                <div class="bg-muted border border-border p-3">
-                                    <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3">
-                                        <h2 class="flex-1 min-w-0 font-bold text-base sm:text-lg">{{ pathway_info.pathway.name }}</h2>
-                                        <span class="text-xs text-muted-foreground whitespace-nowrap">
-                                            {{ pathway_info.pathway.end|sub:pathway_info.pathway.start|naturaldelta }}
-                                            long
-                                        </span>
-                                    </div>
-                                    <div class="text-sm mt-2">
-                                        Starts
-                                        <span class="underline decoration-dotted"
-                                              title="{{ pathway_info.pathway.start }}">
-                                            {{ pathway_info.pathway.start|naturalday }}
-                                        </span>
-                                        <span class="mx-1">•</span>
-                                        Ends
-                                        <span class="underline decoration-dotted"
-                                              title="{{ pathway_info.pathway.end }}">
-                                            {{ pathway_info.pathway.end|naturalday }}
-                                        </span>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                        {% for pathway_info in future_pathways %}
+                            <c-client.pathway-card :pathway_info="pathway_info" />
+                        {% endfor %}
                         </div>
                     </section>
                 {% endif %}

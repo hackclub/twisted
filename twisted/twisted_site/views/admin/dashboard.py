@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
-from twisted_site.models import Journal
+from twisted_site.models import Journal, as_user
 
 from .admin import AdminView
 
@@ -12,8 +12,9 @@ from .admin import AdminView
 # Create your views here.
 class DashboardView(AdminView):
     allowed = True
+    page = "dashboard"
     def get(self, request: HttpRequest) -> HttpResponse:
-        context = self.get_context_data(page="dashboard")
+        context = self.get_context_data()
         if self.request.user.is_anonymous:
             return redirect("homepage")
         hours_logged = 0
@@ -28,14 +29,14 @@ class DashboardView(AdminView):
             hours = journal.reduced_minutes / 60
             hours_logged += hours
 
-            date = journal.created_at.date().strftime("%a, %d %b")
+            date = journal.created_at.date().isoformat()
             hours_logged_chart[date] = hours_logged_chart.get(date, 0) + hours
 
             logged_project_type[journal.project.get_project_type_display()] += hours
 
-            country = journal.project.user.profile.get_country()
+            country = as_user(journal.project.user).profile.get_country()
 
-            logged_region_hours.setdefault(country, 0)
+            _ = logged_region_hours.setdefault(country, 0)
             logged_region_hours[country] += hours
 
             if journal.project.is_shipped():

@@ -19,7 +19,7 @@ class AuditLogsView(AdminView):
 
         page_number: str | None = request.GET.get("page")
         if page_number is None:
-            return redirect(self.request.get_full_path() + "?page=1")
+            return redirect(f"{self.request.get_full_path()}?page=1")
 
         context = self.get_context_data(page="logs")
 

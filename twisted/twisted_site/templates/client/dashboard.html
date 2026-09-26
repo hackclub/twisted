@@ -8,14 +8,13 @@
         <div class="relative z-10">
             <div class="flex flex-col flex-wrap content-start gap-3 w-full h-full overflow-y-hidden p-5">
                 {% if user.profile.is_staff %}
-                    <div class="font-vintage w-fit cursor-pointer select-none">
-                        <a href="{% url 'admin.dash' %}">
-                            <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🛡️</div>
-                            <span class="text-white block text-center text-sm">Admin</span>
-                        </a>
-                    </div>
+                    <a class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
+                       href="{% url 'admin.dash' %}">
+                        <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🛡️</div>
+                        <span class="block text-center text-sm">Admin</span>
+                    </a>
                 {% endif %}
-                <a class="font-vintage w-fit cursor-pointer select-none"
+                <a class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                    href="https://docs.twisted.hackclub.com/"
                    target="_blank">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
@@ -23,7 +22,7 @@
                     </div>
                     <span class="block text-center text-sm">Docs</span>
                 </a>
-                <div class="font-vintage w-fit cursor-pointer select-none"
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                      data-url="{% url 'fr.projects' %}"
                      onclick="newWindow('Projects', this.dataset.url)">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center">
@@ -31,7 +30,7 @@
                     </div>
                     <span class="block text-center text-sm">Projects</span>
                 </div>
-                <div class="font-vintage w-fit cursor-pointer select-none"
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                      data-url="{% url 'fr.pathways' %}"
                      onclick="newWindow('Pathways', this.dataset.url)">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
@@ -41,13 +40,23 @@
                     </div>
                     <span class="block text-center text-sm">Pathways</span>
                 </div>
-                <div class="font-vintage w-fit cursor-pointer select-none"
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                      data-url="{% url 'fr.referrals' %}"
                      onclick="newWindow('Referrals', this.dataset.url)">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
                         <img class="size-10" src="{% static 'icons/gift.png' %}" alt="" />
                     </div>
                     <span class="block text-center text-sm">Referrals</span>
+                </div>
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
+                     data-url="{% url 'fr.shop' %}"
+                     onclick="newWindow('Shop', this.dataset.url)">
+                    <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">
+                        <span class="pl-1">
+                            🛒
+                        </span>
+                    </div>
+                    <span class="block text-center text-sm">Shop</span>
                 </div>
                 {% comment %}
                 <div
@@ -66,8 +75,8 @@
                 <div class="relative">
                     <button type="button"
                             onclick="toggleStartMenu(event)"
-                            class="flex shrink-0 items-center gap-1.5 sm:gap-2 border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground">
-                        <img src="{% static 'images/twisted_logo.png' %}"
+                            class="flex shrink-0 items-center gap-1.5 sm:gap-2 border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
+                        <img src="{% static 'images/twisted_t.png' %}"
                              class="h-4 w-6 object-contain"
                              alt="" />
                         Twisted
@@ -88,10 +97,10 @@
                                 <div class="font-vintage space-y-1 text-absolute-white text-sm border-t border-twisted-800 pt-2">
                                     {% if user.is_staff %}
                                         <a href="{% url 'admin.dash' %}"
-                                           class="block text-absolute-white px-2 py-1 hover:bg-twisted-800">Admin Panel</a>
+                                           class="block text-absolute-white px-2 py-1 hover:bg-twisted-800 active:bg-accent active:text-accent-foreground">Admin Panel</a>
                                     {% endif %}
                                     <a href="https://docs.twisted.hackclub.com/"
-                                       class="text-card-foreground px-2 py-1 w-full flex items-center justify-between hover:bg-accent hover:text-accent-foreground transition text-xl">
+                                       class="text-card-foreground px-2 py-1 w-full flex items-center justify-between hover:bg-accent hover:text-accent-foreground active:bg-accent/80 active:text-accent-foreground transition text-xl">
                                         <svg fill-rule="evenodd"
                                              clip-rule="evenodd"
                                              stroke-linejoin="round"
@@ -117,7 +126,7 @@
                             <form method="post" action="{% url 'logout' %}" class="w-full">
                                 {% csrf_token %}
                                 <button type="submit"
-                                        class="border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground w-full transition hover:bg-accent/60 hover:text-primary-foreground text-center">
+                                        class="border border-border bg-secondary px-2 sm:px-3 py-1.5 font-mono text-xs sm:text-sm font-bold text-secondary-foreground w-full transition hover:bg-accent/60 hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground text-center">
                                     Logout
                                 </button>
                             </form>
@@ -125,7 +134,7 @@
                     </div>
                 </div>
                 <div id="taskbar-windows"
-                     class="flex-1 flex items-center gap-1 px-2 overflow-x-auto"></div>
+                     class="flex-1 flex items-center gap-1 px-2 py-1 overflow-x-auto"></div>
                 <div class="flex items-center gap-2">
                     <div id="taskbar-clock"
                          class="min-w-20 border border-border bg-background px-3 py-1.5 text-center font-mono text-xs text-foreground">
@@ -134,7 +143,7 @@
                 </div>
             </nav>
         </div>
-        <div id="musicPlayerDiv" class="bg-card p-2 border-border box-border absolute bottom-16 right-4 min-w-75" style="border-width: 1px;">
+        <div id="musicPlayerDiv" class="bg-card p-2 border border-border box-border absolute bottom-16 right-4 min-w-75">
             <div>
                 <h1 class="font-bold text-xl text-center">Twistedly</h1>
                 <p class="text-sm text-white/50 text-center">Cisco Disco</p>
@@ -183,20 +192,20 @@
                     }
                 </style>
                 <div class="flex justify-center">
-                    <button onclick="audioBackward(10)">
+                    <button type="button" onclick="audioBackward(10)">
                         <img class="size-8" src="https://icons.hackclub.com/api/icons/white/view-back" alt="">
                     </button>
-                    <button onclick="playPauseAudio()">
+                    <button type="button" onclick="playPauseAudio()">
                         <div class="size-8">
                             <img id="audioPauseIcon" class="hidden" src="https://icons.hackclub.com/api/icons/white/pause-circle-fill" alt="">
                             <img id="audioPlayIcon" src="https://icons.hackclub.com/api/icons/white/play-circle-fill" alt="">
                         </div>
                     </button>
-                    <button onclick="audioForward(10)">
+                    <button type="button" onclick="audioForward(10)">
                         <img class="size-8" src="https://icons.hackclub.com/api/icons/white/view-forward" alt="">
                     </button>
                 </div>
-                <iframe id="audioSilence" onload="this.location = this.location" src="{% static 'audio/silence.mp3' %}" allow="autoplay" id="audio" style="display: none"></iframe>
+                <iframe id="audioSilence" class="hidden" title="Autoplay keep-alive" onload="this.location = this.location" src="{% static 'audio/silence.mp3' %}" allow="autoplay"></iframe>
                 <script>
                     player = document.getElementById('musicPlayerDiv')
                     audio = document.getElementById('audioPlayer_audio')
@@ -220,6 +229,14 @@
                             return null
                         }
                     }
+
+                    function syncPlayPauseIcons() {
+                        // Keep the button in sync with the real playback state (including autoplay on first load).
+                        playIcon.classList.toggle('hidden', !audio.paused)
+                        pauseIcon.classList.toggle('hidden', audio.paused)
+                    }
+                    audio.addEventListener('play', syncPlayPauseIcons)
+                    audio.addEventListener('pause', syncPlayPauseIcons)
 
                     function updateSliderFill() {
                         const percent = slider.max > 0 ? (slider.value / slider.max) * 100 : 0;
@@ -248,26 +265,18 @@
                         if (pause == -1) {
                             if (audio.paused) {
                                 audio.play()
-                                playIcon.classList.add('hidden')
-                                pauseIcon.classList.remove('hidden')
                                 saveAudioPausedPreference(false)
                             } else {
                                 audio.pause()
-                                pauseIcon.classList.add('hidden')
-                                playIcon.classList.remove('hidden')
                                 saveAudioPausedPreference(true)
                             }
                         } else if (pause == 0) {
                             audio.pause()
-                            pauseIcon.classList.add('hidden')
-                            playIcon.classList.remove('hidden')
                             saveAudioPausedPreference(true)
                         } else {
                             audio.muted = true
                             audio.play()
                             audio.muted = false
-                            playIcon.classList.add('hidden')
-                            pauseIcon.classList.remove('hidden')
                             saveAudioPausedPreference(false)
                         }
                     }
@@ -294,7 +303,7 @@
 
                     function setBorder(width) {
                         const borderConfig = {
-                        width: width+'px',
+                        width: `${width}px`,
                         };
 
                         // 3. Optional: If you also want to change the width dynamically without moving the layout
@@ -331,6 +340,7 @@
                         }
                     }
                     autoStartAudio()
+                    syncPlayPauseIcons()
 
                     function updateBorderLoop() {
                         requestAnimationFrame(updateBorderLoop);
@@ -346,39 +356,42 @@
         </div>
     </main>
     <template id="window-template">
-        <div class="absolute window resize flex flex-col overflow-hidden bg-card border-2 border-dark-black shadow-lg min-w-[40vw] min-h-[40vh] left-75 top-75 w-75 h-75">
+        <div class="absolute window resize flex flex-col overflow-hidden bg-card border-2 border-white shadow-lg min-w-[40vw] min-h-[40vh] left-75 top-75 w-75 h-75">
             <div class="title-bar w-full h-8 shrink-0 flex items-center justify-between bg-primary text-primary-foreground px-2 select-none">
                 <div class="flex gap-2">
-                    <button class="reload-button h-5 w-5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary"
+                    <button class="reload-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary active:scale-90 active:bg-accent active:text-accent-foreground"
                             type="button"
-                            aria-label="Reload">↻</button>
+                            aria-label="Reload">🗘</button>
                     <label class="title-bar-text font-bold truncate">[ title card ]</label>
                 </div>
-                <div class="title-bar-controls flex items-center gap-1">
-                    <button id="max-button"
-                            class="max-button h-5 w-5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary"
+                <div class="title-bar-controls flex items-center gap-1.5">
+                    <button class="min-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary active:scale-90 active:bg-accent active:text-accent-foreground"
                             type="button"
-                            aria-label="Maximize">□</button>
-                    <button class="close-button h-5 w-5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-destructive hover:text-destructive-foreground"
+                            aria-label="Minimise">🗕</button>
+                    <button class="max-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-secondary active:scale-90 active:bg-accent active:text-accent-foreground"
                             type="button"
-                            aria-label="Close">×</button>
+                            aria-label="Maximize">🗖</button>
+                    <button class="close-button h-6 w-6 p-0.5 flex items-center justify-center bg-card text-card-foreground border border-border hover:bg-destructive hover:text-destructive-foreground active:scale-90"
+                            type="button"
+                            aria-label="Close">🗙</button>
                 </div>
             </div>
             <div class="window-body min-h-0 flex-1 overflow-hidden">
                 <iframe class="w-full h-full block src-frame select-none border-0"
                         src="about:blank"
-                        frameborder="0"></iframe>
+                        title="Window content"
+                        frameborder="0">
+                </iframe>
             </div>
+            <div class="resize-handle resize-n"></div>
+            <div class="resize-handle resize-s"></div>
+            <div class="resize-handle resize-e"></div>
+            <div class="resize-handle resize-w"></div>
+            <div class="resize-handle resize-ne"></div>
+            <div class="resize-handle resize-nw"></div>
+            <div class="resize-handle resize-se"></div>
+            <div class="resize-handle resize-sw"></div>
         </div>
-        <div class="resize-handle resize-n"></div>
-        <div class="resize-handle resize-s"></div>
-        <div class="resize-handle resize-e"></div>
-        <div class="resize-handle resize-w"></div>
-        <div class="resize-handle resize-ne"></div>
-        <div class="resize-handle resize-nw"></div>
-        <div class="resize-handle resize-se"></div>
-        <div class="resize-handle resize-sw"></div>
-    </div>
     </template>
     <audio id="bg-music" loop>
         <source src="{% static 'audio/bg.mp3' %}" type="audio/mpeg" />
@@ -386,7 +399,7 @@
     <template id="taskbutton-template">
         <button type="button"
                 onclick="focusWindow(this.dataset.winId)"
-                class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
+                class="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-primary/50 hover:text-primary-foreground active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-colors text-sm px-2! py-1! border border-white rounded shadow-accent shadow-[2px_2px_0px] max-w-40">
             <img src="{% static 'images/directory.png' %}"
                  alt=""
                  class="size-4 object-cover shrink-0">
@@ -424,6 +437,20 @@
                     if (!safeSrc) return;
                     newWindow(data.title, safeSrc, w, h);
                 }
+                if (data.action === "refresh-projects") {
+                    document.querySelectorAll(".window").forEach((win) => {
+                        const frame = win.querySelector(".src-frame");
+                        if (!frame) return;
+                        try {
+                            const path = new URL(frame.src, window.location.origin).pathname;
+                            if (path === "{% url 'fr.projects' %}") {
+                                frame.src = frame.src;
+                            }
+                        } catch (_) {
+                            // Ignore malformed frame URLs.
+                        }
+                    });
+                }
             },
             false,
         );
@@ -433,7 +460,7 @@
         const container = document.getElementById("windows-container");
         const clone = template.content.cloneNode(true);
         const win = clone.querySelector(".window");
-        const id = "win-" + ++windowCounter;
+        const id = `win-${++windowCounter}`;
         win.dataset.winId = id;
 
             win.querySelector(".title-bar-text").textContent = title;
@@ -463,9 +490,20 @@
             document.getElementById("taskbar-windows").appendChild(taskBtn);
 
         realWin.querySelector(".title-bar").addEventListener("mousedown", () => focusWindow(id));
+        // Clicking anywhere in the window (not just the title bar) raises it.
+        realWin.addEventListener("pointerdown", () => bringWindowToFront(id));
+
+        // The iframe fills the window body, so observe clicks inside its document too.
+        const srcFrame = realWin.querySelector(".src-frame");
+        srcFrame.addEventListener("load", () => bindFrameFocus(srcFrame, id));
+        bindFrameFocus(srcFrame, id);
+
         dragWindow(realWin);
         initResizeHandles(realWin);
         focusWindow(id);
+        realWin.querySelector(".min-button").addEventListener("click", () => {
+            minimiseWindow(realWin);
+        });
         realWin.querySelector(".max-button").addEventListener("click", () => {
             fullscreenWindow(realWin);
         });
@@ -482,6 +520,17 @@
         });
     }
 
+        function minimiseWindow(win) {
+            win.style.display = "none";
+        }
+
+        function setMaxButtonState(win, maximised) {
+            const button = win.querySelector(".max-button");
+            if (!button) return;
+            button.textContent = maximised ? "🗗" : "🗖";
+            button.setAttribute("aria-label", maximised ? "Restore" : "Maximize");
+        }
+
         function fullscreenWindow(win) {
             if (currentMaximisedWindow?.win === win) {
                 const previous = currentMaximisedWindow;
@@ -495,6 +544,7 @@
                 win.style.height = previous.height;
 
                 win.classList.add("resize");
+                setMaxButtonState(win, false);
 
                 currentMaximisedWindow = null;
                 return;
@@ -514,6 +564,7 @@
                 width: win.style.width,
                 height: win.style.height,
             };
+            setMaxButtonState(win, true);
 
             const taskbar = document.getElementById("taskbar");
             const taskbarHeight = taskbar?.offsetHeight || 48;
@@ -529,9 +580,34 @@
             win.style.height = "auto";
         }
 
+        // Raise the window, unless it is already on top.
+        function bringWindowToFront(id) {
+            const win = document.querySelector(`.window[data-win-id="${id}"]`);
+            if (!win) return;
+            if (win.style.zIndex === "100" && win.style.display !== "none") return;
+            focusWindow(id);
+        }
+
+        // Clicks inside a frame's document don't bubble up to the parent, so bind each
+        // same-origin frame document to raise its window as well.
+        function bindFrameFocus(frame, id) {
+            let frameDoc;
+            try {
+                frameDoc = frame.contentDocument;
+            } catch (_) {
+                return; // Cross-origin frames can't be observed.
+            }
+            if (!frameDoc || frameDoc.__twistedFocusBound) return;
+            frameDoc.__twistedFocusBound = true;
+            frameDoc.addEventListener("pointerdown", () => bringWindowToFront(id), true);
+        }
+
     function focusWindow(id) {
-        document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("!bg-twisted-999"));
-        const win = document.querySelector('.window[data-win-id="' + id + '"]');
+        document.querySelectorAll("#taskbar-windows button").forEach((b) => b.classList.remove("bg-twisted-999!"));
+        const win = document.querySelector(`.window[data-win-id="${id}"]`);
+
+            // Restore the window if it was minimised.
+            if (win.style.display === "none") win.style.display = "";
 
             container = document.getElementById("windows-container");
             container.moveBefore(win, null);
@@ -758,6 +834,7 @@
             {% for window in startup_windows %}
                 <iframe data-href="{{ window.href }}"
                         data-title="{{ window.title }}"
+                        title="{{ window.title }}"
                         onload="
             console.log('loading...');
             newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);

@@ -21,14 +21,6 @@
 	font-display: swap;
 }
 
-@font-face {
-	font-family: "Piedra";
-	src: url("/static/fonts/Piedra-Regular.ttf") format("truetype");
-	font-weight: 100;
-	font-style: normal;
-	font-display: swap;
-}
-
 :root {
 	/* Accent: primary buttons, links, focus ring, active states */
 	--color-accent: var(--color-red-500);
@@ -67,15 +59,10 @@
 	--color-twisted-200: #e0a7ff;
 	--color-twisted-400: #b96cff;
 	--color-twisted-600: #8c3ed1;
-	--color-twisted-800: #61268f;
-	--color-twisted-999: #3a1750;
 
-	--color-absolute-white: #ffffff;
-	--color-fair-gray: #b8adbf;
 	--color-dark-black: #120817;
 
 	--color-surface: #2e153c;
-	--color-dark: #1b0d25;
 }
 
 @theme {
@@ -94,9 +81,6 @@
 	--color-card: #1b0d25;
 	--color-card-foreground: #faf7ff;
 
-	--color-popover: #48245c;
-	--color-popover-foreground: #ffffff;
-
 	--color-primary: #b96cff;
 	--color-primary-foreground: #190b24;
 
@@ -110,10 +94,8 @@
 	--color-muted-foreground: #c9b8d3;
 
 	--color-subtle: #806a8d;
-	--color-subtle-foreground: #e2d8e8;
 
 	--color-border: #654078;
-	--color-input: #75488a;
 	--color-ring: #c27aff;
 
 	--color-success: #4ade80;
@@ -124,6 +106,17 @@
 
 	--color-destructive: #ff6b7a;
 	--color-destructive-foreground: #2a080d;
+
+	/* "OS" palette — must live in @theme for Tailwind to generate its utilities */
+	--color-twisted-200: #e0a7ff;
+	--color-twisted-400: #b96cff;
+	--color-twisted-600: #8c3ed1;
+	--color-twisted-800: #61268f;
+	--color-twisted-999: #3a1750;
+
+	--color-absolute-white: #ffffff;
+	--color-dark-black: #120817;
+	--color-surface: #2e153c;
 }
 
 button {
@@ -162,33 +155,6 @@ button {
 	image-rendering: pixelated;
 }
 
-.window .maximized {
-	position: fixed !important;
-	inset: 0 0 32px 0 !important;
-	width: auto !important;
-	height: auto !important;
-	min-width: 0 !important;
-	min-height: 0 !important;
-	margin: 0 !important;
-	transform: none !important;
-}
-
-progress {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	display: block;
-	height: 100%;
-	border: none;
-	box-sizing: border-box;
-	background-color: var(--color-primary);
-}
-
-progress::-webkit-progress-bar {
-	background-color: var(--color-primary);
-	height: 100%;
-}
-
 ::-webkit-scrollbar {
 	width: 10px;
 	height: 10px;
@@ -212,13 +178,6 @@ progress::-webkit-progress-bar {
 	background: #1e072f;
 }
 
-@utility no-scrollbar {
-	@apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
-}
-
-::-webkit-scrollbar-corner {
-	background: #1e072f;
-}
 .resize-handle {
 	position: absolute;
 	z-index: 10;

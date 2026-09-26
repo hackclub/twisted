@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0033_project_hackatime_project_names'),
+        ("twisted_site", "0033_project_hackatime_project_names"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='country',
-            field=models.CharField(blank=True, default='', max_length=20),
+            model_name="profile",
+            name="country",
+            field=models.CharField(blank=True, default="", max_length=20),
         ),
         migrations.AddField(
-            model_name='profile',
-            name='country_cached_until',
+            model_name="profile",
+            name="country_cached_until",
             field=models.DateTimeField(default=None, null=True),
         ),
     ]

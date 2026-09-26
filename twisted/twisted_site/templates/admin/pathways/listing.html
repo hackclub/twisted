@@ -1,0 +1,83 @@
+{% load time_filters %}
+<div class="flex h-full justify-center overflow-hidden">
+    <c-ui.card class="my-auto w-1/2 flex flex-col max-h-9/10" padding="sm">
+        <div class="flex">
+            <div class="text-white text-xl font-bold my-auto grow">
+                {{ item.item_name }}
+            </div>
+            <c-ui.button id="myCloseBtn" variant="ghost" size="sm" class="text-xl" popovertarget="listing-{{ item.id }}">
+                ×
+            </c-ui.button>
+        </div>
+        <div class="overflow-auto grow">
+            <form method="post" action="{% url 'admin.pathways.shopitems' item.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="new_listing">
+                <div>
+                    <c-ui.input name="name" value="{{ item.item_name }}" label="Item name" placeholder="Stickers" />
+                </div>
+                <div class="mt-4">
+                    <c-ui.textarea name="description" height="xs" label="Item description" placeholder="Cool stickers!">{{ item.item_description }}</c-ui.textarea>
+                </div>
+                <div>
+                    <c-ui.input name="stock" value="{{ item.stock }}" label="Remaining stock" placeholder="999" />
+                </div>
+                <div class="mt-4" id="editShopItemImageField-{{ item.id }}">
+                    <c-ui.label>Item image</c-ui.label>
+                    <img id="editShopItemImagePreview-{{ item.id }}"
+                         src="{{ item.image_url }}"
+                         alt=""
+                         class="max-h-32 w-auto border border-ink-700 object-contain bg-ink-950 mb-2 {% if not item.image_url %}hidden{% endif %}">
+                    <input id="editShopItemImageInput-{{ item.id }}" type="file" accept="image/*" class="text-white">
+                    <p class="text-xs text-ink-400">or paste an image anywhere in this dialog</p>
+                    <p id="editShopItemImageStatus-{{ item.id }}" class="text-xs text-ink-400"></p>
+                    <input type="hidden" name="image_url" id="editShopItemImageUrl-{{ item.id }}" value="{{ item.image_url }}">
+                </div>
+                <div class="mt-4">
+                    <c-ui.label>Regions and availability</c-ui.label>
+                    <p class="text-white">Leave price blank for no availability</p>
+                    <c-ui.table>
+                        <thead>
+                            <th>Region</th>
+                            <th>Price</th>
+                        </thead>
+                        <tbody>
+                        {% for region in regions %}
+                            <tr>
+                                <td class="text-white">
+                                    {{ region.region.name }}
+                                </td>
+                                <td>
+                                    <c-ui.input name="region-{{ region.region.id }}-price" value="{{ region.listing.price }}" type="number" />
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td>
+                                </td>
+                                <td class="text-white">
+                                    No regions found :(
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </c-ui.table>
+                </div>
+                <c-ui.button type="submit">
+                    Update!
+                </c-ui.button>
+            </form>
+        </div>
+    </c-ui.card>
+</div>
+<script>
+    setupShopItemImagePaste({
+        scope: document.getElementById("listing-{{ item.id }}"),
+        fileInput: document.getElementById("editShopItemImageInput-{{ item.id }}"),
+        urlField: document.getElementById("editShopItemImageUrl-{{ item.id }}"),
+        preview: document.getElementById("editShopItemImagePreview-{{ item.id }}"),
+        status: document.getElementById("editShopItemImageStatus-{{ item.id }}"),
+    })
+</script>

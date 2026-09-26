@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import requests
 from django.conf import settings
 
-from .models import Journal, Project, ProjectShip
+from .models import Journal, Project, ProjectShip, as_user
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -18,6 +18,13 @@ ARI_WEBHOOK_SECRET = cast("str", settings.ARI_WEBHOOK_SECRET)
 
 # Deliveries older than this are rejected, per the "How delivery works" doc.
 WEBHOOK_MAX_AGE_SECONDS = 5 * 60
+
+
+def is_configured() -> bool:
+    """Return whether outbound ARI submissions can be sent."""
+    return bool(settings.DEBUG_REVIEW) or (
+        bool(ARI_INGEST_ENDPOINT) and bool(ARI_SIGNING_SECRET)
+    )
 
 
 def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, signature: str) -> bool:
@@ -74,9 +81,11 @@ def send_request(
     else:
         message_bytes = None
         headers = {"Authorization": f"Bearer {ARI_SIGNING_SECRET}"}
+    base_url = ARI_INGEST_ENDPOINT.rstrip("/")
+    url = f"{base_url}/{endpoint.lstrip('/')}" if endpoint != "" else base_url
     return requests.request(
         method,
-        ARI_INGEST_ENDPOINT + endpoint,
+        url,
         data=message_bytes,
         headers=headers,
         timeout=10,
@@ -94,9 +103,9 @@ def send_ship(ship: ProjectShip) -> None:
             untracked_time += journal.reduced_minutes
 
     maker = {
-        "email": ship.project.user.email,  # pyrefly: ignore[missing-attribute]
-        "name": ship.project.user.profile.slack_username,  # pyrefly: ignore[missing-attribute]
-        "slack_id": ship.project.user.profile.slack_id,  # pyrefly: ignore[missing-attribute]
+        "email": as_user(ship.project.user).email,
+        "name": as_user(ship.project.user).profile.slack_username,
+        "slack_id": as_user(ship.project.user).profile.slack_id,
         "program_hours": 0,
     }
 
@@ -111,7 +120,7 @@ def send_ship(ship: ProjectShip) -> None:
 
     thumbnail_url = ship.project.screenshot_url
 
-    hackatime_projects = ship.project.hackatime_project_names  # pyrefly: ignore[missing-attribute]
+    hackatime_projects = ship.project.hackatime_project_names
 
     meta = {
         "project_url": f"https://twisted.hackclub.com/dashboard/?project={ship.project.id}",
@@ -124,8 +133,8 @@ def send_ship(ship: ProjectShip) -> None:
         content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
             {
-                "at": journal.created_at.isoformat(),  # ty: ignore[unresolved-attribute]
-                "minutes": int(journal.reduced_minutes),  # ty: ignore[invalid-argument-type]
+                "at": journal.created_at.isoformat(),
+                "minutes": journal.reduced_minutes,
                 "text": content,
                 "markdown": content,
             },
@@ -153,7 +162,7 @@ def send_ship(ship: ProjectShip) -> None:
 
 
 def get_project_status(project: Project) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
-    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+    r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")
     _resp = r.content
     r.raise_for_status()
     status_data: dict[str, Any] = r.json()  # pyrefly: ignore[explicit-any]

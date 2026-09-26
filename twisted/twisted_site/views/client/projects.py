@@ -1,14 +1,10 @@
-from typing import TYPE_CHECKING, cast
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
-from twisted_site.models import PROJECT_TYPE_CHOICES, Profile, Project
+from twisted_site.models import PROJECT_TYPE_CHOICES, Project, as_user
 from twisted_site.slack import log_to_channel
-
-if TYPE_CHECKING:
-    from django.db.models import QuerySet
 
 
 # Create your views here.
@@ -17,9 +13,9 @@ class ListProjects(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        profile = cast("Profile", request.user.profile)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        profile = as_user(request.user).profile
 
-        projects = cast("QuerySet[Project]", request.user.projects.all())  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        projects = as_user(request.user).projects.all()
 
         return render(
             request,
@@ -39,9 +35,17 @@ class CreateProject(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
-        project_name: str = request.POST["name"]
-        project_description: str = request.POST["description"]
-        project_type: str = request.POST["type"]
+        submitted_name = request.POST.get("name")
+        submitted_description = request.POST.get("description")
+        project_name = submitted_name.strip() if submitted_name is not None else ""
+        project_description = (
+            submitted_description.strip() if submitted_description is not None else ""
+        )
+        project_type = request.POST.get("type")
+        project_type = project_type if project_type is not None else ""
+
+        if project_name == "" or project_description == "" or project_type == "":
+            return HttpResponseBadRequest("Name, description, and type are required")
 
         if project_type not in PROJECT_TYPE_CHOICES:
             return HttpResponse("naughty! you arent supposed to do this!")
@@ -53,10 +57,10 @@ class CreateProject(View):
             project_type=project_type,
         )
 
-        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
 
         log_to_channel(
-            f"*{request.user.profile.slack_username}* created a <{project_url}|new project>!\n- *Name*: {project_name}\n- *Description*: {project_description}\n- {project_type.title()}",  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            f"*{as_user(request.user).profile.slack_username}* created a <{project_url}|new project>!\n- *Name*: {project_name}\n- *Description*: {project_description}\n- {project_type.title()}",
         )
 
-        return redirect("fr.projects.detail", project.id)  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        return redirect("fr.projects.detail", project.id)

@@ -186,7 +186,7 @@
                                         <c-ui.select name="value">
                                             <c-ui.select.option value="True">True</c-ui.select.option>
                                             <c-ui.select.option value="False">False</c-ui.select.option>
-                                        </c-ui.select.option>
+                                        </c-ui.select>
                                         <c-ui.button type="submit">Save</c-ui.button>
                                     </div>
                                 </form>
@@ -212,7 +212,7 @@
                                 <c-ui.input id="textCopyInput" disabled value="Yes, I am sure, make @{{ user.profile.slack_username }} an admin." />
                             </div>
                             <c-ui.button onclick="copyAction(this)">
-                                <img class="size-4" src="https://icons.hackclub.com/api/icons/white/copy">
+                                <img class="size-4" alt="" src="https://icons.hackclub.com/api/icons/white/copy">
                             </c-ui.button>
                             <script>
                                 function copyAction(elem) {

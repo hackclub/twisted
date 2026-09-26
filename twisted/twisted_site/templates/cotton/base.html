@@ -54,24 +54,15 @@
         <script defer
                 src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         {% if messages %}
-            {% for message in messages %}
-                <div id="djangomessage{{ forloop.counter }}" data-message="{{ message }}">
-                    <script>
-                        window.addEventListener('load', (event) => {
-                            message = document.querySelector('#djangomessage{{ forloop.counter }}').dataset.message
-                            setTimeout(() => {
-                                console.log(`sending message ${message}...`)
-                                window.dispatchEvent(new CustomEvent('toast', {
-                                    detail: {
-                                        message: message,
-                                        variant: '{{ message.tags }}'
-                                    }
-                                }))
-                            }, 100)
-                        })
-                    </script>
-                </div>
-            {% endfor %}
+            <div class="fixed right-4 top-4 z-50 flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-2">
+                {% for message in messages %}
+                    <c-ui.alert variant="{{ message.tags|default:'info' }}"
+                                :dismissible="True"
+                                class="shadow-lg">
+                        {{ message }}
+                    </c-ui.alert>
+                {% endfor %}
+            </div>
         {% endif %}
     </body>
 </html>

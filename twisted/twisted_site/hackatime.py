@@ -35,7 +35,7 @@ def authhelper(access_token: str, headers: dict[str, str] | None = None) -> dict
 def me(access_token: str) -> MeResponse:
     """Returns information about the authenticated user."""
     resp = requests.get(
-        HACKATIME_ROOT_URL + "/api/v1/authenticated/me",
+        f"{HACKATIME_ROOT_URL}/api/v1/authenticated/me",
         headers=authhelper(access_token),
         timeout=10,
     )
@@ -67,7 +67,7 @@ def projects(
         params["projects"] = ",".join(projects)
 
     resp = requests.get(
-        HACKATIME_ROOT_URL + "/api/v1/authenticated/projects",
+        f"{HACKATIME_ROOT_URL}/api/v1/authenticated/projects",
         params=params,
         headers=authhelper(access_token),
         timeout=10,

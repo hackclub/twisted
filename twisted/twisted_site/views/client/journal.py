@@ -50,7 +50,15 @@ class NewProjectHackatimeJournal(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        reduced_minutes = min(project.hackatime_time_unjournaled(), HACKATIME_MAX_LOGGABLE_MINUTES)
+        available_minutes = project.hackatime_time_unjournaled()
+        if available_minutes <= 0:
+            return self.get(
+                request,
+                project_id,
+                info="There is no unjournaled Hackatime time available.",
+            )
+
+        reduced_minutes = min(available_minutes, HACKATIME_MAX_LOGGABLE_MINUTES)
 
         if project.is_shipped():
             return redirect("fr.projects.detail", project_id)
@@ -83,12 +91,14 @@ class NewProjectHackatimeJournal(View):
             project=project,
             type="hackatime",
             content=content,
-            minutes_worked=project.hackatime_time_unjournaled(),
+            minutes_worked=available_minutes,
             reduced_minutes=reduced_minutes,
         )
         journal.save()
 
-        log_to_channel(f":haiku: *New journal for {project.project_name}!*\n- {journal.reduced_minutes} minutes")
+        log_to_channel(
+            f":haiku: *New journal for {project.project_name}!*\n- {journal.reduced_minutes} minutes",
+        )
 
         return self.get(request, project_id, context={"success": True})
 
@@ -117,7 +127,7 @@ class NewProjectUntrackedJournal(View):
             return redirect("dashboard")
 
         if project.project_type == "software":
-            return redirect("fr.projects.journals.new.hackatime")
+            return redirect("fr.projects.journals.new.hackatime", project_id=project_id)
 
         context["project"] = project
 
@@ -141,7 +151,7 @@ class NewProjectUntrackedJournal(View):
             return redirect("dashboard")
 
         if project.project_type == "software":
-            return redirect("fr.projects.journals.new.hackatime")
+            return redirect("fr.projects.journals.new.hackatime", project_id=project_id)
 
         content = request.POST["content"]
         time_logged = int(request.POST["time_logged"])
@@ -228,25 +238,36 @@ class DeleteJournal(View):
         if journal.type != "untracked":
             return redirect("dashboard")
 
-        journal.delete()
+        _ = journal.delete()
 
         return self.get(request, journal_id=None, context={"success": True})
 
 
 class EditJournal(View):
-    def get(self, request:HttpRequest, id:int, info:str|None=None, context:str|None=None) -> HttpResponse:
+    def get(
+        self,
+        request: HttpRequest,
+        id: int,
+        info: str | None = None,
+        context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
+    ) -> HttpResponse:
         journal = Journal.objects.get(id=id)
+        if journal.project.is_shipped():
+            return redirect("fr.projects.detail", project_id=journal.project.id)
         if journal.project.user != request.user:
             return redirect("fr.projects.detail", journal.project.id)
-        context = context or {}
-        if info:
+        if context is None:
+            context = TemplateContext()
+        if info is not None:
             context["info"] = info
         context["journal"] = journal
         return render(request, "client/projects/journal/edit.html", context)
 
-    def post(self, request:HttpRequest, id:int) -> HttpResponse:
+    def post(self, request: HttpRequest, id: int) -> HttpResponse:
         journal = Journal.objects.get(id=id)
 
+        if journal.project.is_shipped():
+            return redirect("fr.projects.detail", project_id=journal.project.id)
         if journal.project.user != request.user:
             return redirect("fr.projects.detail", journal.project.id)
 
@@ -277,7 +298,8 @@ class EditJournal(View):
         journal.content = content
         journal.save()
 
-        log_to_channel(f":haiku: *Journal edited for {journal.project.project_name}!*\n- {journal.reduced_minutes} minutes")
+        log_to_channel(
+            f":haiku: *Journal edited for {journal.project.project_name}!*\n- {journal.reduced_minutes} minutes",
+        )
 
         return self.get(request, journal.id, context={"success": True})
-
