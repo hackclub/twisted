@@ -238,7 +238,9 @@ class PathwayDetailView(AdminView):
             )
             for region, price in regional_prices:
                 _ = ShopItemRegionalPricing.objects.create(
-                    region=region, item=shop_item, price=price
+                    region=region,
+                    item=shop_item,
+                    price=price,
                 )
             messages.success(request, f"Created new shop listing for {item_name}")
             return redirect(request.path_info)

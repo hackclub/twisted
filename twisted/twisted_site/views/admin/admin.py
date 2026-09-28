@@ -27,7 +27,9 @@ class AdminView(View):
     subpage: str | None = None
 
     def get_context_data(
-        self, page: str | None = None, subpage: str | None = None
+        self,
+        page: str | None = None,
+        subpage: str | None = None,
     ) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
         context["page"] = page if page is not None else self.page

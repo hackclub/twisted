@@ -70,7 +70,10 @@ class Profile(models.Model):
     country_cached_until = models.DateTimeField(null=True, default=None)
 
     region = models.ForeignKey(
-        "twisted_site.ShopRegion", on_delete=models.PROTECT, null=True, default=None
+        "twisted_site.ShopRegion",
+        on_delete=models.PROTECT,
+        null=True,
+        default=None,
     )
 
     @override
@@ -386,7 +389,9 @@ class ShopItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     pathway = models.ForeignKey(
-        "twisted_site.Pathway", on_delete=models.PROTECT, related_name="shop"
+        "twisted_site.Pathway",
+        on_delete=models.PROTECT,
+        related_name="shop",
     )
 
     item_name = models.CharField(max_length=500)

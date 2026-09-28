@@ -62,7 +62,7 @@ class ShopView(View):
                 {
                     "item": item,
                     "price": price,
-                }
+                },
             )
         context["shop_items"] = parsed_shop_items
         return render(
