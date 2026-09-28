@@ -1,12 +1,12 @@
-from datetime import timedelta
-
 from django import template
 
 register = template.Library()
 
 
 @register.filter
-def minutes_to_hours_minutes(minutes):
+def minutes_to_hours_minutes(minutes: int | str | None) -> str | int | None:
+    if minutes is None:
+        return None
     try:
         total_minutes = int(minutes)
     except (ValueError, TypeError):
@@ -19,10 +19,4 @@ def minutes_to_hours_minutes(minutes):
         if remaining_minutes == 0:
             return f"{hours}h"
         return f"{hours}h {remaining_minutes}m"
-    return f"{int(minutes)}m"
-
-
-@register.filter
-def rounddelta(delta: timedelta, to=1):
-    delta = timedelta(seconds=round(delta.total_seconds(), to))
-    return delta
+    return f"{total_minutes}m"

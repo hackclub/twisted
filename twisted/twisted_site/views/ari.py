@@ -1,26 +1,33 @@
 import json
+from typing import Any, cast
 
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from ..ari import verify_webhook_signature
-from ..models import Project, ProjectShip
-from ..slack import slack_bot
+from twisted_site.ari import verify_webhook_signature
+from twisted_site.models import Project, as_user
+from twisted_site.slack import send_blocks
 
 
-def _escape_mrkdwn(text):
+def _escape_mrkdwn(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def _quote_block(value):
-    lines = _escape_mrkdwn(value).splitlines() or [""]
+def _quote_block(value: str) -> str:
+    lines = _escape_mrkdwn(value).splitlines()
+    if len(lines) == 0:
+        lines = [""]
+
     return "\n".join(f"> {line}" for line in lines)
 
 
-def _build_ship_update_blocks(project, changes):
-    blocks = [
+def _build_ship_update_blocks(
+    project: Project,
+    changes: list[dict[str, str]],
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
+    blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
             "type": "section",
             "text": {
@@ -44,13 +51,16 @@ def _build_ship_update_blocks(project, changes):
                         f"*New:*\n{_quote_block(change['new_value'])}"
                     ),
                 },
-            }
+            },
         )
 
     return blocks
 
 
-def _build_review_changes_blocks(project, note_to_maker):
+def _build_review_changes_blocks(
+    project: Project,
+    note_to_maker: str,
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
             "type": "section",
@@ -78,8 +88,11 @@ def _build_review_changes_blocks(project, note_to_maker):
     ]
 
 
-def _build_review_approved_blocks(project, note_to_maker):
-    blocks = [
+def _build_review_approved_blocks(
+    project: Project,
+    note_to_maker: str,
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
+    blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
             "type": "section",
             "text": {
@@ -88,7 +101,7 @@ def _build_review_approved_blocks(project, note_to_maker):
             },
         },
     ]
-    if note_to_maker:
+    if note_to_maker != "":
         blocks.append({"type": "divider"})
         blocks.append(
             {
@@ -97,13 +110,16 @@ def _build_review_approved_blocks(project, note_to_maker):
                     "type": "mrkdwn",
                     "text": f"*Note from reviewer:*\n{_quote_block(note_to_maker)}",
                 },
-            }
+            },
         )
     return blocks
 
 
-def _build_review_rejected_blocks(project, note_to_maker):
-    blocks = [
+def _build_review_rejected_blocks(
+    project: Project,
+    note_to_maker: str,
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
+    blocks: list[dict[str, str] | dict[str, str | dict[str, str]]] = [
         {
             "type": "section",
             "text": {
@@ -112,7 +128,7 @@ def _build_review_rejected_blocks(project, note_to_maker):
             },
         },
     ]
-    if note_to_maker:
+    if note_to_maker != "":
         blocks.append({"type": "divider"})
         blocks.append(
             {
@@ -121,7 +137,7 @@ def _build_review_rejected_blocks(project, note_to_maker):
                     "type": "mrkdwn",
                     "text": f"*Note from reviewer:*\n{_quote_block(note_to_maker)}",
                 },
-            }
+            },
         )
     blocks.append({"type": "divider"})
     blocks.append(
@@ -131,12 +147,14 @@ def _build_review_rejected_blocks(project, note_to_maker):
                 "type": "mrkdwn",
                 "text": "Feel free to drop us a message over at #twisted-help if you think this is a mistake!",
             },
-        }
+        },
     )
     return blocks
 
 
-def _build_review_reverted_blocks(project):
+def _build_review_reverted_blocks(
+    project: Project,
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
             "type": "section",
@@ -148,7 +166,9 @@ def _build_review_reverted_blocks(project):
     ]
 
 
-def _build_review_requeued_blocks(project):
+def _build_review_requeued_blocks(
+    project: Project,
+) -> list[dict[str, str] | dict[str, str | dict[str, str]]]:
     return [
         {
             "type": "section",
@@ -163,7 +183,7 @@ def _build_review_requeued_blocks(project):
 # Create your views here.
 @method_decorator(csrf_exempt, name="dispatch")
 class AriView(View):
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         body = request.body
 
         if not verify_webhook_signature(
@@ -174,20 +194,25 @@ class AriView(View):
         ):
             return HttpResponse(status=401)
 
-        data = json.loads(body)
+        try:
+            data = json.loads(body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return HttpResponseBadRequest("Malformed JSON payload")
+        if not isinstance(data, dict):
+            return HttpResponseBadRequest("JSON payload must be an object")
 
-        external_id = data.get("external_id")
-        if not external_id:
+        external_id = cast("str | None", data.get("external_id"))
+        if external_id in (None, ""):
             return HttpResponseBadRequest("Missing external_id")
 
         try:
             project_id = int(external_id.removeprefix("twisted-"))
             project = Project.objects.get(id=project_id)
-        except (ValueError, Project.DoesNotExist):  # ty:ignore[unresolved-attribute]
+        except (ValueError, Project.DoesNotExist):
             return HttpResponseBadRequest("Invalid external_id")
 
-        event = data.get("event")
-        if not event:
+        event = cast("str | None", data.get("event"))
+        if event in (None, ""):
             return HttpResponseBadRequest("Missing event")
 
         if data["event"] == "ship.updated":
@@ -197,11 +222,14 @@ class AriView(View):
             project.screenshot_url = data["ship"]["thumbnail_url"]
             project.repo_url = data["ship"]["repo_url"]
             project.playable_url = data["ship"]["demo_url"]
-            project.hackatime_project_name = data["ship"]["hackatime_projects"][0]
+            project.hackatime_project_names = data["ship"]["hackatime_projects"]
             project.save()
-            slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
-                blocks=_build_ship_update_blocks(project, data["changes"]),
+            _ = send_blocks(
+                channel=as_user(project.user).profile.slack_id,
+                blocks=_build_ship_update_blocks(
+                    project,
+                    cast("list[dict[str, str]]", data["changes"]),
+                ),
                 text=f"Your ship for {project.project_name} has been updated by a reviewer!",
             )
 
@@ -210,16 +238,18 @@ class AriView(View):
         if data["event"] == "review.changes":
             if data["decision"] != "changes":
                 return HttpResponse("Event ignored")
-            note_to_maker = data["review"]["note_to_maker"]
+            note_to_maker = cast("str", data["review"]["note_to_maker"])
 
-            ship: ProjectShip = project.latest_ship()
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
 
-            ship.status = "requested_changes"  # ty:ignore[invalid-assignment]
+            ship.status = "requested_changes"
             ship.note_to_maker = note_to_maker
             ship.save()
 
-            slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+            _ = send_blocks(
+                channel=as_user(project.user).profile.slack_id,
                 blocks=_build_review_changes_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} needs some changes!",
             )
@@ -227,20 +257,24 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.approved":
-            review = data["review"]
-            note_to_maker = review.get("note_to_maker", "")
-            justification = review.get("justification") or {}
+            review = cast("dict[str, Any]", data["review"])
+            note_to_maker = cast("str", review.get("note_to_maker", ""))
+            raw_justification = review.get("justification")
 
-            ship: ProjectShip = project.latest_ship()
-            ship.status = "approved"  # ty:ignore[invalid-assignment]
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
+            ship.status = "approved"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
-            ship.technical_features = justification.get("technical_features", "")
-            ship.deflation_reason = justification.get("deflation_reason", "")
+            if isinstance(raw_justification, dict):
+                ship.technical_features = raw_justification.get("technical_features", "")
+                ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 
-            slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+            _ = send_blocks(
+                channel=as_user(project.user).profile.slack_id,
                 blocks=_build_review_approved_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} was approved!",
             )
@@ -248,20 +282,24 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.rejected":
-            review = data["review"]
-            note_to_maker = review.get("note_to_maker", "")
-            justification = review.get("justification") or {}
+            review = cast("dict[str, Any]", data["review"])
+            note_to_maker = cast("str", review.get("note_to_maker", ""))
+            raw_justification = review.get("justification")
 
-            ship: ProjectShip = project.latest_ship()
-            ship.status = "rejected"  # ty:ignore[invalid-assignment]
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
+            ship.status = "rejected"
             ship.note_to_maker = note_to_maker
             ship.audit_note = review.get("audit_note", "")
-            ship.technical_features = justification.get("technical_features", "")
-            ship.deflation_reason = justification.get("deflation_reason", "")
+            if isinstance(raw_justification, dict):
+                ship.technical_features = raw_justification.get("technical_features", "")
+                ship.deflation_reason = raw_justification.get("deflation_reason", "")
             ship.save()
 
-            slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+            _ = send_blocks(
+                channel=as_user(project.user).profile.slack_id,
                 blocks=_build_review_rejected_blocks(project, note_to_maker),
                 text=f"Your ship for {project.project_name} was rejected.",
             )
@@ -269,12 +307,15 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.reverted":
-            ship: ProjectShip = project.latest_ship()
-            ship.status = "pending"  # ty:ignore[invalid-assignment]
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
+            ship.status = "pending"
             ship.save()
 
-            slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+            _ = send_blocks(
+                channel=as_user(project.user).profile.slack_id,
                 blocks=_build_review_reverted_blocks(project),
                 text=f"The decision on your ship for {project.project_name} was reverted.",
             )
@@ -282,12 +323,15 @@ class AriView(View):
             return HttpResponse("Request processed!")
 
         if data["event"] == "review.requeued":
-            ship: ProjectShip = project.latest_ship()
-            ship.status = "pending"  # ty:ignore[invalid-assignment]
+            ship = project.latest_ship()
+            if ship is None:
+                return HttpResponseBadRequest("Ship not found")
+
+            ship.status = "pending"
             ship.save()
 
-            slack_bot.send_blocks(
-                channel=project.user.profile.slack_id,
+            _ = send_blocks(
+                channel=as_user(project.user).profile.slack_id,
                 blocks=_build_review_requeued_blocks(project),
                 text=f"Your ship for {project.project_name} is back in the review queue.",
             )

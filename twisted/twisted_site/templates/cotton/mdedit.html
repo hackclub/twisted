@@ -1,39 +1,133 @@
 <div class="flex flex-col flex-1 min-h-0 min-w-0 {{ class }} font-vintage">
-
+    <div id="restorebanner"
+         class="hidden shrink-0 items-center justify-between gap-2 bg-warning/30 border-b border-warning px-3 py-2 text-sm">
+        <span>A saved draft was found. Restore it?</span>
+        <div class="flex gap-2 shrink-0">
+            <button type="button"
+                    onclick="restoreSavedDraft()"
+                    class="px-2 py-1 bg-primary text-primary-foreground border border-border hover:bg-primary/80">
+                Restore
+            </button>
+            <button type="button"
+                    onclick="dismissSavedDraft()"
+                    class="px-2 py-1 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                Dismiss
+            </button>
+        </div>
+    </div>
     <div class="shrink-0 flex items-center gap-1 bg-card border-b border-border p-1">
-        <button id="editbutton" type="button" onclick="switchedit()" disabled
-            class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+        <button id="editbutton"
+                type="button"
+                onclick="switchedit()"
+                disabled
+                class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
             Edit
         </button>
-
-        <button id="previewbutton" type="button" onclick="switchpreview()"
-            class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+        <button id="previewbutton"
+                type="button"
+                onclick="switchpreview()"
+                class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
             Preview
         </button>
     </div>
-
     <div class="flex-1 min-h-0 min-w-0 overflow-hidden">
-
         <div id="edittab" class="flex w-full h-full min-h-0">
-            <textarea name="content" id="content"
-                class="block w-full h-full min-h-0 resize-none bg-background text-foreground p-3 font-mono border-0 outline-none"
-                placeholder="Write your journal entry here..." oninput="renderpreview()">{{ content }}</textarea>
+            <textarea name="content"
+                      id="content"
+                      class="block w-full h-full min-h-0 resize-none bg-background text-foreground p-3 font-mono border-0 outline-none"
+                      placeholder="Write your journal entry here. Ctrl+V an image into this textbox to insert it. (supports markdown!)"
+                      oninput="renderpreview()">{{ content }}</textarea>
         </div>
-
         <div id="previewtab" class="hidden w-full h-full min-h-0">
             <div class="w-full h-full overflow-y-auto bg-background p-4">
                 <div id="preview"
-                    class="w-full max-w-full wrap-break-word text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-2 [&_a]:underline [&_a]:text-primary [&_img]:max-w-full">
+                     class="w-full max-w-full wrap-break-word text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-2 [&_a]:underline [&_a]:text-primary [&_img]:max-w-full">
                 </div>
             </div>
         </div>
-
     </div>
 </div>
-
 <script>
     const textbox = document.querySelector("#content");
     const csrfToken = "{{ csrf_token }}";
+
+    const saveId = "{{ save_id }}";
+    const draftStorageKey = saveId ? `mdedit-draft:${saveId}` : null;
+
+    function readSavedDraft() {
+        if (!draftStorageKey) {
+            return null;
+        }
+
+        try {
+            return localStorage.getItem(draftStorageKey);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function saveDraft() {
+        if (!draftStorageKey) {
+            return;
+        }
+
+        try {
+            localStorage.setItem(draftStorageKey, textbox.value);
+        } catch (e) {
+            // localStorage unavailable (private browsing, quota exceeded, etc.)
+        }
+    }
+
+    function clearSavedDraft() {
+        if (!draftStorageKey) {
+            return;
+        }
+
+        try {
+            localStorage.removeItem(draftStorageKey);
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    function restoreSavedDraft() {
+        const saved = readSavedDraft();
+
+        if (saved !== null) {
+            textbox.value = saved;
+            renderpreview();
+        }
+
+        document.getElementById("restorebanner").classList.add("hidden");
+        document.getElementById("restorebanner").classList.remove("flex");
+    }
+
+    function dismissSavedDraft() {
+        document.getElementById("restorebanner").classList.add("hidden");
+        document.getElementById("restorebanner").classList.remove("flex");
+    }
+
+    if (draftStorageKey) {
+        const saved = readSavedDraft();
+
+        if (saved !== null && saved !== textbox.value) {
+            if (textbox.value.trim() === "") {
+                textbox.value = saved;
+                renderpreview();
+            } else {
+                document.getElementById("restorebanner").classList.remove("hidden");
+                document.getElementById("restorebanner").classList.add("flex");
+            }
+        }
+
+        setInterval(saveDraft, 1_000);
+
+        const form = textbox.closest("form");
+
+        if (form) {
+            form.addEventListener("submit", clearSavedDraft);
+        }
+    }
 
     function generateRandomString(length) {
         const chars =
@@ -96,7 +190,7 @@
                 `![Uploading... ${generateRandomString(5)}]()`;
 
 
-            textbox.value += id + "\n";
+            textbox.value += `${id}\n`;
 
             const formData = new FormData();
 
@@ -109,9 +203,9 @@
             formData.append("ref", "journals");
 
             fetch("{% url 'misc.upload_file' %}", {
-                method: "POST",
-                body: formData
-            })
+                    method: "POST",
+                    body: formData
+                })
                 .then(response => response.json())
                 .then(result => {
 

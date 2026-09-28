@@ -1,0 +1,64 @@
+{% load static time_filters humanize humanizelib maths mathfilters %}
+<div class="bg-background border border-primary p-3 sm:p-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-xl sm:text-2xl font-bold truncate">
+                {{ pathway_info.pathway.name|default:"none! please dm @kavyansh." }}
+            </h2>
+            <div class="text-sm text-muted-foreground mt-1">
+                {% if pathway_info.pathway.in_progress or pathway_info.pathway.ended %}
+                Started
+                {% endif %}
+                <span class="underline decoration-dotted"
+                        title="{{ pathway_info.pathway.start }}">
+                    {{ pathway_info.pathway.start|naturaltime }}
+                </span>
+                <span class="mx-1">•</span>
+                Ends
+                <span class="underline decoration-dotted"
+                        title="{{ pathway_info.pathway.end }}">
+                    {{ pathway_info.pathway.end|naturaltime }}
+                </span>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <div class="grow bg-secondary border border-border px-3 py-2 text-center shrink-0">
+                <button onclick="createWindow('shop', this.dataset.url)" data-url="{% url 'fr.shop' %}?pathway={{ pathway_info.pathway.id }}" type="button" class="w-full h-full">
+                    <div class="my-auto">
+                        <div class="text-lg sm:text-xl font-bold">view shop</div>
+                        {% if pathway_info.time_spent.unlocked %}
+                        <div class="text-xs text-muted-foreground">{{ pathway_info.time_spent.golden_twists }} golden twists</div>
+                        {% endif %}
+                    </div>
+                </button>
+            </div>
+            {% if not pathway_info.pathway.didnt_start %}
+            <div class="grow">
+                {% if pathway_info.time_spent.unlocked %}
+                <div class="bg-success/40 border border-border px-3 py-2 text-center shrink-0 h-full">
+                    <div class="text-lg sm:text-xl font-bold">unlocked</div>
+                    <div class="text-xs text-muted-foreground">spent {{ pathway_info.time_spent.minutes|minutes_to_hours_minutes }}</div>
+                </div>
+                {% elif unspent_mins >= pathway_info.pathway.min_mins %}
+                <div class="bg-success/60 border border-border px-3 py-2 text-center shrink-0">
+                    <form method="post" action="{% url 'fr.pathways.unlock' pathway_info.pathway.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full cursor-pointer">
+                            <div class="text-lg sm:text-xl font-bold">unlock</div>
+                            <div class="text-xs text-muted-foreground">spends {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="bg-secondary border border-border px-3 py-2 text-center shrink-0">
+                    <button type="button" class="w-full cursor-not-allowed!">
+                        <div class="text-lg sm:text-xl font-bold">cant unlock</div>
+                        <div class="text-xs text-muted-foreground">You need {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

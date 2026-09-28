@@ -1,18 +1,21 @@
+from datetime import timedelta
+from typing import Any, Protocol, cast, override
+
 from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import TextField
+from django.db.models import QuerySet, Sum, TextField
 from django.utils import timezone
+from requests import RequestException
 
-from . import hackatime
+from . import hackatime, hca
 
 User = get_user_model()
 
-JOURNAL_TYPES = {
-    "hackatime": "Hackatime",
-    "lookout": "Lookout",
-    "untracked": "Untracked",
-}
+#: Template context dictionaries mix value types by design (mirroring
+#: `django.shortcuts.render`), so they are typed loosely.
+TemplateContext = dict[str, Any]  # pyrefly: ignore[explicit-any]
 
 
 class UploadedFile(models.Model):
@@ -22,8 +25,11 @@ class UploadedFile(models.Model):
     uploaded_thru = models.CharField(max_length=500)
     filesize = models.IntegerField()
 
-    def __str__(self):
-        return f"{self.cdn_response['filename']} uploaded by {self.uploaded_by.profile.slack_username}"
+    @override
+    def __str__(self) -> str:
+        cdn_response = cast("dict[str, str]", self.cdn_response)
+        filename = cdn_response.get("name", "upload")
+        return f"{filename} uploaded by {as_user(self.uploaded_by).profile.slack_username}"
 
 
 # Create your models here.
@@ -40,8 +46,14 @@ class Profile(models.Model):
 
     hca_access_token = models.CharField(max_length=2000, blank=True, default="")
 
-    is_staff = models.BooleanField(default=False)
     is_allowed = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    staff_permissions = models.OneToOneField(
+        "twisted_site.ProfileStaffPermissions",
+        on_delete=models.PROTECT,
+        default=None,
+        null=True,
+    )
 
     twists = models.IntegerField(default=0)
 
@@ -54,33 +66,83 @@ class Profile(models.Model):
     )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
-    def shipped_projects(self):
-        shipped_projects = []
-        for project in self.user.projects.all():
-            if project.is_shipped():
-                shipped_projects.append(project)
-        return shipped_projects
+    country = models.CharField(max_length=20, default="", blank=True)
+    country_cached_until = models.DateTimeField(null=True, default=None)
 
-    def time_logged(self):
+    region = models.ForeignKey("twisted_site.ShopRegion", on_delete=models.PROTECT, null=True, default=None)
+
+    @override
+    def __str__(self) -> str:
+        return as_user(self.user).username
+
+    def get_country(self) -> str:
+        if self.country_cached_until is not None and self.country_cached_until > timezone.now():
+            return self.country  # ty: ignore[unsound-return-statement]
+        try:
+            user_data = hca.get_user_data(self.hca_access_token)
+            country = (
+                user_data.primary_address.country
+                if user_data.primary_address is not None
+                else "Unknown"
+            )
+        except RequestException:
+            country = "Unknown"
+
+        self.country = country
+        self.country_cached_until = timezone.now() + timedelta(hours=3)
+        self.save()
+
+        return country
+
+    def shipped_projects(self) -> list["Project"]:
+        return [
+            project
+            for project in as_user(self.user).projects.all()
+            if project.is_shipped()
+        ]
+
+    def time_logged(self) -> int:
         time_logged = 0
-        for project in self.user.projects.all():
+        for project in as_user(self.user).projects.all():
             time_logged += project.time_logged()
         return time_logged
 
-    def time_shipped(self):
+    def time_shipped(self) -> int:
         time_shipped = 0
         for project in self.shipped_projects():
             time_shipped += project.time_logged()
         return time_shipped
 
-    def __str__(self):
-        return self.user.username  # ty:ignore[unresolved-attribute]
+
+class ProfileStaffPermissions(models.Model):
+    superuser = models.BooleanField(default=False)
+
+    view_users = models.BooleanField(default=False)
+
+    view_pathways = models.BooleanField(default=False)
+    manage_pathways = models.BooleanField(default=False)
+
+    manage_fulfillments = models.BooleanField(default=False)
+
+    manage_shop = models.BooleanField(default=False)
+
+    view_review = models.BooleanField(default=False)
+    manage_review = models.BooleanField(default=False)
+
+    manage_announcements = models.BooleanField(default=False)
+
+    view_auditlogs = models.BooleanField(default=False)
+
+    @override
+    def __str__(self) -> str:
+        return f"Staff permissions (superuser={self.superuser})"
 
 
 PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}
 
 
 class Project(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="projects")
 
     project_name = models.CharField(max_length=50)
@@ -91,75 +153,78 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    hackatime_project_name = models.CharField(max_length=200, blank=True, default="")
+    hackatime_project_names = models.JSONField(default=list, blank=True)
     repo_url = models.CharField(max_length=200, blank=True, default="")
     playable_url = models.CharField(max_length=200, blank=True, default="")
     screenshot_url = models.CharField(max_length=500, blank=True, default="")
 
-    def __str__(self):
-        return self.project_name
+    @override
+    def __str__(self) -> str:
+        return cast("str", self.project_name)  # pyrefly: ignore[redundant-cast]
 
-    def get_hackatime_project(self) -> hackatime.HackatimeProject | None:
-        if not self.hackatime_project_name:
-            return
-        projects = hackatime.projects(self.user.profile.hackatime_access_token)
-        for project in projects:
-            if project.name == self.hackatime_project_name:
-                return project
-        return
+    def get_hackatime_projects(self) -> list[hackatime.HackatimeProject]:
+        names = cast("list[str]", self.hackatime_project_names)
+        if len(names) == 0:
+            return []
+        projects = hackatime.projects(as_user(self.user).profile.hackatime_access_token)
+        return [project for project in projects if project.name in names]
 
-    def time_logged(self, include_all_minutes=False):
+    def time_logged(self, *, include_all_minutes: bool = False) -> int:
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += journal.minutes_worked
+                minutes += cast("int", journal.minutes_worked)
             else:
-                minutes += journal.reduced_minutes
+                minutes += cast("int", journal.reduced_minutes)
         return minutes
 
-    def hackatime_logged(self, include_all_minutes=False):
+    def hackatime_logged(self, *, include_all_minutes: bool = False) -> int:
         minutes = 0
-        for journal in self.journals.all():  # ty:ignore[unresolved-attribute]
+        for journal in self.journals.all():  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
             if journal.type != "hackatime":
                 continue
             if include_all_minutes:
                 # django-orm-lens-disable-next-line DOL007
-                minutes += journal.minutes_worked
+                minutes += cast("int", journal.minutes_worked)
             else:
-                minutes += journal.reduced_minutes
+                minutes += cast("int", journal.reduced_minutes)
         return minutes
 
-    def time_spent(self):
-        project = self.get_hackatime_project()
-        if project is None:
-            return 0
-        return project.total_seconds // 60
+    def time_spent(self) -> int:
+        total_seconds = sum(project.total_seconds for project in self.get_hackatime_projects())
+        return total_seconds // 60
 
-    def hackatime_time_unjournaled(self):
+    def hackatime_time_unjournaled(self) -> int:
         return self.time_spent() - self.hackatime_logged(include_all_minutes=True)
 
-    def latest_ship(self):
-        ship = self.ships.order_by("-created_at").first()
-        return ship
+    def latest_ship(self) -> "ProjectShip | None":
+        ship = self.ships.order_by("-created_at").first()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        return cast("ProjectShip | None", ship)
 
-    def is_shipped(self):
+    def is_shipped(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status != "requested_changes"
+        return cast("bool", latest_ship.status != "requested_changes")  # pyrefly: ignore[redundant-cast]
 
-    def is_approved(self):
+    def is_approved(self) -> bool:
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return latest_ship.status == "approved"
+        return cast("bool", latest_ship.status == "approved")  # pyrefly: ignore[redundant-cast]
+
+
+JOURNAL_TYPES = {
+    "hackatime": "Hackatime",
+    "lookout": "Lookout",
+    "untracked": "Untracked",
+}
 
 
 class Journal(models.Model):
-    project = models.ForeignKey(
-        Project, on_delete=models.PROTECT, related_name="journals"
-    )
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
+    project = models.ForeignKey(Project, on_delete=models.PROTECT, related_name="journals")
     type = models.CharField(max_length=100, choices=JOURNAL_TYPES)
 
     content = TextField()
@@ -170,7 +235,8 @@ class Journal(models.Model):
     minutes_worked = models.IntegerField(validators=[MinValueValidator(0)])
     reduced_minutes = models.IntegerField(validators=[MinValueValidator(0)])
 
-    def __str__(self):
+    @override
+    def __str__(self) -> str:
         return f"{self.reduced_minutes} mins on {self.project}"
 
 
@@ -188,9 +254,7 @@ class ProjectShip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    status = models.CharField(
-        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
-    )
+    status = models.CharField(default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200)
 
     note_to_maker = models.TextField(blank=True, default="")
     audit_note = models.TextField(blank=True, default="")
@@ -198,81 +262,51 @@ class ProjectShip(models.Model):
     deflation_reason = models.CharField(blank=True, default="", max_length=255)
 
     final_status = models.CharField(
-        default="pending", choices=PROJECT_SHIP_STATUSES, max_length=200
+        default="pending",
+        choices=PROJECT_SHIP_STATUSES,
+        max_length=200,
     )
     final_note_to_maker = models.TextField(blank=True, default="")
     final_audit_note = models.TextField(blank=True, default="")
 
-    def __str__(self):
-        return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute]
+    @override
+    def __str__(self) -> str:
+        return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
 
 class Pathway(models.Model):
-    start = models.DateTimeField()
-    end = models.DateTimeField()
-
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     name = models.CharField(max_length=200)
     min_mins = models.IntegerField(default=300)
+    start = models.DateTimeField()
+    end = models.DateTimeField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def ended(self):
+    @override
+    def __str__(self) -> str:
+        return cast("str", self.name)  # pyrefly: ignore[redundant-cast]
+
+    def get_unspent_mins(self, user: AbstractBaseUser) -> float:
+        total_spent = as_user(user).profile.time_logged()
+        spent_on_pathways = (
+            PathwayTimeSpent.objects.filter(user=user).aggregate(total=Sum("minutes"))["total"] or 0
+        )
+        return total_spent - spent_on_pathways
+
+    def ended(self) -> bool:
         return timezone.now() > self.end
 
-    def didnt_start(self):
-        return self.start > timezone.now()
+    def didnt_start(self) -> bool:
+        return self.start > timezone.now()  # ty: ignore[unsound-return-statement]
 
-    def in_progress(self):
+    def in_progress(self) -> bool:
         return not self.ended() and not self.didnt_start()
 
-    def status(self):
-        if self.ended():
-            return "ended"
-        if self.didnt_start():
-            return "awaiting"
-        if self.in_progress():
-            return "in progress"
-
-    def mins_spent(self, user: User):
-        pathways = Pathway.objects.order_by("start").values(
-            "id", "start", "end", "min_mins"
-        )
-        if not pathways:
-            return 0
-
-        pathway_totals = {p["id"]: 0 for p in pathways}
-
-        journals = (
-            Journal.objects.filter(project__user=user)
-            .order_by("created_at")
-            .values_list("created_at", "reduced_minutes")
-        )
-
-        for j_created, j_mins in journals:
-            mins_remaining = j_mins
-            for pathway in pathways:
-                if mins_remaining <= 0:
-                    break
-
-                # Check if journal falls within the pathway window
-                if pathway["start"] > j_created or pathway["end"] < j_created:
-                    continue
-
-                p_id = pathway["id"]
-                mins_completed = pathway_totals.get(p_id, 0)
-                mins_required = pathway["min_mins"]
-
-                if mins_completed >= mins_required:
-                    continue
-
-                mins_needed = mins_required - mins_completed
-                mins_donated = min(mins_remaining, mins_needed)
-
-                mins_remaining -= mins_donated
-                pathway_totals[p_id] = mins_completed + mins_donated
-
-        return pathway_totals[self.id]
+    def mins_spent(self, user: AbstractBaseUser) -> int:
+        time_spent = PathwayTimeSpent.objects.filter(pathway=self, user=user).first()
+        return time_spent.minutes if time_spent is not None else 0  # ty: ignore[unsound-return-statement]
 
     def mins_spent_per_participant(self) -> dict[int, int]:
         """
@@ -280,70 +314,91 @@ class Pathway(models.Model):
 
         Returns:
             dict: {user_id: mins_spent}
+
         """
-        # Fetch all pathways to accurately model the sequential time donation
-        pathways = list(
-            Pathway.objects.order_by("start").values("id", "start", "end", "min_mins")
-        )
-        if not pathways:
-            return {}
-
-        # Fetch journals from all users that fit within this pathway's active time frame
-        journals = (
-            Journal.objects.filter(
-                created_at__gte=self.start,
-                created_at__lte=self.end,
-                reduced_minutes__gt=0,
-            )
-            .order_by("project__user_id", "created_at")
-            .values_list("project__user_id", "created_at", "reduced_minutes")
+        return dict(
+            PathwayTimeSpent.objects.filter(pathway=self).values_list("user_id", "minutes"),
         )
 
-        user_pathway_totals = {}
-
-        for user_id, j_created, j_mins in journals:
-            if user_id not in user_pathway_totals:
-                user_pathway_totals[user_id] = {p["id"]: 0 for p in pathways}
-
-            pathway_totals = user_pathway_totals[user_id]
-            mins_remaining = j_mins
-
-            for pathway in pathways:
-                if mins_remaining <= 0:
-                    break
-
-                if pathway["start"] > j_created or pathway["end"] < j_created:
-                    continue
-
-                p_id = pathway["id"]
-                mins_completed = pathway_totals[p_id]
-                mins_required = pathway["min_mins"]
-
-                if mins_completed >= mins_required:
-                    continue
-
-                mins_needed = mins_required - mins_completed
-                mins_donated = min(mins_remaining, mins_needed)
-
-                mins_remaining -= mins_donated
-                pathway_totals[p_id] += mins_donated
-
-        # Extract only this pathway's result for each participant
-        return {
-            user_id: totals.get(self.id, 0)
-            for user_id, totals in user_pathway_totals.items()
-        }
-
-    def qualified_participants(self):
+    def qualified_participants(self) -> list[AbstractBaseUser]:
         per_part = self.mins_spent_per_participant()
-        qualified = []
+        qualified: list[AbstractBaseUser] = []
         for userid, mins in per_part.items():
             if mins >= self.min_mins:
                 qualified.append(User.objects.get(id=userid))
         return qualified
 
-    def __str__(self):
-        return self.name
+
+class PathwayTimeSpent(models.Model):
+    pathway_id: int  # pyright: ignore[reportUninitializedInstanceVariable]
+    pathway = models.ForeignKey("twisted_site.Pathway", on_delete=models.CASCADE)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+
+    unlocked = models.BooleanField(default=False)
+    minutes = models.IntegerField(default=0)
+    golden_twists = models.IntegerField(default=0)
+
+    class Meta:  # meta :loll:
+        """Meta class for the PathwayTimeSpent model."""
+
+        unique_together = ("pathway", "user")
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.user} - {self.pathway}"
+
+
+class ShopRegion(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=200)
+
+    @override
+    def __str__(self) -> str:
+        return self.name  # ty: ignore[unsound-return-statement]
+
+
+class ShopItemRegionalPricing(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    region = models.ForeignKey(
+        "twisted_site.ShopRegion",
+        related_name="prices",
+        on_delete=models.PROTECT,
+    )
+    item = models.ForeignKey(
+        "twisted_site.ShopItem",
+        related_name="prices",
+        on_delete=models.PROTECT,
+    )
+
+    price = models.IntegerField()
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.item} in {self.region}: {self.price}"
+
+
+class ShopItem(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    pathway = models.ForeignKey("twisted_site.Pathway", on_delete=models.PROTECT, related_name="shop")
+
+    item_name = models.CharField(max_length=500)
+    item_description = models.TextField()
+
+    stock = models.IntegerField(default=999)
+
+    image_url = models.CharField(max_length=500, blank=True, default="")
+
+    @override
+    def __str__(self) -> str:
+        return self.item_name  # ty: ignore[unsound-return-statement]
 
 
 class AuditLog(models.Model):
@@ -355,5 +410,29 @@ class AuditLog(models.Model):
 
     additional_context = models.JSONField(null=True, default=None)
 
-    def __str__(self):
-        return f"Audit log for {self.user.profile.slack_username}. PII: {self.pii}"
+    @override
+    def __str__(self) -> str:
+        return f"Audit log for {as_user(self.user).profile.slack_username}. PII: {self.pii}"
+
+
+class _ProjectsManager(Protocol):
+    def all(self) -> QuerySet[Project]: ...
+
+
+class UserWithProfile(Protocol):
+    """
+    The built-in user model plus the relations this project adds to it.
+
+    Reverse relations (and concrete fields like `username` on `get_user_model()`)
+    cannot be resolved by pyrefly/ty/pyright without the django-stubs mypy plugin,
+    so access goes through this protocol instead of per-tool ignore comments.
+    """
+
+    profile: Profile
+    projects: _ProjectsManager
+    username: str
+    email: str
+
+
+def as_user(user: object) -> UserWithProfile:
+    return cast("UserWithProfile", user)

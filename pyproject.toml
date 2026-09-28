@@ -13,6 +13,7 @@ dependencies = [
     "django-tailwind[cookiecutter,honcho,reload]>=4.5.0",
     "gunicorn>=26.0.0",
     "psycopg[binary]>=3.3.4",
+    "pillow>=11.3.0",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
     "slack-bolt>=1.30.0",
@@ -20,14 +21,52 @@ dependencies = [
     "urllib3>=2.7.0",
     "whitenoise>=6.12.0",
     "boto3>=1.43.66",
-    "django-cotton-ui>=0.3.2",
     "django-google-charts>=0.1.1",
     "django-qsstats-magic>=1.1.0",
     "django-htmx>=1.29.0",
     "django-extensions>=4.1",
     "django-mathfilters>=1.0.0",
     "django-humanize>=0.1.2",
+    "django-cotton-ui>=0.3.3",
 ]
 
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+extend-select = ["ALL"]
+ignore = ["A002", "C901", "CPY001", "D100", "D101", "D102", "D103", "D104", "D107", "D203", "D212", "D401", "E501", "PLC0415", "PLR0911", "PLR0912", "PLR0915", "S102", "S105"]
+
 [tool.ruff.lint.per-file-ignores]
-"*/migrations/*.py" = ["RUF012"]
+"*/migrations/*.py" = ["RUF012", "ALL"]
+"*/tests/*.py" = ["PT009", "PT027", "S106"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+executionEnvironments = [{ root = "twisted" }]
+
+[tool.pyrefly]
+infer-with-first-use = false
+search-path = ["twisted"]
+# Migrations are generated and excluded from ruff too (see per-file-ignores above).
+project-excludes = ["**/migrations/**"]
+
+[tool.coverage.run]
+branch = true
+source = ["twisted"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "twisted/manage.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[dependency-groups]
+dev = [
+    "coverage[toml]>=7.9.0",
+    "django-stubs>=6.1.1",
+]

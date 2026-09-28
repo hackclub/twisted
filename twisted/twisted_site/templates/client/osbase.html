@@ -1,38 +1,84 @@
 {% load static tailwind_tags static %}
 <!DOCTYPE html>
-<html style="background: #1E072F;" class="os w-full h-full">
+<html lang="en" class="os w-full h-full bg-background">
+    <head>
+        {% tailwind_css %}
+        <link rel="icon" href="{% static 'favicon.png' %}">
+        <title>Twisted</title>
+        <!-- Primary Meta Tags -->
+        <meta name="title" content="Twisted" />
+        <meta name="description" content="Join a Twisted YSWS where you build cool projects, complete challenges, and work your way through a roadmap to earn a PC." />
 
-<head>
-    {% tailwind_css %}
-    <link rel="icon" href="{% static 'favicon.png' %}" />
-    <link rel="stylesheet" href="/twisted/tailwindcsstheme/static/css/dist/styles.css">
-    <title>Twisted</title>
-    {% block css %} {% endblock css %}
-    {% block js %}{% endblock js %}
-    <script>
-        function createWindow(title, src) {
-            window.parent.postMessage({
-                'type': 'internal',
-                'action': 'open',
-                'title': title,
-                'src': src
-            }, '*')
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-    <script src="
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://metatags.io/" />
+        <meta property="og:title" content="Twisted" />
+        <meta property="og:description" content="Join a Twisted YSWS where you build cool projects, complete challenges, and work your way through a roadmap to earn a PC." />
+        <meta property="og:image" content="{% static 'images/twisted_logo_big.png' %}" />
+
+        <!-- X (Twitter) -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://metatags.io/" />
+        <meta property="twitter:title" content="Twisted" />
+        <meta property="twitter:description" content="Join a Twisted YSWS where you build cool projects, complete challenges, and work your way through a roadmap to earn a PC." />
+        <meta property="twitter:image" content="{% static 'images/twisted_logo_big.png' %}" />
+
+        {% block css %}
+        {% endblock css %}
+        {% block js %}
+        {% endblock js %}
+        {% block extra_stuff %}
+        {% endblock extra_stuff %}
+        <script>
+            function createWindow(title, src) {
+                window.parent.postMessage({
+                    'type': 'internal',
+                    'action': 'open',
+                    'title': title,
+                    'src': src
+                }, '*')
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+        <script src="
         https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js
         "></script>
+        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js" 
+        integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
+        crossorigin="anonymous"></script>
+    </head>
+    <body class="font-vintage h-full">{% block body %} meow :3 {% endblock body %}</body>
+    <script type="module">
+        // Timezone settings
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
+        await cookieStore.set('django_timezone', timezone, { path: '/' });
+    </script>
+    <script>
+        // MoveBefore polyfill for Safari (suggested by @Luke / U0BFDHWUSPM)
+        (function () {
+            // 1. Check if the native method is already supported
+            if (typeof Element.prototype.moveBefore === 'function') return;
 
-</head>
+            // 2. Define the fallback function matching the moveBefore signature
+            const moveBeforeFallback = function (nodeToMove, referenceNode) {
+                if (!nodeToMove) {
+                throw new TypeError("Failed to execute 'moveBefore': 1 argument required, but only 0 present.");
+                }
+                // Element.insertBefore(node, null) behaves exactly like appendChild
+                return this.insertBefore(nodeToMove, referenceNode);
+            };
 
-<body class="font-vintage h-full">
-    {% block body %} meow :3 {% endblock body %}
-</body>
-<script>
-    // Timezone settings
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // e.g. "America/New_York"
-    document.cookie = "django_timezone=" + timezone;
-</script>
+            // 3. Apply the fallback across all valid ParentNode prototypes
+            if (typeof Element !== 'undefined') {
+                Element.prototype.moveBefore = moveBeforeFallback;
+            }
+            if (typeof Document !== 'undefined') {
+                Document.prototype.moveBefore = moveBeforeFallback;
+            }
+            if (typeof DocumentFragment !== 'undefined') {
+                DocumentFragment.prototype.moveBefore = moveBeforeFallback;
+            }
+        })();
 
+    </script>
 </html>

@@ -11,8 +11,8 @@ from .views.client.auth import (
 from .views.image_upload import upload_file
 
 urlpatterns = [
-    path("", view=client.HomepageView.as_view(), name="homepage"),
-    path("faqs/", view=client.FaqsView.as_view(), name="faqs"),
+    path("", client.HomepageView.as_view(), name="homepage"),
+    path("faqs/", client.FaqsView.as_view(), name="faqs"),
     path("api/upload_image/", upload_file, name="misc.upload_file"),
     path("api/ari/", AriView.as_view(), name="ari"),
     path("auth/login/", LoginView.as_view(), name="login"),
@@ -20,81 +20,91 @@ urlpatterns = [
     path(
         "oauth/hackatime_callback/",
         HackatimeCallbackView.as_view(),
-        name="auth_callback",
+        name="hackatime_callback",
     ),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("dashboard/", client.DashboardView.as_view(), name="dashboard"),
-    path(
-        "dashboard/frame/projects/", client.ListProjects.as_view(), name="fr.projects"
-    ),
+    path("dashboard/frame/projects/", client.ListProjects.as_view(), name="fr.projects"),
     path(
         "dashboard/frame/projects/create/",
         client.CreateProject.as_view(),
         name="fr.projects.create",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/",
+        "dashboard/frame/projects/<int:project_id>/",
         client.ProjectDetail.as_view(),
         name="fr.projects.detail",
     ),
     path(
-        "dashboard/frame/projects/ship/<int:id>/",
+        "dashboard/frame/projects/ship/<int:project_id>/",
         client.SubmitProject.as_view(),
         name="fr.projects.ship",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/settings/",
+        "dashboard/frame/projects/<int:project_id>/settings/",
         client.ProjectSettings.as_view(),
         name="fr.projects.settings",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/journals/new/hackatime/",
+        "dashboard/frame/projects/<int:project_id>/journals/new/hackatime/",
         client.NewProjectHackatimeJournal.as_view(),
         name="fr.projects.journals.new.hackatime",
     ),
     path(
-        "dashboard/frame/projects/<int:id>/journals/new/untracked/",
+        "dashboard/frame/projects/<int:project_id>/journals/new/untracked/",
         client.NewProjectUntrackedJournal.as_view(),
         name="fr.projects.journals.new.untracked",
     ),
     path(
-        "dashboard/frame/journals/delete/<int:id>/",
+        "dashboard/frame/journals/delete/<int:journal_id>/",
         client.DeleteJournal.as_view(),
         name="fr.projects.journals.delete",
     ),
     path(
-        "dashboard/frame/pathways/", client.PathwaysView.as_view(), name="fr.pathways"
+        "dashboard/frame/journals/edit/<int:id>/",
+        client.EditJournal.as_view(),
+        name="fr.projects.journals.edit",
+    ),
+    path("dashboard/frame/pathways/", client.PathwaysView.as_view(), name="fr.pathways"),
+    path(
+        "dashboard/frame/pathways/<int:pathway_id>/unlock/",
+        client.UnlockPathway.as_view(),
+        name="fr.pathways.unlock",
     ),
     path(
         "dashboard/frame/referrals/",
         client.ReferralsView.as_view(),
         name="fr.referrals",
     ),
-    path(
-        "dashboard/frame/discover/", client.DiscoverView.as_view(), name="fr.discover"
-    ),
+    path("dashboard/frame/discover/", client.DiscoverView.as_view(), name="fr.discover"),
+    path("dashboard/frame/shop/", client.ShopView.as_view(), name="fr.shop"),
+
     path("admin/", admin.DashboardView.as_view(), name="admin.dash"),
     path("admin/users/", admin.UsersView.as_view(), name="admin.users"),
     path(
-        "admin/users/<int:id>/",
+        "admin/users/<int:user_id>/",
         admin.UserDetailView.as_view(),
         name="admin.users.detail",
     ),
     path("admin/pathways/", admin.PathwayListView.as_view(), name="admin.pathways"),
     path(
-        "admin/pathways/<int:id>",
+        "admin/pathways/<int:pathway_id>/",
         admin.PathwayDetailView.as_view(),
         name="admin.pathways.detail",
+    ),
+    path(
+        "admin/pathways/_shopitems/<int:listing_id>/",
+        admin.PathwayShopItemDetailView.as_view(),
+        name="admin.pathways.shopitems",
     ),
     path(
         "admin/pathways/new/",
         admin.PathwayCreateView.as_view(),
         name="admin.pathways.create",
     ),
-    path(
-        "admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"
-    ),
+    path("admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"),
     path("admin/shop/", admin.ShopView.as_view(), name="admin.shop"),
+    path("admin/shop/regions/", admin.ShopRegionsView.as_view(), name="admin.shop.regions"),
     path("admin/review/", admin.ReviewView.as_view(), name="admin.review"),
     path(
         "admin/announcements/",

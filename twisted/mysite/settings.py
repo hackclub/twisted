@@ -15,8 +15,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-if not os.environ.get("ALLOWED_HOSTS"):
-    load_dotenv()
+if os.environ.get("ALLOWED_HOSTS") in (None, ""):
+    _ = load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,20 +47,18 @@ SECURE_HSTS_PRELOAD = not DEBUG
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 allowed_hosts_raw = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost")
-ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_raw.split(",") if host.strip()]
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_raw.split(",") if host.strip() != ""]
 
 
-csrf_origins_raw = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000"
-)
+csrf_origins_raw = os.getenv("CSRF_TRUSTED_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000")
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() for origin in csrf_origins_raw.split(",") if origin.strip()
+    origin.strip() for origin in csrf_origins_raw.split(",") if origin.strip() != ""
 ]
 
 # Application definition
 TAILWIND_APP_NAME = "tailwindcsstheme"
 
-INSTALLED_APPS = [
+INSTALLED_APPS: list[str] = [
     # 'django.contrib.admin',
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -68,6 +66,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django.contrib.postgres",
     # Your apps
     "common",
     "twisted_site",
@@ -79,14 +78,15 @@ INSTALLED_APPS = [
     "django_htmx",
     "django_extensions",
     "mathfilters",
+    # Provides naturaldelta/naturalday extras beyond django.contrib.humanize
     "django_humanize",
 ]
 
 if DEBUG:
     # Add django_browser_reload only in DEBUG mode
-    INSTALLED_APPS += ["django_browser_reload"]
+    INSTALLED_APPS.append("django_browser_reload")
 
-MIDDLEWARE = [
+MIDDLEWARE: list[str] = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -101,16 +101,14 @@ MIDDLEWARE = [
 
 if DEBUG:
     # Add django_browser_reload middleware only in DEBUG mode
-    MIDDLEWARE += [
-        "django_browser_reload.middleware.BrowserReloadMiddleware",
-    ]
+    MIDDLEWARE.append("django_browser_reload.middleware.BrowserReloadMiddleware")
 
 ROOT_URLCONF = "mysite.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [],  # pyrefly: ignore[implicit-any-empty-container]
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -136,7 +134,7 @@ DATABASES = {
         "PASSWORD": os.environ["POSTGRES_PASSWORD"],
         "HOST": os.environ["POSTGRES_HOST"],
         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-    }
+    },
 }
 
 
@@ -171,17 +169,27 @@ USE_L10N = True
 
 USE_TZ = True
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 CSRF_COOKIE_HTTPONLY = False
 NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm")
 
 # Django Messages Framework
-MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
+MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 
 
 # Logging
@@ -199,10 +207,15 @@ LOGGING = {
     },
 }
 
-# Ari (Review)
+# Ari review integration
 # https://ari.hackclub.com/docs/webhooks
 ARI_INGEST_ENDPOINT = os.environ.get("ARI_INGEST_ENDPOINT")
 ARI_SIGNING_SECRET = os.environ.get("ARI_SIGNING_SECRET")
 # Separate from ARI_SIGNING_SECRET: signs deliveries Ari sends to us (Settings -> Webhooks),
 # not requests we send to Ari.
 ARI_WEBHOOK_SECRET = os.environ.get("ARI_WEBHOOK_SECRET")
+
+
+# Slack
+SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
+SLACK_LOG_CHANNEL = os.environ.get("SLACK_LOG_CHANNEL")

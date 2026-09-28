@@ -1,0 +1,88 @@
+<c-base>
+    <div>
+        <c-ui.breadcrumbs>
+            <c-ui.breadcrumbs.item href="{% url 'admin.dash' %}">Admin</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item href="{% url 'admin.shop' %}">Shop</c-ui.breadcrumbs.item>
+            <c-ui.breadcrumbs.item :current="True">
+                Regions
+            </c-ui.breadcrumbs.item>
+        </c-ui.breadcrumbs>
+        <h1 class="text-2xl font-bold mt-2">Shop Regions</h1>
+
+        <c-ui.card class="mt-4">
+            <h2 class="text-lg font-bold">New region</h2>
+            <form method="post" class="mt-2 flex gap-2 items-end">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create">
+                <div class="flex-1">
+                    <c-ui.input label="Name" name="name" placeholder="United States" required="True" />
+                </div>
+                <c-ui.button type="submit" variant="primary">
+                    Create region
+                </c-ui.button>
+            </form>
+        </c-ui.card>
+
+        <div class="mt-4">
+            {% if regions %}
+                <c-ui.card class="p-0">
+                    <c-ui.table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for region in regions %}
+                                <tr>
+                                    <td>
+                                        <form method="post" class="flex gap-2 items-center">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="update">
+                                            <input type="hidden" name="region_id" value="{{ region.id }}">
+                                            <c-ui.input name="name" value="{{ region.name }}" required="True" />
+                                            <c-ui.button type="submit">
+                                                Save
+                                            </c-ui.button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <c-admin.dialog title="Delete region?">
+                                            <c-slot name="trigger">
+                                                <c-ui.button variant="danger">
+                                                    Delete
+                                                </c-ui.button>
+                                            </c-slot>
+                                            <div class="w-full">
+                                                <p>
+                                                    Are you sure you want to delete "{{ region.name }}"? This cannot
+                                                    be undone.
+                                                </p>
+                                                <div class="mt-4 flex justify-end">
+                                                    <form method="post">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="delete">
+                                                        <input type="hidden" name="region_id" value="{{ region.id }}">
+                                                        <c-ui.button type="submit" variant="danger">
+                                                            Delete region
+                                                        </c-ui.button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </c-admin.dialog>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </c-ui.table>
+                </c-ui.card>
+            {% else %}
+                <c-ui.card>
+                    <h1 class="text-lg font-bold">No regions found :(</h1>
+                    <p>Create one above to get started!</p>
+                </c-ui.card>
+            {% endif %}
+        </div>
+    </div>
+</c-base>

@@ -1,0 +1,39 @@
+<div x-data="{ open: false }" {{ attrs }}>
+    <div @click="open = true">
+        {{ trigger }}
+    </div>
+        <div 
+        x-show="open" 
+        @keydown.escape.window="open = false"
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
+        x-cloak
+    >
+        <!-- Backdrop Overlay -->
+        <div 
+            x-show="open"
+            x-transition.opacity.duration.300ms
+            class="fixed inset-0 bg-black/60 bg-opacity-50"
+        ></div>
+
+        <!-- 3. Dialog Panel Container -->
+        <div 
+            x-show="open"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            @click.outside="open = false"
+            class="relative w-full max-w-md p-6 mx-4 bg-surface rounded-lg shadow-xl z-10"
+        >
+            <!-- Title -->
+            <h3 class="text-lg font-bold">{{ title }}</h3>
+            
+            <!-- Content -->
+            <div class="mt-2 text-sm text-gray-500">
+                {{ slot }}
+            </div>
+        </div>
+    </div>
+</div>

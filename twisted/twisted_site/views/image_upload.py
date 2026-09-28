@@ -1,19 +1,60 @@
 import logging
 import os
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
+from django.http import HttpRequest, JsonResponse
 from django.utils.text import slugify
+from PIL import Image, UnidentifiedImageError
 
-from ..models import UploadedFile
+from twisted_site.models import UploadedFile
 
 logger = logging.getLogger(__name__)
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif"}
+CONTENT_TYPE_FORMATS = {
+    "PNG": "image/png",
+    "JPEG": "image/jpeg",
+    "WEBP": "image/webp",
+    "GIF": "image/gif",
+}
+CONTENT_TYPE_EXTENSIONS = {
+    "image/png": {".png"},
+    "image/jpeg": {".jpg", ".jpeg"},
+    "image/webp": {".webp"},
+    "image/gif": {".gif"},
+}
+
+
+def validate_image(file: "DjangoUploadedFile[bytes]") -> str | None:
+    try:
+        file.seek(0)
+        with Image.open(file) as image:
+            image_format = image.format
+            image.verify()
+    except (UnidentifiedImageError, OSError, SyntaxError, ValueError):
+        file.seek(0)
+        return "File contents are not a valid image"
+    finally:
+        file.seek(0)
+
+    normalized_format = image_format if image_format is not None else ""
+    expected_content_type = CONTENT_TYPE_FORMATS.get(normalized_format)
+    content_type = file.content_type if file.content_type is not None else ""
+    filename = file.name if file.name is not None else ""
+    extension = Path(filename).suffix.lower()
+    if expected_content_type != content_type:
+        return "Image contents do not match the declared content type"
+    allowed_extensions = CONTENT_TYPE_EXTENSIONS.get(content_type, set())
+    if extension not in allowed_extensions:
+        return "Image extension does not match its content type"
+    return None
+
 
 s3 = boto3.client(
     "s3",
@@ -25,60 +66,70 @@ s3 = boto3.client(
 
 
 @login_required
-def upload_file(request):
-    if request.method == "POST":
-        if "file" in request.FILES:
-            file = request.FILES["file"]
+def upload_file(request: HttpRequest) -> JsonResponse:
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "reason": "Invalid request: method not POST"})
 
-            if file.content_type not in ALLOWED_CONTENT_TYPES:
-                return JsonResponse(
-                    {
-                        "status": "error",
-                        "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!",
-                    }
-                )
+    if "file" not in request.FILES:
+        return JsonResponse({"status": "error", "reason": "Invalid request: No file found"})
 
-            # The size limit is a server-side policy; never let the client raise it.
-            max_file_mb = 10
+    file = request.FILES["file"]
+    if not isinstance(file, DjangoUploadedFile):
+        return JsonResponse({"status": "error", "reason": "Invalid file upload"})
 
-            file_size_mb = file.size / (1024 * 1024)
-            if file_size_mb > max_file_mb:
-                return JsonResponse(
-                    {"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"}
-                )
-
-            response_data = file_uploader(request, file)
-            # Handle upload errors
-            if response_data.get("status") == "error":
-                return JsonResponse(response_data)
-
-            url = response_data["link"]
-            filename = response_data["name"]
-            UploadedFile.objects.create(
-                uploaded_by=request.user,
-                link=url,
-                cdn_response=response_data,
-                uploaded_thru=request.POST.get("ref", "unknown"),
-                filesize=file.size,
-            )
-
-            return JsonResponse(
-                {
-                    "status": "ok",
-                    "link": url,
-                    "name": filename,
-                    "response": response_data,
-                }
-            )
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
         return JsonResponse(
-            {"status": "error", "reason": "Invalid request: No file found"}
+            {
+                "status": "error",
+                "reason": "Only PNG, JPEG, WEBP, or GIF images are allowed!",
+            },
         )
+
+    # The size limit is a server-side policy; never let the client raise it.
+    max_file_mb = 10
+
+    if file.size is None:
+        return JsonResponse({"status": "error", "reason": "Could not determine file size"})
+
+    file_size_mb = file.size / (1024 * 1024)
+    if file_size_mb > max_file_mb:
+        return JsonResponse({"status": "error", "reason": f"File size exceeds {max_file_mb}MB!"})
+
+    validation_error = validate_image(file)
+    if validation_error is not None:
+        return JsonResponse({"status": "error", "reason": validation_error})
+
+    response_data = file_uploader(file)
+    # Handle upload errors
+    if response_data.get("status") == "error":
+        return JsonResponse(response_data)
+
+    url = response_data["link"]
+    filename = response_data["name"]
+    _ = UploadedFile.objects.create(
+        uploaded_by=request.user,
+        link=url,
+        cdn_response=response_data,
+        uploaded_thru=request.POST.get("ref", "unknown"),
+        filesize=file.size,
+    )
+
     return JsonResponse(
-        {"status": "error", "reason": "Invalid request: method not POST"}
+        {
+            "status": "ok",
+            "link": url,
+            "name": filename,
+            "response": response_data,
+        },
     )
 
 
-def _upload_fileobj(fileobj, filename, content_type, size):
+def _upload_fileobj(
+    fileobj: object,
+    filename: str,
+    content_type: str | None,
+    size: int | None,
+) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     try:
         ext = Path(filename).suffix.lower()
         stored_name = f"{uuid4()!s}-{size}/{slugify(Path(filename).stem)}{ext}"
@@ -91,27 +142,31 @@ def _upload_fileobj(fileobj, filename, content_type, size):
                 "ContentType": content_type,
             },
         )
-
-        return {
+        link = f"{os.environ['R2_PUBLIC_URL'].rstrip('/')}/{stored_name}"
+        return {  # noqa: TRY300
             "status": "ok",
-            "link": f"{os.environ['R2_PUBLIC_URL']}{stored_name}",
+            "link": link,
             "name": original_filename,
             "size": size,
         }
 
-    except (ClientError, BotoCoreError) as e:
-        return {"status": "error", "error": str(e)}
+    except (ClientError, BotoCoreError):
+        logger.exception("Error during file upload to R2")
+        return {"status": "error", "error": "Could not upload file"}
 
     except Exception as e:
         logger.exception("Unknown error during file upload")
         return {
             "status": "error",
-            "error": f"Unknown Error Occurred: {e!s}",
+            "error": f"Unknown error occurred: {e!s}",
         }
 
 
-def file_uploader(request, image):
-    """
-    Basic imgur uploader return as json data.
-    """
+def file_uploader(
+    image: "DjangoUploadedFile[Any]",  # pyrefly: ignore[explicit-any]
+) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
+    """Basic imgur uploader return as json data."""
+    if image.name is None:
+        return {"status": "error", "error": "Uploaded file is missing a filename"}
+
     return _upload_fileobj(image, image.name, image.content_type, image.size)

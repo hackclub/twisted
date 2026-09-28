@@ -13,15 +13,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="journal",
             name="minutes_worked",
-            field=models.IntegerField(
-                validators=[django.core.validators.MinValueValidator(0)]
-            ),
+            field=models.IntegerField(validators=[django.core.validators.MinValueValidator(0)]),
         ),
         migrations.AlterField(
             model_name="journal",
             name="reduced_minutes",
-            field=models.IntegerField(
-                validators=[django.core.validators.MinValueValidator(0)]
-            ),
+            field=models.IntegerField(validators=[django.core.validators.MinValueValidator(0)]),
         ),
     ]

@@ -1,30 +1,36 @@
+from typing import Any
+
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 
-from ...models import Project
+from twisted_site.models import Project, as_user
 
 
 # Create your views here.
 class DashboardView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
-        profile = self.request.user.profile
+        profile = as_user(self.request.user).profile
 
-        context = {"profile": profile}
+        context: dict[str, Any] = {"profile": profile}  # pyrefly: ignore[explicit-any]
 
-        startup_windows = []
+        startup_windows: list[dict[str, str]] = []
 
-        project_id = request.GET.get("project")
+        project_id: str | None = request.GET.get("project")
 
-        if project_id:
+        if project_id not in (None, ""):
             project = get_object_or_404(Project, id=project_id)
             startup_windows.append(
                 {
                     "href": resolve_url("fr.projects.detail", project.id),
                     "title": project.project_name,
-                }
+                },
             )
+
+        if request.GET.get("discover") is not None:
+            startup_windows.append({"href": resolve_url("fr.discover"), "title": "discover"})
 
         context["startup_windows"] = startup_windows
 
