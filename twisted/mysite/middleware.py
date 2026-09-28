@@ -24,7 +24,8 @@ class TimezoneMiddleware:
                 timezone.deactivate()
         except (zoneinfo.ZoneInfoNotFoundError, ValueError):
             logger.warning(
-                "Invalid django_timezone cookie value: %r", request.COOKIES.get("django_timezone"),
+                "Invalid django_timezone cookie value: %r",
+                request.COOKIES.get("django_timezone"),
             )
             timezone.deactivate()
 

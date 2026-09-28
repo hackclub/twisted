@@ -1,0 +1,141 @@
+{% load time_filters %}
+<c-base>
+    <c-slot name="head">
+        <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+        <script src="
+        https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js
+        "></script>
+        <script>
+            function popoverCloser(elem) {
+                elem.addEventListener('click', function(event) {
+                    // Check if the click happened directly on the parent, not a child
+                    if (event.target == elem.querySelector('div')) {
+                        elem.togglePopover()
+                    }
+                });
+            }
+        </script>
+    </c-slot>
+    <a href="{% url 'admin.users.detail' user_id=project.user.id %}">
+        <c-ui.button>
+            Back
+        </c-ui.button>
+    </a>
+    <c-ui.card class="mt-4 bg-ink-900">
+        <div class="flex gap-2 items-center justify-between flex-wrap">
+            <div>
+                <h3 class="text-lg font-semibold mb-1">
+                    {{ project.project_name }}
+                </h3>
+                <div>
+                    <c-ui.badge size="sm">
+                        {{ project.get_project_type_display }}
+                    </c-ui.badge>
+                    {% if project.latest_ship %}
+                        <c-ui.badge size="sm">
+                            {{ project.latest_ship.get_status_display }}
+                        </c-ui.badge>
+                    {% endif %}
+                    <c-ui.badge size="sm" href="{% url 'admin.users.detail' user_id=project.user.id %}">
+                        @{{ project.user.profile.slack_username }}
+                    </c-ui.badge>
+                </div>
+                <p class="mt-2 text-ink-400">{{ project.project_description }}</p>
+            </div>
+            <a target="_blank" href="{% url 'dashboard' %}?project={{ project.id }}">
+                <c-ui.button>
+                    Open in Twisted
+                </c-ui.button>
+            </a>
+        </div>
+    </c-ui.card>
+    <div class="mt-4 grid gap-4 grid-cols-2 md:grid-cols-4">
+        <c-ui.card class="bg-ink-900">
+            <div class="text-xs uppercase text-ink-400">Time logged</div>
+            <div class="mt-1 text-xl font-bold">{{ project.time_logged|minutes_to_hours_minutes }}</div>
+        </c-ui.card>
+        <c-ui.card class="bg-ink-900">
+            <div class="text-xs uppercase text-ink-400">Journals</div>
+            <div class="mt-1 text-xl font-bold">{{ project.journals.count }}</div>
+        </c-ui.card>
+        <c-ui.card class="bg-ink-900">
+            <div class="text-xs uppercase text-ink-400">Repo</div>
+            <div class="mt-1 text-sm break-all">
+                {% if project.repo_url %}
+                    <a class="underline" target="_blank" href="{{ project.repo_url }}">{{ project.repo_url }}</a>
+                {% else %}
+                    not set
+                {% endif %}
+            </div>
+        </c-ui.card>
+        <c-ui.card class="bg-ink-900">
+            <div class="text-xs uppercase text-ink-400">Playable URL</div>
+            <div class="mt-1 text-sm break-all">
+                {% if project.playable_url %}
+                    <a class="underline" target="_blank" href="{{ project.playable_url }}">{{ project.playable_url }}</a>
+                {% else %}
+                    not set
+                {% endif %}
+            </div>
+        </c-ui.card>
+    </div>
+    <div class="mt-4">
+        <h1 class="text-2xl font-black">Activity</h1>
+        {% if activity %}
+            {% for activity_item in activity %}
+                {% if activity_item.content %}
+                    {% with activity_item as journal %}
+                        <c-ui.card class="bg-ink-900 mb-2">
+                            <div class="flex items-center gap-2 text-sm text-ink-400">
+                                <span class="font-bold text-white">{{ journal.reduced_minutes|minutes_to_hours_minutes }}</span>
+                                <span>logged via {{ journal.get_type_display }}</span>
+                                <span>&bull;</span>
+                                <span title="{{ journal.created_at }}">{{ journal.created_at }}</span>
+                            </div>
+                            <div>
+                                {{ journal.content|truncatechars:200 }}
+                            </div>
+                            <div class="mt-2">
+                                <c-ui.button popovertarget="journal-{{ journal.id }}">View journal</c-ui.button>
+                            </div>
+                            <div id="journal-{{ journal.id }}" popover class="h-full w-full bg-black/40 overflow-hidden">
+                                <div class="flex w-full h-full">
+                                    <c-ui.card class="w-1/2 text-white mx-auto my-auto">
+                                        <p class="text-center">
+                                            <c-mdpreview>{{ journal.content }}</c-mdpreview>
+                                        </p>
+                                    </c-ui.card>
+                                </div>
+                            </div>
+                            <script>
+                                popoverCloser(document.getElementById("journal-{{ journal.id }}"))
+                            </script>
+                        </c-ui.card>
+                    {% endwith %}
+                {% elif activity_item.status %}
+                    {% with activity_item as ship %}
+                        <c-ui.card class="bg-ink-900 mb-2">
+                            <div class="flex items-center gap-2 text-sm text-ink-400">
+                                <span class="font-bold text-white">Ship submitted</span>
+                                <span>&bull;</span>
+                                <span title="{{ ship.created_at }}">{{ ship.created_at }}</span>
+                            </div>
+                            <div class="mt-2 flex gap-2 flex-wrap">
+                                <c-ui.badge size="sm">first pass: {{ ship.get_status_display }}</c-ui.badge>
+                                <c-ui.badge size="sm">final review: {{ ship.get_final_status_display }}</c-ui.badge>
+                            </div>
+                            {% if ship.note_to_maker %}
+                                <p class="mt-2 text-sm text-ink-400">{{ ship.note_to_maker|linebreaksbr }}</p>
+                            {% endif %}
+                        </c-ui.card>
+                    {% endwith %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <c-ui.card class="bg-ink-900">
+                <h1 class="text-lg font-bold">No activity found :(</h1>
+                <p>This project has no journals or ships yet!</p>
+            </c-ui.card>
+        {% endif %}
+    </div>
+</c-base>

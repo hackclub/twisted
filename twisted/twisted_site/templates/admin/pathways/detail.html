@@ -9,11 +9,6 @@
                 }
             });
         }
-        function randomTextEngine(elem, items, delay=1000) {
-            return setInterval(() => {
-                elem.innerText = items[Math.floor(Math.random() * items.length)]
-            }, delay)
-        }
 
         function setupShopItemImagePaste({ scope, fileInput, urlField, preview, status }) {
             function uploadImage(file) {

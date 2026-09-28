@@ -26,7 +26,11 @@ class AdminView(View):
     page: str | None = None
     subpage: str | None = None
 
-    def get_context_data(self, page: str | None = None, subpage: str | None = None) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
+    def get_context_data(
+        self,
+        page: str | None = None,
+        subpage: str | None = None,
+    ) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
         context: dict[str, Any] = {}  # pyrefly: ignore[explicit-any]
         context["page"] = page if page is not None else self.page
         context["subpage"] = subpage if subpage is not None else self.subpage
@@ -98,7 +102,7 @@ class AdminView(View):
                     name="logs",
                     icon="view",
                     text="Audit Logs",
-                    href=f"{resolve_url("admin.logs")}?page=1",
+                    href=f"{resolve_url('admin.logs')}?page=1",
                 ),
             )
 

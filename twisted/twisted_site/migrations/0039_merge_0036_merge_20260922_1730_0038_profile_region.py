@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0036_merge_20260922_1730'),
-        ('twisted_site', '0038_profile_region'),
+        ("twisted_site", "0036_merge_20260922_1730"),
+        ("twisted_site", "0038_profile_region"),
     ]
 
-    operations = [
-    ]
+    operations = []

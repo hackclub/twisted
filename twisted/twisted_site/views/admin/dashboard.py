@@ -13,6 +13,7 @@ from .admin import AdminView
 class DashboardView(AdminView):
     allowed = True
     page = "dashboard"
+
     def get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data()
         if self.request.user.is_anonymous:

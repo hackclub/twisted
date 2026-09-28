@@ -25,7 +25,11 @@ class ShopView(View):
 
         regions = ShopRegion.objects.all()
         context["regions"] = regions
-        pathways = Pathway.objects.filter(start__lt=timezone.now(), pathwaytimespent__user=request.user, pathwaytimespent__unlocked=True)
+        pathways = Pathway.objects.filter(
+            start__lt=timezone.now(),
+            pathwaytimespent__user=request.user,
+            pathwaytimespent__unlocked=True,
+        )
         context["pathways"] = pathways
         shop_items: list[ShopItem] = []
         pathway_id = request.GET.get("pathway", "")
@@ -54,10 +58,12 @@ class ShopView(View):
             ).first()
             if price is None:
                 continue
-            parsed_shop_items.append({
-                "item": item,
-                "price": price,
-            })
+            parsed_shop_items.append(
+                {
+                    "item": item,
+                    "price": price,
+                },
+            )
         context["shop_items"] = parsed_shop_items
         return render(
             request,
