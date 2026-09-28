@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0040_shopitem_stock'),
+        ("twisted_site", "0040_shopitem_stock"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='shopitem',
-            name='image_url',
-            field=models.CharField(blank=True, default='', max_length=500),
+            model_name="shopitem",
+            name="image_url",
+            field=models.CharField(blank=True, default="", max_length=500),
         ),
     ]

@@ -116,7 +116,8 @@ class AdminAuthorizationTests(TestCase):
         target_user = User.objects.create_user(username="target")
         target_permissions = ProfileStaffPermissions.objects.create()
         target_profile = Profile.objects.create(
-            user=target_user, staff_permissions=target_permissions,
+            user=target_user,
+            staff_permissions=target_permissions,
         )
         detail_url = reverse(
             "admin.users.detail",
@@ -156,7 +157,8 @@ class AdminAuthorizationTests(TestCase):
         target_user = User.objects.create_user(username="permission-target")
         target_permissions = ProfileStaffPermissions.objects.create()
         target_profile = Profile.objects.create(
-            user=target_user, staff_permissions=target_permissions,
+            user=target_user,
+            staff_permissions=target_permissions,
         )
         detail_url = reverse(
             "admin.users.detail",

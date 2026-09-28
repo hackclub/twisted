@@ -5,15 +5,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0037_shopregion_shopitem_shopitemregionalpricing'),
+        ("twisted_site", "0037_shopregion_shopitem_shopitemregionalpricing"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='region',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='twisted_site.shopregion'),
+            model_name="profile",
+            name="region",
+            field=models.ForeignKey(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="twisted_site.shopregion",
+            ),
         ),
     ]
