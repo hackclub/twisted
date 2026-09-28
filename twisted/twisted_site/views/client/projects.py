@@ -1,4 +1,3 @@
-
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render, resolve_url
 from django.views import View

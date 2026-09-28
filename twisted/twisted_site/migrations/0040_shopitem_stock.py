@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0039_merge_0036_merge_20260922_1730_0038_profile_region'),
+        ("twisted_site", "0039_merge_0036_merge_20260922_1730_0038_profile_region"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='shopitem',
-            name='stock',
+            model_name="shopitem",
+            name="stock",
             field=models.IntegerField(default=999),
         ),
     ]

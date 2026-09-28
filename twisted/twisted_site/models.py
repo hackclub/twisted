@@ -69,7 +69,9 @@ class Profile(models.Model):
     country = models.CharField(max_length=20, default="", blank=True)
     country_cached_until = models.DateTimeField(null=True, default=None)
 
-    region = models.ForeignKey("twisted_site.ShopRegion", on_delete=models.PROTECT, null=True, default=None)
+    region = models.ForeignKey(
+        "twisted_site.ShopRegion", on_delete=models.PROTECT, null=True, default=None
+    )
 
     @override
     def __str__(self) -> str:
@@ -95,11 +97,7 @@ class Profile(models.Model):
         return country
 
     def shipped_projects(self) -> list["Project"]:
-        return [
-            project
-            for project in as_user(self.user).projects.all()
-            if project.is_shipped()
-        ]
+        return [project for project in as_user(self.user).projects.all() if project.is_shipped()]
 
     def time_logged(self) -> int:
         time_logged = 0
@@ -387,7 +385,9 @@ class ShopItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    pathway = models.ForeignKey("twisted_site.Pathway", on_delete=models.PROTECT, related_name="shop")
+    pathway = models.ForeignKey(
+        "twisted_site.Pathway", on_delete=models.PROTECT, related_name="shop"
+    )
 
     item_name = models.CharField(max_length=500)
     item_description = models.TextField()

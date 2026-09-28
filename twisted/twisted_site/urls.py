@@ -78,7 +78,6 @@ urlpatterns = [
     ),
     path("dashboard/frame/discover/", client.DiscoverView.as_view(), name="fr.discover"),
     path("dashboard/frame/shop/", client.ShopView.as_view(), name="fr.shop"),
-
     path("admin/", admin.DashboardView.as_view(), name="admin.dash"),
     path("admin/users/", admin.UsersView.as_view(), name="admin.users"),
     path(

@@ -5,41 +5,76 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('twisted_site', '0036_merge_20260922_1058'),
+        ("twisted_site", "0036_merge_20260922_1058"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ShopRegion',
+            name="ShopRegion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=200)),
             ],
         ),
         migrations.CreateModel(
-            name='ShopItem',
+            name="ShopItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('item_name', models.CharField(max_length=500)),
-                ('item_description', models.TextField()),
-                ('pathway', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='shop', to='twisted_site.pathway')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("item_name", models.CharField(max_length=500)),
+                ("item_description", models.TextField()),
+                (
+                    "pathway",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="shop",
+                        to="twisted_site.pathway",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ShopItemRegionalPricing',
+            name="ShopItemRegionalPricing",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('price', models.IntegerField()),
-                ('item', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='prices', to='twisted_site.shopitem')),
-                ('region', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='prices', to='twisted_site.shopregion')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("price", models.IntegerField()),
+                (
+                    "item",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="prices",
+                        to="twisted_site.shopitem",
+                    ),
+                ),
+                (
+                    "region",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="prices",
+                        to="twisted_site.shopregion",
+                    ),
+                ),
             ],
         ),
     ]
