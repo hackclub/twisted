@@ -119,6 +119,8 @@ class ProfileStaffPermissions(models.Model):
 
     view_users = models.BooleanField(default=False)
 
+    view_projects = models.BooleanField(default=False)
+
     view_pathways = models.BooleanField(default=False)
     manage_pathways = models.BooleanField(default=False)
 

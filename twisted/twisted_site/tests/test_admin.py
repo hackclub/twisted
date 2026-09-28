@@ -6,7 +6,7 @@ from django.contrib.sessions.models import Session
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from twisted_site.models import AuditLog, Profile, ProfileStaffPermissions
+from twisted_site.models import AuditLog, Profile, ProfileStaffPermissions, Project
 
 
 class AdminAuthorizationTests(TestCase):
@@ -69,6 +69,40 @@ class AdminAuthorizationTests(TestCase):
         response = self.client.get(reverse("admin.users"))
 
         self.assertEqual(response.status_code, 200)
+
+    def test_view_projects_permission_grants_project_detail_access(self) -> None:
+        self.permissions.view_projects = True
+        self.permissions.save(update_fields=("view_projects",))
+        owner = User.objects.create_user(username="project-owner")
+        _ = Profile.objects.create(user=owner)
+        project = Project.objects.create(
+            user=owner,
+            project_name="Test project",
+            project_description="A project",
+            project_type="software",
+        )
+
+        response = self.client.get(
+            reverse("admin.projects.detail", kwargs={"project_id": project.pk}),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_project_detail_requires_view_projects_permission(self) -> None:
+        owner = User.objects.create_user(username="project-owner-2")
+        _ = Profile.objects.create(user=owner)
+        project = Project.objects.create(
+            user=owner,
+            project_name="Test project",
+            project_description="A project",
+            project_type="software",
+        )
+
+        response = self.client.get(
+            reverse("admin.projects.detail", kwargs={"project_id": project.pk}),
+        )
+
+        self.assertRedirects(response, reverse("admin.dash"))
 
     def test_view_audit_logs_permission_grants_audit_access(self) -> None:
         self.permissions.view_auditlogs = True

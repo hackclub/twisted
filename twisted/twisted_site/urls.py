@@ -86,6 +86,11 @@ urlpatterns = [
         admin.UserDetailView.as_view(),
         name="admin.users.detail",
     ),
+    path(
+        "admin/projects/<int:project_id>/",
+        admin.ProjectDetailView.as_view(),
+        name="admin.projects.detail",
+    ),
     path("admin/pathways/", admin.PathwayListView.as_view(), name="admin.pathways"),
     path(
         "admin/pathways/<int:pathway_id>/",
