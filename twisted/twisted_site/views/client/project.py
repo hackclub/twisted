@@ -9,7 +9,11 @@ from requests import RequestException
 
 from twisted_site import ari, hackatime
 from twisted_site.models import (
+    PROJECT_DESCRIPTION_MAX_LENGTH,
+    PROJECT_NAME_MAX_LENGTH,
+    PROJECT_SCREENSHOT_URL_MAX_LENGTH,
     PROJECT_TYPE_CHOICES,
+    PROJECT_URL_MAX_LENGTH,
     Project,
     ProjectShip,
     TemplateContext,
@@ -21,13 +25,10 @@ from twisted_site.validation import invalid_http_urls
 logger = getLogger(__name__)
 
 MINIMUM_SHIP_MINUTES = 60
-MAX_PROJECT_NAME_LENGTH = 50
-# Keep in sync with the Project model's field max_length values.
-MAX_PROJECT_DESCRIPTION_LENGTH = 2000
 URL_MAX_LENGTHS = {
-    "repo": 200,
-    "playable_url": 200,
-    "screenshot_url": 500,
+    "repo": PROJECT_URL_MAX_LENGTH,
+    "playable_url": PROJECT_URL_MAX_LENGTH,
+    "screenshot_url": PROJECT_SCREENSHOT_URL_MAX_LENGTH,
 }
 
 
@@ -159,13 +160,13 @@ class ProjectSettings(View):
         errors: list[str] = []
         if project_name == "":
             errors.append("Project name is required.")
-        elif len(project_name) > MAX_PROJECT_NAME_LENGTH:
-            errors.append(f"Project name must be at most {MAX_PROJECT_NAME_LENGTH} characters.")
+        elif len(project_name) > PROJECT_NAME_MAX_LENGTH:
+            errors.append(f"Project name must be at most {PROJECT_NAME_MAX_LENGTH} characters.")
         if project_description == "":
             errors.append("Project description is required.")
-        elif len(project_description) > MAX_PROJECT_DESCRIPTION_LENGTH:
+        elif len(project_description) > PROJECT_DESCRIPTION_MAX_LENGTH:
             errors.append(
-                f"Project description must be at most {MAX_PROJECT_DESCRIPTION_LENGTH} characters.",
+                f"Project description must be at most {PROJECT_DESCRIPTION_MAX_LENGTH} characters.",
             )
 
         invalid_fields = invalid_http_urls(url_fields)

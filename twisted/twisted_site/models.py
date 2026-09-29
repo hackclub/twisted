@@ -143,13 +143,20 @@ class ProfileStaffPermissions(models.Model):
 
 PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}
 
+#: Field limits for Project, shared by the model, the client settings form and the ARI
+#: webhook validator so the three can never drift apart.
+PROJECT_NAME_MAX_LENGTH = 50
+PROJECT_DESCRIPTION_MAX_LENGTH = 2000
+PROJECT_URL_MAX_LENGTH = 200
+PROJECT_SCREENSHOT_URL_MAX_LENGTH = 500
+
 
 class Project(models.Model):
     id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="projects")
 
-    project_name = models.CharField(max_length=50)
-    project_description = models.TextField(max_length=2000)
+    project_name = models.CharField(max_length=PROJECT_NAME_MAX_LENGTH)
+    project_description = models.TextField(max_length=PROJECT_DESCRIPTION_MAX_LENGTH)
 
     project_type = models.CharField(choices=PROJECT_TYPE_CHOICES, max_length=100)
 
@@ -157,9 +164,13 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     hackatime_project_names = models.JSONField(default=list, blank=True)
-    repo_url = models.CharField(max_length=200, blank=True, default="")
-    playable_url = models.CharField(max_length=200, blank=True, default="")
-    screenshot_url = models.CharField(max_length=500, blank=True, default="")
+    repo_url = models.CharField(max_length=PROJECT_URL_MAX_LENGTH, blank=True, default="")
+    playable_url = models.CharField(max_length=PROJECT_URL_MAX_LENGTH, blank=True, default="")
+    screenshot_url = models.CharField(
+        max_length=PROJECT_SCREENSHOT_URL_MAX_LENGTH,
+        blank=True,
+        default="",
+    )
 
     @override
     def __str__(self) -> str:
