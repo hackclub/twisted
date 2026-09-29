@@ -93,7 +93,7 @@
                             <div class="flex items-center gap-2 text-sm text-ink-400">
                                 <span class="font-bold text-white">{{ journal.reduced_minutes|minutes_to_hours_minutes }}</span>
                                 <span>logged via {{ journal.get_type_display }}</span>
-                                <span>&bull;</span>
+                                <span>•</span>
                                 <span title="{{ journal.created_at }}">{{ journal.created_at }}</span>
                             </div>
                             <div>
@@ -121,7 +121,7 @@
                         <c-ui.card class="bg-ink-900 mb-2">
                             <div class="flex items-center gap-2 text-sm text-ink-400">
                                 <span class="font-bold text-white">Ship submitted</span>
-                                <span>&bull;</span>
+                                <span>•</span>
                                 <span title="{{ ship.created_at }}">{{ ship.created_at }}</span>
                             </div>
                             <div class="mt-2 flex gap-2 flex-wrap">

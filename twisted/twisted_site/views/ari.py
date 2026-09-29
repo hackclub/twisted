@@ -229,9 +229,11 @@ class AriView(View):
             project.project_name = data["ship"]["title"]
             project.project_description = data["ship"]["description"]
             project.project_type = data["ship"]["track"]
-            project.screenshot_url = sanitize_http_url(data["ship"]["thumbnail_url"])
-            project.repo_url = sanitize_http_url(data["ship"]["repo_url"])
-            project.playable_url = sanitize_http_url(data["ship"]["demo_url"])
+            project.screenshot_url = sanitize_http_url(
+                cast("object", data["ship"]["thumbnail_url"]),
+            )
+            project.repo_url = sanitize_http_url(cast("object", data["ship"]["repo_url"]))
+            project.playable_url = sanitize_http_url(cast("object", data["ship"]["demo_url"]))
             project.hackatime_project_names = data["ship"]["hackatime_projects"]
             project.save()
             _ = send_blocks(

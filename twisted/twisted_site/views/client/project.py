@@ -141,7 +141,7 @@ class ProjectSettings(View):
             "screenshot_url": request.POST.get("screenshot_url", "").strip(),
         }
         invalid_fields = invalid_http_urls(url_fields)
-        if invalid_fields:
+        if len(invalid_fields) > 0:
             labels = ", ".join(
                 field.replace("_url", "").replace("_", " ").title() for field in invalid_fields
             )

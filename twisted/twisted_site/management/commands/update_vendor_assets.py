@@ -16,7 +16,7 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TypedDict, cast, override
 
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
@@ -26,6 +26,19 @@ README_NAME = "README.md"
 SOURCE_MAP_COMMENT = b"//# sourceMappingURL="
 
 DEFAULT_VENDOR_DIR = Path(__file__).resolve().parents[2] / "static" / "vendor"
+
+
+class NpmDist(TypedDict):
+    """The ``dist`` object of an npm release's metadata."""
+
+    tarball: str
+
+
+class NpmMetadata(TypedDict):
+    """The subset of an npm release's metadata that this command uses."""
+
+    version: str
+    dist: NpmDist
 
 
 @dataclass(frozen=True)
@@ -74,10 +87,11 @@ def fetch_latest(package: str) -> tuple[str, str]:
         package_metadata_url(package),
         timeout=NETWORK_TIMEOUT_SECONDS,
     ) as response:
-        metadata: dict[str, Any] = json.load(response)
+        payload = cast("bytes", response.read())
 
-    version = str(metadata["version"])
-    tarball_url = str(metadata["dist"]["tarball"])
+    metadata = cast("NpmMetadata", json.loads(payload))
+    version = metadata["version"]
+    tarball_url = metadata["dist"]["tarball"]
     if not tarball_url.startswith(f"{NPM_REGISTRY}/"):
         msg = f"refusing to download {package} from unexpected host: {tarball_url}"
         raise CommandError(msg)
@@ -87,7 +101,7 @@ def fetch_latest(package: str) -> tuple[str, str]:
 def download_tarball(tarball_url: str) -> bytes:
     """Download a package tarball into memory."""
     with urllib.request.urlopen(tarball_url, timeout=NETWORK_TIMEOUT_SECONDS) as response:  # noqa: S310
-        return response.read()
+        return cast("bytes", response.read())
 
 
 def read_tarball_member(tar: tarfile.TarFile, name: str) -> bytes:
@@ -151,6 +165,7 @@ class Command(BaseCommand):
         "latest npm releases."
     )
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         _ = parser.add_argument(
             "--check",
@@ -164,9 +179,10 @@ class Command(BaseCommand):
             help="Directory containing the vendored assets and their README.",
         )
 
-    def handle(self, *args: object, **options: object) -> None:  # noqa: ARG002
-        vendor_dir: Path = options["vendor_dir"]
-        check_only: bool = options["check"]
+    @override
+    def handle(self, *args: object, **options: object) -> None:
+        vendor_dir = cast("Path", options["vendor_dir"])
+        check_only = cast("bool", options["check"])
 
         readme_path = vendor_dir / README_NAME
         if not readme_path.exists():
@@ -176,7 +192,7 @@ class Command(BaseCommand):
         readme_text = readme_path.read_text(encoding="utf-8")
         versions = read_readme_versions(readme_text)
         missing_rows = [asset.target for asset in ASSETS if asset.target not in versions]
-        if missing_rows:
+        if len(missing_rows) > 0:
             msg = f"{README_NAME} is missing version table rows for: {', '.join(missing_rows)}"
             raise CommandError(msg)
 
@@ -209,7 +225,7 @@ class Command(BaseCommand):
             updated.append(asset.target)
             self.stdout.write(self.style.SUCCESS(f"updated: {outdated[-1]}"))
 
-        if updated:
+        if len(updated) > 0:
             _ = readme_path.write_text(readme_text, encoding="utf-8")
             self.stdout.write(
                 self.style.SUCCESS(
@@ -218,10 +234,10 @@ class Command(BaseCommand):
                 ),
             )
 
-        if outdated and check_only:
+        if len(outdated) > 0 and check_only:
             msg = f"{len(outdated)} vendored asset(s) are outdated"
             raise CommandError(msg)
-        if not outdated:
+        if len(outdated) == 0:
             self.stdout.write(self.style.SUCCESS("All vendored assets are up to date."))
 
     def fetch_latest_or_fail(self, asset: VendoredAsset) -> tuple[str, str]:

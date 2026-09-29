@@ -1,6 +1,6 @@
 import io
 import tarfile
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -75,6 +75,7 @@ class VendorUpdateHelperTests(SimpleTestCase):
 
 
 class UpdateVendorAssetsCommandTests(SimpleTestCase):
+    tmp: TemporaryDirectory[str]  # pyright: ignore[reportUninitializedInstanceVariable]
     vendor_dir: Path  # pyright: ignore[reportUninitializedInstanceVariable]
     readme_path: Path  # pyright: ignore[reportUninitializedInstanceVariable]
 
@@ -87,7 +88,7 @@ class UpdateVendorAssetsCommandTests(SimpleTestCase):
         _ = self.readme_path.write_text(sample_readme(), encoding="utf-8")
 
     @contextmanager
-    def patched_registry(self, versions: dict[str, str]) -> Iterator[None]:
+    def patched_registry(self, versions: dict[str, str]) -> Generator[None]:
         tarballs = {
             asset.package: make_tarball(
                 {
@@ -134,7 +135,7 @@ class UpdateVendorAssetsCommandTests(SimpleTestCase):
 
         with self.patched_registry(versions):
             output = io.StringIO()
-            call_command("update_vendor_assets", vendor_dir=self.vendor_dir, stdout=output)
+            _ = call_command("update_vendor_assets", vendor_dir=self.vendor_dir, stdout=output)
 
         marked = self.vendor_dir / "marked/marked.umd.js"
         self.assertTrue(marked.exists())
@@ -165,7 +166,7 @@ class UpdateVendorAssetsCommandTests(SimpleTestCase):
             self.patched_registry(versions),
             self.assertRaisesMessage(CommandError, "1 vendored asset(s) are outdated"),
         ):
-            call_command(
+            _ = call_command(
                 "update_vendor_assets",
                 vendor_dir=self.vendor_dir,
                 check=True,
@@ -181,7 +182,7 @@ class UpdateVendorAssetsCommandTests(SimpleTestCase):
 
         with self.patched_registry(versions):
             output = io.StringIO()
-            call_command(
+            _ = call_command(
                 "update_vendor_assets",
                 vendor_dir=self.vendor_dir,
                 check=True,
@@ -198,7 +199,11 @@ class UpdateVendorAssetsCommandTests(SimpleTestCase):
             self.patched_registry(dict.fromkeys((asset.package for asset in ASSETS), "1.0.0")),
             self.assertRaisesMessage(CommandError, "missing version table rows"),
         ):
-            call_command("update_vendor_assets", vendor_dir=self.vendor_dir, stdout=io.StringIO())
+            _ = call_command(
+                "update_vendor_assets",
+                vendor_dir=self.vendor_dir,
+                stdout=io.StringIO(),
+            )
 
     def test_registry_errors_are_reported(self) -> None:
         with (
@@ -208,4 +213,8 @@ class UpdateVendorAssetsCommandTests(SimpleTestCase):
             ),
             self.assertRaisesMessage(CommandError, "could not fetch"),
         ):
-            call_command("update_vendor_assets", vendor_dir=self.vendor_dir, stdout=io.StringIO())
+            _ = call_command(
+                "update_vendor_assets",
+                vendor_dir=self.vendor_dir,
+                stdout=io.StringIO(),
+            )

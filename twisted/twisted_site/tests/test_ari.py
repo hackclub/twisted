@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+from contextlib import ExitStack
 from typing import cast, override
 from unittest.mock import patch
 
@@ -165,7 +166,7 @@ class WebhookSignatureTests(SimpleTestCase):
 class AriConfigurationTests(SimpleTestCase):
     @override_settings(DEBUG_REVIEW=False)
     def test_is_configured_requires_endpoint_and_both_secrets(self) -> None:
-        cases: tuple[dict[str, str | None], bool] = (
+        cases: tuple[tuple[dict[str, str | None], bool], ...] = (
             (
                 {
                     "ARI_INGEST_ENDPOINT": "https://example.invalid/ari/",
@@ -208,10 +209,9 @@ class AriConfigurationTests(SimpleTestCase):
             ),
         )
         for constants, expected in cases:
-            with (
-                self.subTest(constants=constants),
-                patch.multiple("twisted_site.ari", **constants),
-            ):
+            with self.subTest(constants=constants), ExitStack() as stack:
+                for name, value in constants.items():
+                    _ = stack.enter_context(patch.object(ari, name, value))
                 self.assertEqual(ari.is_configured(), expected)
 
     @override_settings(DEBUG_REVIEW=True)
