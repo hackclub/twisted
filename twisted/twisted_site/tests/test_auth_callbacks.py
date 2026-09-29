@@ -1,16 +1,21 @@
 import os
-from typing import override
+from typing import cast, override
 from unittest.mock import patch
 
 from authlib.integrations.base_client import (  # pyrefly: ignore[untyped-import]
     MismatchingStateError,
 )
+from authlib.integrations.base_client.errors import (  # pyrefly: ignore[untyped-import]
+    OAuthError,
+)
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
-from django.test import Client, TestCase
+from django.test import Client, SimpleTestCase, TestCase
 from django.urls import reverse
 
 from twisted_site.models import Profile
+from twisted_site.views.client.auth import _default_avatar_url
 
 
 class HCAIdentityCallbackTests(TestCase):
@@ -125,6 +130,43 @@ class HCAIdentityCallbackTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(User.objects.exists())
 
+    def test_oauth_error_is_reported_gracefully(self) -> None:
+        with patch(
+            "twisted_site.views.client.auth.oauth.hca.authorize_access_token",
+            side_effect=OAuthError("invalid_grant"),
+        ):
+            response = self.client.get(reverse("auth_callback"))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.exists())
+
+    def test_missing_subject_is_rejected(self) -> None:
+        token = self.token()
+        userinfo = cast("dict[str, object]", token["userinfo"])
+        _ = userinfo.pop("sub")
+
+        with patch(
+            "twisted_site.views.client.auth.oauth.hca.authorize_access_token",
+            return_value=token,
+        ):
+            response = self.client.get(reverse("auth_callback"))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.exists())
+
+    def test_missing_access_token_is_rejected(self) -> None:
+        token = self.token()
+        _ = token.pop("access_token")
+
+        with patch(
+            "twisted_site.views.client.auth.oauth.hca.authorize_access_token",
+            return_value=token,
+        ):
+            response = self.client.get(reverse("auth_callback"))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.exists())
+
     def test_slack_lookup_failure_uses_identity_fallback(self) -> None:
         with (
             patch(
@@ -148,6 +190,48 @@ class HCAIdentityCallbackTests(TestCase):
         profile = Profile.objects.get(user__username="hca_maker")
         self.assertEqual(profile.slack_username, "Maker Name")
         self.assertEqual(profile.slack_pfp_url, "https://example.invalid/avatar.png")
+
+    def test_slack_failure_without_configured_pfp_uses_static_avatar(self) -> None:
+        with (
+            patch.dict(os.environ, {}, clear=False),
+            patch(
+                "twisted_site.views.client.auth.oauth.hca.authorize_access_token",
+                return_value=self.token(),
+            ),
+            patch(
+                "twisted_site.views.client.auth.slack_bot.users_info",
+                side_effect=RuntimeError("Slack unavailable"),
+            ),
+            patch(
+                "twisted_site.views.client.auth.secrets.token_urlsafe",
+                return_value="generated-state",
+            ),
+            patch("twisted_site.views.client.auth.log_to_channel"),
+            self.assertLogs("twisted_site.views.client.auth", level="ERROR"),
+        ):
+            _ = os.environ.pop("DEFAULT_PFP", None)
+            response = self.client.get(reverse("auth_callback"))
+
+        self.assertEqual(response.status_code, 302)
+        profile = Profile.objects.get(user__username="hca_maker")
+        self.assertEqual(
+            profile.slack_pfp_url,
+            f"{settings.STATIC_URL}images/twisted_t.png",
+        )
+
+
+class DefaultAvatarTests(SimpleTestCase):
+    def test_configured_default_pfp_wins(self) -> None:
+        with patch.dict(os.environ, {"DEFAULT_PFP": "https://example.com/pfp.png"}):
+            self.assertEqual(_default_avatar_url(), "https://example.com/pfp.png")
+
+    def test_static_asset_is_used_when_unset(self) -> None:
+        with patch.dict(os.environ, {}, clear=False):
+            _ = os.environ.pop("DEFAULT_PFP", None)
+            self.assertEqual(
+                _default_avatar_url(),
+                f"{settings.STATIC_URL}images/twisted_t.png",
+            )
 
 
 class LoginLogoutTests(TestCase):

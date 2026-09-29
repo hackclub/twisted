@@ -1,4 +1,5 @@
 from typing import cast, override
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.db import SessionStore
@@ -6,7 +7,7 @@ from django.contrib.sessions.models import Session
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from twisted_site.models import AuditLog, Profile, ProfileStaffPermissions, Project
+from twisted_site.models import AuditLog, Journal, Profile, ProfileStaffPermissions, Project
 
 
 class AdminAuthorizationTests(TestCase):
@@ -109,6 +110,28 @@ class AdminAuthorizationTests(TestCase):
         self.permissions.save(update_fields=("view_auditlogs",))
 
         response = self.client.get(f"{reverse('admin.logs')}?page=1")
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_dashboard_tolerates_unknown_project_types(self) -> None:
+        owner = User.objects.create_user(username="odd-type-owner")
+        _ = Profile.objects.create(user=owner)
+        project = Project.objects.create(
+            user=owner,
+            project_name="Odd project",
+            project_description="x",
+            project_type="experimental",
+        )
+        _ = Journal.objects.create(
+            project=project,
+            type="untracked",
+            content="x",
+            minutes_worked=30,
+            reduced_minutes=30,
+        )
+
+        with patch("twisted_site.models.Profile.get_country", return_value="Unknown"):
+            response = self.client.get(reverse("admin.dash"))
 
         self.assertEqual(response.status_code, 200)
 

@@ -4,6 +4,7 @@ from unittest.mock import patch
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from requests import RequestException
 
 from twisted_site.hackatime import MeResponse
 from twisted_site.models import Profile
@@ -15,6 +16,14 @@ class _TokenResponse:
 
     def json(self) -> dict[str, str]:
         return {"access_token": "hackatime-access-token"}
+
+
+class _EmptyTokenResponse:
+    def raise_for_status(self) -> None:
+        pass
+
+    def json(self) -> dict[str, str]:
+        return {}
 
 
 class HackatimeCallbackTests(TestCase):
@@ -134,3 +143,51 @@ class HackatimeCallbackTests(TestCase):
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.hackatime_access_token, "")
         self.assertEqual(self.profile.hackatime_state, "")
+
+    def test_token_exchange_failure_is_reported(self) -> None:
+        with patch(
+            "twisted_site.views.client.auth.requests.post",
+            side_effect=RequestException("Hackatime unreachable"),
+        ):
+            response = self.client.get(
+                reverse("hackatime_callback"),
+                {"state": "expected-state", "code": "authorization-code"},
+            )
+
+        self.assertEqual(response.status_code, 502)
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.hackatime_access_token, "")
+
+    def test_missing_access_token_is_reported(self) -> None:
+        with patch(
+            "twisted_site.views.client.auth.requests.post",
+            return_value=_EmptyTokenResponse(),
+        ):
+            response = self.client.get(
+                reverse("hackatime_callback"),
+                {"state": "expected-state", "code": "authorization-code"},
+            )
+
+        self.assertEqual(response.status_code, 502)
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.hackatime_access_token, "")
+
+    def test_profile_lookup_failure_is_reported(self) -> None:
+        with (
+            patch(
+                "twisted_site.views.client.auth.requests.post",
+                return_value=_TokenResponse(),
+            ),
+            patch(
+                "twisted_site.views.client.auth.hackatime.me",
+                side_effect=RequestException("Hackatime unreachable"),
+            ),
+        ):
+            response = self.client.get(
+                reverse("hackatime_callback"),
+                {"state": "expected-state", "code": "authorization-code"},
+            )
+
+        self.assertEqual(response.status_code, 502)
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.hackatime_access_token, "")

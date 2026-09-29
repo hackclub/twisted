@@ -4,11 +4,13 @@ import json
 from contextlib import ExitStack
 from typing import cast, override
 from unittest.mock import patch
+from uuid import uuid4
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
+from slack_sdk.errors import SlackClientError
 
 from twisted_site import ari
 from twisted_site.models import Profile, Project, ProjectShip
@@ -286,9 +288,10 @@ class AriWebhookTests(TestCase):
         )
         self.ship = ProjectShip.objects.create(project=self.project)
 
-    def post_raw_webhook(self, body: bytes) -> HttpResponse:
+    def post_raw_webhook(self, body: bytes, *, delivery_id: str | None = None) -> HttpResponse:
         timestamp = str(_NOW)
-        delivery_id = "delivery-webhook-test"
+        if delivery_id is None:
+            delivery_id = f"delivery-{uuid4().hex}"
         expected_signature = _webhook_signature(body, timestamp, delivery_id)
         with (
             patch("twisted_site.ari.ARI_SIGNING_SECRET", "outbound-secret"),
@@ -560,3 +563,113 @@ class AriWebhookTests(TestCase):
         self.ship.refresh_from_db()
         self.assertEqual(self.ship.status, "pending")
         send_blocks.assert_not_called()
+
+    def test_malformed_payloads_return_bad_request(self) -> None:
+        external_id = f"twisted-{self.project.pk}"
+        base_ship: dict[str, object] = {
+            "title": "Reviewed title",
+            "description": "Description",
+            "track": "software",
+            "thumbnail_url": "https://example.com/new.png",
+            "repo_url": "https://github.com/example/repo",
+            "demo_url": "https://example.com/demo",
+            "hackatime_projects": [],
+        }
+        payloads: tuple[dict[str, object], ...] = (
+            {"external_id": external_id, "event": "ship.updated"},
+            {
+                "external_id": external_id,
+                "event": "ship.updated",
+                "ship": {**base_ship, "track": "unknown-track"},
+            },
+            {
+                "external_id": external_id,
+                "event": "ship.updated",
+                "ship": {**base_ship, "title": 5},
+            },
+            {
+                "external_id": external_id,
+                "event": "ship.updated",
+                "ship": {**base_ship, "hackatime_projects": "not-a-list"},
+            },
+            {"external_id": external_id, "event": "review.approved"},
+            {
+                "external_id": external_id,
+                "event": "review.approved",
+                "review": {"justification": "not-an-object"},
+            },
+        )
+
+        for payload in payloads:
+            with self.subTest(payload=payload):
+                response = self.post_webhook(payload)
+                self.assertEqual(response.status_code, 400)
+
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.project_name, "Test Project")
+
+    def test_ship_updated_trims_fields_to_model_limits(self) -> None:
+        long_url = f"https://example.com/{'a' * 600}"
+        with patch("twisted_site.views.ari.send_blocks"):
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "ship.updated",
+                    "ship": {
+                        "title": "T" * 80,
+                        "description": "Description",
+                        "track": "software",
+                        "thumbnail_url": long_url,
+                        "repo_url": "https://github.com/example/repo",
+                        "demo_url": "https://example.com/demo",
+                        "hackatime_projects": [],
+                    },
+                    "changes": [],
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.project_name, "T" * 50)
+        self.assertEqual(self.project.screenshot_url, "")
+        self.assertEqual(self.project.repo_url, "https://github.com/example/repo")
+
+    def test_duplicate_delivery_is_processed_once(self) -> None:
+        body = json.dumps(
+            {
+                "external_id": f"twisted-{self.project.pk}",
+                "event": "review.approved",
+                "review": {"note_to_maker": "Nice work", "justification": {}},
+            },
+        ).encode()
+
+        with patch("twisted_site.views.ari.send_blocks") as send_blocks:
+            first_response = self.post_raw_webhook(body, delivery_id="delivery-duplicate")
+            second_response = self.post_raw_webhook(body, delivery_id="delivery-duplicate")
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 200)
+        self.assertIn("already processed", second_response.content.decode())
+        self.ship.refresh_from_db()
+        self.assertEqual(self.ship.status, "approved")
+        send_blocks.assert_called_once()
+
+    def test_slack_failure_does_not_fail_the_delivery(self) -> None:
+        with (
+            self.assertLogs("twisted_site.views.ari", level="ERROR"),
+            patch(
+                "twisted_site.views.ari.send_blocks",
+                side_effect=SlackClientError("Slack is down"),
+            ),
+        ):
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "review.approved",
+                    "review": {"note_to_maker": "Nice work", "justification": {}},
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.ship.refresh_from_db()
+        self.assertEqual(self.ship.status, "approved")
