@@ -3,7 +3,7 @@ from typing import Any
 
 from django.conf import settings
 from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
+from slack_sdk.errors import SlackClientError
 from slack_sdk.web.slack_response import SlackResponse
 
 SLACK_TOKEN = settings.SLACK_TOKEN
@@ -34,5 +34,5 @@ def log_to_channel(message: str) -> None:
             )
         else:
             _ = slack_bot.chat_postMessage(channel=SLACK_LOG_CHANNEL, text=message)
-    except SlackApiError:
+    except SlackClientError:
         logger.exception("Failed to log to Slack channel, message %s", message)
