@@ -31,7 +31,10 @@ class DashboardView(AdminView):
             date = journal.created_at.date().isoformat()
             hours_logged_chart[date] = hours_logged_chart.get(date, 0) + hours
 
-            logged_project_type[journal.project.get_project_type_display()] += hours
+            project_type_label = journal.project.get_project_type_display()
+            logged_project_type[project_type_label] = (
+                logged_project_type.get(project_type_label, 0) + hours
+            )
 
             country = as_user(journal.project.user).profile.get_country()
 
@@ -41,7 +44,9 @@ class DashboardView(AdminView):
             if journal.project.is_shipped():
                 hours_shipped += hours
                 hours_shipped_chart[date] = hours_shipped_chart.get(date, 0) + hours
-                shipped_project_type[journal.project.get_project_type_display()] += hours
+                shipped_project_type[project_type_label] = (
+                    shipped_project_type.get(project_type_label, 0) + hours
+                )
 
         context["hours_logged"] = round(hours_logged, 2)
         # Rendered with json_script in the template (escapes </script> etc.).
