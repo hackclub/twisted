@@ -1,20 +1,8 @@
+{% load static %}
 <c-base>
     <c-slot name="head">
-        <script src="https://www.gstatic.com/charts/loader.js"></script>
-        <script>
-            // AreaChart needs a real date axis (it rejects a string domain), so build a
-            // typed DataTable from the [["Date", "Hours"], ...] payload.
-            function hoursDateData(raw) {
-                var data = new google.visualization.DataTable();
-                data.addColumn('date', 'Date');
-                data.addColumn('number', 'Hours');
-                (raw || []).slice(1).forEach(function (row) {
-                    var parts = String(row[0]).split('-');
-                    data.addRow([new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])), row[1]]);
-                });
-                return data;
-            }
-        </script>
+        <script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
+        <script src="{% static 'js/admin_charts.js' %}"></script>
     </c-slot>
     <c-ui.card class="bg-zinc-900 mb-4">
         <h3 class="text-lg font-semibold mb-2">Welcome back, {{ user.profile.slack_username }}!</h3>
@@ -52,116 +40,38 @@
                         <div>
                             <div class="text-center">Hours logged</div>
                             <div class="text-center text-lg font-bold">{{ hours_logged }}h</div>
-                            <div id="hours_logged_chart" class="mx-auto md:mx-0">
-                                <div class="text-center py-4">Loading chart...</div>
+                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                                <canvas id="hours_logged_chart"></canvas>
                             </div>
+                            {{ hours_logged_chart|json_script:"hours_logged_chart_data" }}
+                            <script>
+                                areaChart("hours_logged_chart", "hours_logged_chart_data");
+                            </script>
                         </div>
-                        <script>
-                            google.charts.load('current', {
-                                'packages': ['corechart']
-                            });
-                            google.charts.setOnLoadCallback(drawChart);
-
-                            function drawChart() {
-                                var data = hoursDateData({{ hours_logged_chart|safe }});
-
-                                var options = {
-                                    vAxis: {
-                                        minValue: 0
-                                    },
-                                    hAxis: {
-                                        format: 'EEE, d MMM'
-                                    },
-                                    animation: {
-                                        duration: 250,
-                                        startup: true
-                                    },
-                                    backgroundColor: {
-                                        fill: 'transparent'
-                                    },
-                                    theme: "maximized",
-                                    width: 240,
-                                    height: 160
-                                };
-
-                                var chart = new google.visualization.AreaChart(document.getElementById('hours_logged_chart'));
-                                chart.draw(data, options);
-                            }
-                        </script>
                     </div>
                     <div class="md:w-fit flex flex-row mx-auto">
                         <div>
                             <div class="text-center">Project type</div>
-                            <div id="logged_project_type" class="mx-auto md:mx-0 mt-6">
-                                <div class="text-center py-4">Loading chart...</div>
+                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                                <canvas id="logged_project_type"></canvas>
                             </div>
+                            {{ logged_project_type|json_script:"logged_project_type_data" }}
+                            <script>
+                                pieChart("logged_project_type", "logged_project_type_data");
+                            </script>
                         </div>
-                        <script>
-                            google.charts.load('current', {
-                                'packages': ['corechart']
-                            });
-                            google.charts.setOnLoadCallback(drawChart);
-
-                            function drawChart() {
-                                var data = google.visualization.arrayToDataTable({{ logged_project_type|safe }});
-
-                                var options = {
-                                    vAxis: {
-                                        minValue: 0
-                                    },
-                                    animation: {
-                                        duration: 250,
-                                        startup: true
-                                    },
-                                    backgroundColor: {
-                                        fill: 'transparent'
-                                    },
-                                    theme: "maximized",
-                                    width: 240,
-                                    height: 160
-                                };
-
-                                var chart = new google.visualization.PieChart(document.getElementById('logged_project_type'));
-                                chart.draw(data, options);
-                            }
-                        </script>
                     </div>
                     <div class="md:w-fit flex flex-row mx-auto">
                         <div>
                             <div class="text-center">Hours spent by region</div>
-                            <div id="chart_region_hours" class="mx-auto md:mx-0 mt-6">
-                                <div class="text-center py-4">Loading chart...</div>
+                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                                <canvas id="chart_region_hours"></canvas>
                             </div>
+                            {{ logged_region_hours|json_script:"logged_region_hours_data" }}
+                            <script>
+                                pieChart("chart_region_hours", "logged_region_hours_data");
+                            </script>
                         </div>
-                        <script>
-                            google.charts.load('current', {
-                                'packages': ['corechart']
-                            });
-                            google.charts.setOnLoadCallback(drawChart);
-
-                            function drawChart() {
-                                var data = google.visualization.arrayToDataTable({{ logged_region_hours|safe }});
-
-                                var options = {
-                                    vAxis: {
-                                        minValue: 0
-                                    },
-                                    animation: {
-                                        duration: 250,
-                                        startup: true
-                                    },
-                                    backgroundColor: {
-                                        fill: 'transparent'
-                                    },
-                                    theme: "maximized",
-                                    width: 240,
-                                    height: 160
-                                };
-
-                                var chart = new google.visualization.PieChart(document.getElementById('chart_region_hours'));
-                                chart.draw(data, options);
-                            }
-                        </script>
                     </div>
                 </div>
             </c-ui.card>
@@ -172,78 +82,25 @@
                     <div class="md:w-fit">
                         <div class="text-center">Hours shipped</div>
                         <div class="text-center text-lg font-bold">{{ hours_shipped }}h</div>
-                        <div id="hours_shipped_chart" class="mx-auto md:mx-0">
-                            <div class="text-center py-4">Loading chart...</div>
+                        <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                            <canvas id="hours_shipped_chart"></canvas>
                         </div>
+                        {{ hours_shipped_chart|json_script:"hours_shipped_chart_data" }}
                         <script>
-                            google.charts.load('current', {
-                                'packages': ['corechart']
-                            });
-                            google.charts.setOnLoadCallback(drawChart);
-
-                            function drawChart() {
-                                var data = hoursDateData({{ hours_shipped_chart|safe }});
-
-                                var options = {
-                                    vAxis: {
-                                        minValue: 0
-                                    },
-                                    hAxis: {
-                                        format: 'EEE, d MMM'
-                                    },
-                                    animation: {
-                                        duration: 250,
-                                        startup: true
-                                    },
-                                    backgroundColor: {
-                                        fill: 'transparent'
-                                    },
-                                    theme: "maximized",
-                                    width: 240,
-                                    height: 160
-                                };
-
-                                var chart = new google.visualization.AreaChart(document.getElementById('hours_shipped_chart'));
-                                chart.draw(data, options);
-                            }
+                            areaChart("hours_shipped_chart", "hours_shipped_chart_data");
                         </script>
                     </div>
                     <div class="md:w-fit flex flex-row">
                         <div>
                             <div class="text-center">Project type</div>
-                            <div id="shipped_project_type" class="mx-auto md:mx-0 mt-6">
-                                <div class="text-center py-4">Loading chart...</div>
+                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                                <canvas id="shipped_project_type"></canvas>
                             </div>
+                            {{ shipped_project_type|json_script:"shipped_project_type_data" }}
+                            <script>
+                                pieChart("shipped_project_type", "shipped_project_type_data");
+                            </script>
                         </div>
-                        <script>
-                            google.charts.load('current', {
-                                'packages': ['corechart']
-                            });
-                            google.charts.setOnLoadCallback(drawChart);
-
-                            function drawChart() {
-                                var data = google.visualization.arrayToDataTable({{ shipped_project_type|safe }});
-
-                                var options = {
-                                    vAxis: {
-                                        minValue: 0
-                                    },
-                                    animation: {
-                                        duration: 250,
-                                        startup: true
-                                    },
-                                    backgroundColor: {
-                                        fill: 'transparent'
-                                    },
-                                    theme: "maximized",
-                                    width: 240,
-                                    height: 160
-                                };
-
-                                var chart = new google.visualization.PieChart(document.getElementById('shipped_project_type'));
-                                chart.draw(data, options);
-                            }
-                        </script>
                     </div>
                 </div>
             </c-ui.card>

@@ -1,10 +1,8 @@
-{% load time_filters %}
+{% load static time_filters %}
 <c-base>
     <c-slot name="head">
-        <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-        <script src="
-        https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js
-        "></script>
+        <script src="{% static 'vendor/marked/marked.umd.js' %}"></script>
+        <script src="{% static 'vendor/dompurify/purify.min.js' %}"></script>
         <script>
             function popoverCloser(elem) {
                 elem.addEventListener('click', function(event) {
