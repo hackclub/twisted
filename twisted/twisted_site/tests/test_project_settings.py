@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
-from requests import HTTPError
+from requests import HTTPError, Timeout
 
 from twisted_site.models import Profile, Project, ProjectShip
 
@@ -119,10 +119,47 @@ class ProjectSettingsTests(TestCase):
                 self.assertEqual(self.project.screenshot_url, "")
                 log_to_channel.assert_not_called()
 
+    def test_missing_and_oversized_fields_are_rejected(self) -> None:
+        cases: tuple[dict[str, object], ...] = (
+            {"name": ""},
+            {"description": ""},
+            {"name": "x" * 51},
+            {"description": "x" * 2001},
+            {"repo": f"https://example.com/{'x' * 190}"},
+        )
+        for overrides in cases:
+            with self.subTest(overrides=overrides):
+                data = self.valid_post_data()
+                data.update(overrides)
+
+                with (
+                    patch(
+                        "twisted_site.views.client.project.hackatime.projects",
+                        return_value=[],
+                    ),
+                    patch("twisted_site.views.client.project.log_to_channel") as log_to_channel,
+                ):
+                    response = self.client.post(self.settings_url(), data)
+
+                self.assertEqual(response.status_code, 200)
+                self.project.refresh_from_db()
+                self.assertEqual(self.project.project_name, "Original")
+                self.assertEqual(self.project.project_description, "Original description")
+                log_to_channel.assert_not_called()
+
     def test_hackatime_failure_renders_settings_with_no_projects(self) -> None:
         with patch(
             "twisted_site.views.client.project.hackatime.projects",
             side_effect=HTTPError("Hackatime unavailable"),
+        ):
+            response = self.client.get(self.settings_url())
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_hackatime_timeout_renders_settings_with_no_projects(self) -> None:
+        with patch(
+            "twisted_site.views.client.project.hackatime.projects",
+            side_effect=Timeout("Hackatime unreachable"),
         ):
             response = self.client.get(self.settings_url())
 

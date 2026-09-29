@@ -291,3 +291,19 @@ class AdminWorkflowTests(TestCase):
 
         self.assertRedirects(response, reverse("admin.shop.regions"))
         self.assertFalse(ShopRegion.objects.exists())
+
+    def test_shop_region_update_requires_a_valid_region_id(self) -> None:
+        response = self.client.post(
+            reverse("admin.shop.regions"),
+            {"action": "update", "name": "New name"},
+        )
+
+        self.assertRedirects(response, reverse("admin.shop.regions"))
+
+    def test_shop_region_delete_requires_a_valid_region_id(self) -> None:
+        response = self.client.post(
+            reverse("admin.shop.regions"),
+            {"action": "delete"},
+        )
+
+        self.assertRedirects(response, reverse("admin.shop.regions"))

@@ -116,6 +116,23 @@ class ClientWorkflowTests(TestCase):
         self.profile.refresh_from_db()
         self.assertIsNone(self.profile.region)
 
+    def test_missing_shop_region_is_rejected(self) -> None:
+        response = self.client.post(reverse("fr.shop"), {"action": "setRegion"})
+
+        self.assertEqual(response.status_code, 400)
+        self.profile.refresh_from_db()
+        self.assertIsNone(self.profile.region)
+
+    def test_shop_ignores_unknown_pathway_parameter(self) -> None:
+        response = self.client.get(reverse("fr.shop"), {"pathway": 999})
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_dashboard_ignores_non_numeric_project_parameter(self) -> None:
+        response = self.client.get(reverse("dashboard"), {"project": "abc"})
+
+        self.assertEqual(response.status_code, 200)
+
     def test_project_detail_hides_journals_and_reviews_from_other_users(self) -> None:
         other_user = User.objects.create_user(username="detail-other")
         _ = Profile.objects.create(user=other_user, slack_username="Other User")

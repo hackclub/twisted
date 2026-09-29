@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
+from requests import HTTPError
 
 from twisted_site.hackatime import HackatimeProject
 from twisted_site.models import Journal, Profile, Project, ProjectShip
@@ -91,6 +92,43 @@ class HackatimeJournalWorkflowTests(JournalContentMixin, TestCase):
 
     def test_hackatime_journal_requires_enough_prose(self) -> None:
         response = self.post_journal(self.content(words=5, images=2))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Journal.objects.exists())
+
+    def test_hackatime_journal_reports_hackatime_outage(self) -> None:
+        journal_url = reverse(
+            "fr.projects.journals.new.hackatime",
+            kwargs={"project_id": self.project.pk},
+        )
+        with patch.object(
+            Project,
+            "hackatime_time_unjournaled",
+            side_effect=HTTPError("Hackatime unavailable"),
+        ):
+            get_response = self.client.get(journal_url)
+            post_response = self.client.post(
+                journal_url,
+                {"content": self.content(words=60, images=2)},
+            )
+
+        self.assertEqual(get_response.status_code, 200)
+        self.assertContains(get_response, "Hackatime is unavailable")
+        self.assertEqual(post_response.status_code, 200)
+        self.assertFalse(Journal.objects.exists())
+
+    def test_hackatime_journal_missing_content_does_not_crash(self) -> None:
+        with (
+            patch.object(Project, "get_hackatime_projects", return_value=self.hackatime_projects),
+            patch("twisted_site.views.client.journal.log_to_channel"),
+        ):
+            response = self.client.post(
+                reverse(
+                    "fr.projects.journals.new.hackatime",
+                    kwargs={"project_id": self.project.pk},
+                ),
+                {},
+            )
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Journal.objects.exists())
@@ -187,12 +225,26 @@ class UntrackedJournalWorkflowTests(JournalContentMixin, TestCase):
         response = self.post_journal(181, self.content(words=100, images=0))
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "cannot be more than 180 minutes")
         self.assertFalse(Journal.objects.exists())
 
     def test_untracked_journal_cannot_be_negative(self) -> None:
         response = self.post_journal(-1, self.content(words=100, images=0))
 
         self.assertEqual(response.status_code, 200)
+        self.assertFalse(Journal.objects.exists())
+
+    def test_non_numeric_time_logged_is_rejected(self) -> None:
+        response = self.client.post(
+            reverse(
+                "fr.projects.journals.new.untracked",
+                kwargs={"project_id": self.project.pk},
+            ),
+            {"content": self.content(words=60, images=0), "time_logged": "abc"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "whole number")
         self.assertFalse(Journal.objects.exists())
 
     def test_non_owner_cannot_create_untracked_journal(self) -> None:
@@ -331,6 +383,12 @@ class JournalMutationTests(JournalContentMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.journal.refresh_from_db()
         self.assertEqual(self.journal.content, "Original content")
+
+    def test_editing_a_missing_journal_returns_not_found(self) -> None:
+        missing_url = reverse("fr.projects.journals.edit", kwargs={"id": 999999})
+
+        self.assertEqual(self.client.get(missing_url).status_code, 404)
+        self.assertEqual(self.client.post(missing_url, {"content": "x"}).status_code, 404)
 
     def test_owner_can_edit_untracked_journal(self) -> None:
         new_content = self.content(words=20, images=1)

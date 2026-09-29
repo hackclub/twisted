@@ -1,4 +1,4 @@
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
@@ -33,16 +33,21 @@ class ShopView(View):
         context["pathways"] = pathways
         shop_items: list[ShopItem] = []
         pathway_id = request.GET.get("pathway", "")
-        if pathway_id.isnumeric():
-            pathway = Pathway.objects.get(id=int(pathway_id))
-            context["pathway"] = pathway
-            shop_items = list(ShopItem.objects.filter(pathway=pathway))
-            pathway_timespent = PathwayTimeSpent.objects.filter(
-                pathway=pathway,
-                user=request.user,
-            ).first()
-            if pathway_timespent is not None:
-                context["pathway_timespent"] = pathway_timespent
+        try:
+            pathway_pk = int(pathway_id)
+        except ValueError:
+            pathway_pk = None
+        if pathway_pk is not None:
+            pathway = Pathway.objects.filter(id=pathway_pk).first()
+            if pathway is not None:
+                context["pathway"] = pathway
+                shop_items = list(ShopItem.objects.filter(pathway=pathway))
+                pathway_timespent = PathwayTimeSpent.objects.filter(
+                    pathway=pathway,
+                    user=request.user,
+                ).first()
+                if pathway_timespent is not None:
+                    context["pathway_timespent"] = pathway_timespent
 
         parsed_shop_items: list[dict[str, object]] = []
         profile = as_user(request.user).profile
@@ -76,8 +81,12 @@ class ShopView(View):
             return redirect("homepage")
 
         if request.POST.get("action") == "setRegion":
+            try:
+                region_pk = int(request.POST.get("region", ""))
+            except ValueError:
+                return HttpResponseBadRequest("Invalid region")
             profile: Profile = as_user(request.user).profile
-            profile.region = get_object_or_404(ShopRegion, id=request.POST.get("region"))
+            profile.region = get_object_or_404(ShopRegion, id=region_pk)
             profile.save()
 
             return redirect(request.get_full_path())

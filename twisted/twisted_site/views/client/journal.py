@@ -1,15 +1,50 @@
 import math
 import re
+from logging import getLogger
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
+from requests import RequestException
 
 from twisted_site.models import Journal, Project, TemplateContext
 from twisted_site.slack import log_to_channel
 
+logger = getLogger(__name__)
+
 HACKATIME_MAX_LOGGABLE_MINUTES = 999 * 60
+UNTRACKED_MAX_LOGGABLE_MINUTES = 60 * 3
 IMAGE_REGEX = r"!\[([^\]]*)\]\([^)]+\)"
+
+HACKATIME_UNAVAILABLE_MESSAGE = (
+    "Hackatime is unavailable right now, so this journal cannot be logged. "
+    "Please try again in a few minutes."
+)
+UNTRACKED_DEFLATION_MESSAGE = (
+    "logging untracked journals may lead to heavy time deflation. "
+    "for hardware projects, consider using lapse and sync to hackatime."
+)
+
+
+def _hackatime_unjournaled_minutes(project: Project) -> int | None:
+    """Return unjournaled Hackatime minutes, or None when Hackatime cannot be reached."""
+    try:
+        return project.hackatime_time_unjournaled()
+    except RequestException:
+        logger.exception("Could not load Hackatime time for project %s", project.id)
+        return None
+
+
+def _prose_length(content: str) -> int:
+    """Count the words in journal content, ignoring image markdown."""
+    without_images = re.sub(IMAGE_REGEX, "", content)
+    return len(" ".join(without_images.split()))
+
+
+def _prose_requirement(required_length: int, content_length: int) -> str:
+    return (
+        f"Content length must be at least {required_length} characters ({content_length} written)."
+    )
 
 
 class NewProjectHackatimeJournal(View):
@@ -30,18 +65,19 @@ class NewProjectHackatimeJournal(View):
         if project.user != request.user:
             return redirect("dashboard")
 
+        if project.is_shipped():
+            return redirect("fr.projects.detail", project_id)
+
         context["project"] = project
         context["max_minutes"] = HACKATIME_MAX_LOGGABLE_MINUTES
         context["info"] = info
 
-        if project.is_shipped():
-            return redirect("fr.projects.detail", project_id)
-
-        log_minutes = project.hackatime_time_unjournaled()
-
-        log_minutes = min(log_minutes, HACKATIME_MAX_LOGGABLE_MINUTES)
-
-        context["log_minutes"] = log_minutes
+        unjournaled_minutes = _hackatime_unjournaled_minutes(project)
+        if unjournaled_minutes is None:
+            context["log_minutes"] = 0
+            context["info"] = HACKATIME_UNAVAILABLE_MESSAGE
+        else:
+            context["log_minutes"] = min(unjournaled_minutes, HACKATIME_MAX_LOGGABLE_MINUTES)
 
         return render(request, "client/projects/journal/new_hackatime.html", context=context)
 
@@ -50,7 +86,13 @@ class NewProjectHackatimeJournal(View):
         if project.user != request.user:
             return redirect("dashboard")
 
-        available_minutes = project.hackatime_time_unjournaled()
+        if project.is_shipped():
+            return redirect("fr.projects.detail", project_id)
+
+        available_minutes = _hackatime_unjournaled_minutes(project)
+        if available_minutes is None:
+            return self.get(request, project_id)
+
         if available_minutes <= 0:
             return self.get(
                 request,
@@ -60,16 +102,12 @@ class NewProjectHackatimeJournal(View):
 
         reduced_minutes = min(available_minutes, HACKATIME_MAX_LOGGABLE_MINUTES)
 
-        if project.is_shipped():
-            return redirect("fr.projects.detail", project_id)
-
-        content = request.POST["content"]
+        content = request.POST.get("content", "")
 
         image_count = len(re.findall(IMAGE_REGEX, content))
         required_image_count = math.ceil(max(1, reduced_minutes / 180))
 
-        content_no_images = re.sub(IMAGE_REGEX, "", content)
-        content_length = len(" ".join(content_no_images.split()))
+        content_length = _prose_length(content)
 
         if image_count < required_image_count:
             return self.get(
@@ -78,12 +116,13 @@ class NewProjectHackatimeJournal(View):
                 info=f"please add atleast {required_image_count - image_count} more image(s) to log this journal!",
                 context={"content": content},
             )
-        required_content_length = reduced_minutes // 3
-        if content_length < min(100, required_content_length):
+
+        required_content_length = min(100, reduced_minutes // 3)
+        if content_length < required_content_length:
             return self.get(
                 request,
                 project_id,
-                info=f"Content length must be more than 20 characters per hour!<br>({content_length} of {required_content_length} required)",
+                info=_prose_requirement(required_content_length, content_length),
                 context={"content": content},
             )
 
@@ -103,9 +142,6 @@ class NewProjectHackatimeJournal(View):
         return self.get(request, project_id, context={"success": True})
 
 
-UNTRACKED_MAX_LOGGABLE_MINUTES = 60 * 3
-
-
 class NewProjectUntrackedJournal(View):
     def get(
         self,
@@ -117,7 +153,6 @@ class NewProjectUntrackedJournal(View):
         if context is None:
             context = TemplateContext()
 
-        context["info"] = info
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
@@ -130,18 +165,8 @@ class NewProjectUntrackedJournal(View):
             return redirect("fr.projects.journals.new.hackatime", project_id=project_id)
 
         context["project"] = project
-
-        log_minutes = project.hackatime_time_unjournaled()
-
-        log_minutes = min(log_minutes, HACKATIME_MAX_LOGGABLE_MINUTES)
-
-        context["log_minutes"] = log_minutes
-
         context["max_mins"] = UNTRACKED_MAX_LOGGABLE_MINUTES
-
-        context["info"] = (
-            "logging untracked journals may lead to heavy time deflation. for hardware projects, consider using lapse and sync to hackatime."
-        )
+        context["info"] = info if info not in (None, "") else UNTRACKED_DEFLATION_MESSAGE
 
         return render(request, "client/projects/journal/new_untracked.html", context=context)
 
@@ -153,11 +178,19 @@ class NewProjectUntrackedJournal(View):
         if project.project_type == "software":
             return redirect("fr.projects.journals.new.hackatime", project_id=project_id)
 
-        content = request.POST["content"]
-        time_logged = int(request.POST["time_logged"])
+        content = request.POST.get("content", "")
 
-        content_no_images = re.sub(IMAGE_REGEX, "", content)
-        content_length = len(" ".join(content_no_images.split()))
+        try:
+            time_logged = int(request.POST.get("time_logged", ""))
+        except ValueError:
+            return self.get(
+                request,
+                project_id,
+                info="Time logged must be a whole number of minutes.",
+                context={"content": content},
+            )
+
+        content_length = _prose_length(content)
 
         if time_logged > UNTRACKED_MAX_LOGGABLE_MINUTES:
             return self.get(
@@ -175,11 +208,12 @@ class NewProjectUntrackedJournal(View):
                 context={"content": content},
             )
 
-        if content_length < min(100, time_logged * 2):
+        required_content_length = min(100, time_logged * 2)
+        if content_length < required_content_length:
             return self.get(
                 request,
                 project_id,
-                info=f"Content length must be more than 120 characters per hour!<br>({len(content)} of {time_logged} required)",
+                info=_prose_requirement(required_content_length, content_length),
                 context={"content": content},
             )
 
@@ -251,7 +285,7 @@ class EditJournal(View):
         info: str | None = None,
         context: TemplateContext | None = None,  # pyrefly: ignore[explicit-any]
     ) -> HttpResponse:
-        journal = Journal.objects.get(id=id)
+        journal = get_object_or_404(Journal, id=id)
         if journal.project.is_shipped():
             return redirect("fr.projects.detail", project_id=journal.project.id)
         if journal.project.user != request.user:
@@ -264,7 +298,7 @@ class EditJournal(View):
         return render(request, "client/projects/journal/edit.html", context)
 
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
-        journal = Journal.objects.get(id=id)
+        journal = get_object_or_404(Journal, id=id)
 
         if journal.project.is_shipped():
             return redirect("fr.projects.detail", project_id=journal.project.id)
@@ -272,12 +306,11 @@ class EditJournal(View):
             return redirect("fr.projects.detail", journal.project.id)
 
         reduced_minutes = journal.reduced_minutes
-        content = request.POST["content"]
+        content = request.POST.get("content", "")
         image_count = len(re.findall(IMAGE_REGEX, content))
         required_image_count = math.ceil(max(1, reduced_minutes / 180))
 
-        content_no_images = re.sub(IMAGE_REGEX, "", content)
-        content_length = len(" ".join(content_no_images.split()))
+        content_length = _prose_length(content)
 
         if image_count < required_image_count:
             return self.get(
@@ -286,12 +319,13 @@ class EditJournal(View):
                 info=f"please add atleast {required_image_count - image_count} more image(s) to log this journal!",
                 context={"content": content},
             )
-        required_content_length = reduced_minutes // 3
-        if content_length < min(100, required_content_length):
+
+        required_content_length = min(100, reduced_minutes // 3)
+        if content_length < required_content_length:
             return self.get(
                 request,
                 journal.id,
-                info=f"Content length must be more than 20 characters per hour!<br>({content_length} of {required_content_length} required)",
+                info=_prose_requirement(required_content_length, content_length),
                 context={"content": content},
             )
 

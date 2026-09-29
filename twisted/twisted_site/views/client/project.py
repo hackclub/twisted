@@ -5,7 +5,7 @@ from operator import attrgetter
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
-from requests import HTTPError, RequestException
+from requests import RequestException
 
 from twisted_site import ari, hackatime
 from twisted_site.models import (
@@ -19,6 +19,16 @@ from twisted_site.slack import log_to_channel
 from twisted_site.validation import invalid_http_urls
 
 logger = getLogger(__name__)
+
+MINIMUM_SHIP_MINUTES = 60
+MAX_PROJECT_NAME_LENGTH = 50
+# Keep in sync with the Project model's field max_length values.
+MAX_PROJECT_DESCRIPTION_LENGTH = 2000
+URL_MAX_LENGTHS = {
+    "repo": 200,
+    "playable_url": 200,
+    "screenshot_url": 500,
+}
 
 
 def _or_none(value: str) -> str:
@@ -114,7 +124,7 @@ class ProjectSettings(View):
 
         try:
             context["hackatime_projects"] = hackatime.projects(profile.hackatime_access_token)
-        except HTTPError:
+        except RequestException:
             no_projects: list[hackatime.HackatimeProject] = []
             context["hackatime_projects"] = no_projects
 
@@ -135,28 +145,46 @@ class ProjectSettings(View):
         if project.is_shipped():
             return redirect("fr.projects.detail", project_id)
 
-        project_type = request.POST["type"]
+        project_type = request.POST.get("type", "")
         if project_type not in PROJECT_TYPE_CHOICES:
             return HttpResponse("naughty! you arent supposed to do this!")
 
+        project_name = request.POST.get("name", "").strip()
+        project_description = request.POST.get("description", "").strip()
         url_fields = {
             "repo": request.POST.get("repo", "").strip(),
             "playable_url": request.POST.get("playable_url", "").strip(),
             "screenshot_url": request.POST.get("screenshot_url", "").strip(),
         }
+
+        errors: list[str] = []
+        if project_name == "":
+            errors.append("Project name is required.")
+        elif len(project_name) > MAX_PROJECT_NAME_LENGTH:
+            errors.append(f"Project name must be at most {MAX_PROJECT_NAME_LENGTH} characters.")
+        if project_description == "":
+            errors.append("Project description is required.")
+        elif len(project_description) > MAX_PROJECT_DESCRIPTION_LENGTH:
+            errors.append(
+                f"Project description must be at most {MAX_PROJECT_DESCRIPTION_LENGTH} characters.",
+            )
+
         invalid_fields = invalid_http_urls(url_fields)
         if len(invalid_fields) > 0:
             labels = ", ".join(
                 field.replace("_url", "").replace("_", " ").title() for field in invalid_fields
             )
-            return self.get(
-                request,
-                project_id,
-                error=f"{labels} must be full http:// or https:// links.",
-            )
+            errors.append(f"{labels} must be full http:// or https:// links.")
+        for field, max_length in URL_MAX_LENGTHS.items():
+            if len(url_fields[field]) > max_length:
+                label = field.replace("_url", "").replace("_", " ").title()
+                errors.append(f"{label} must be at most {max_length} characters.")
 
-        project.project_name = request.POST["name"]
-        project.project_description = request.POST["description"]
+        if len(errors) > 0:
+            return self.get(request, project_id, error=" ".join(errors))
+
+        project.project_name = project_name
+        project.project_description = project_description
         project.project_type = project_type
         project.hackatime_project_names = request.POST.getlist("hackatime")
         project.repo_url = url_fields["repo"]
@@ -235,6 +263,14 @@ class SubmitProject(View):
 
         if not as_user(project.user).profile.ysws_eligible:
             return self.get(request, project_id)
+
+        logged_minutes = project.time_logged()
+        if logged_minutes < MINIMUM_SHIP_MINUTES:
+            context["info"] = (
+                f"You need at least {MINIMUM_SHIP_MINUTES} minutes logged before shipping "
+                f"(you have {logged_minutes})."
+            )
+            return self.get(request, project_id, context=context)
 
         if not ari.is_configured():
             context["info"] = (
