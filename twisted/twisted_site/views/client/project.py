@@ -56,19 +56,18 @@ class ProjectDetail(View):
         context["first_pass_status"] = "pending"
         context["second_pass_status"] = "pending"
 
-        if not owner:
-            # Journals, ship history and reviewer feedback are private to the owner.
-            # Everyone else gets the same public summary the discover listing shows.
-            context["journals"] = []  # pyrefly: ignore[implicit-any-empty-container]
-            return render(request, "client/projects/detail.html", context)
-
+        # Journals are public; ship history and reviewer feedback are owner-only.
         journals = project.journals.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
-        ships = project.ships.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+        ships = (
+            project.ships.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
+            if owner
+            else ProjectShip.objects.none()
+        )
 
         context["journals"] = list(chain(journals, ships))
         context["journals"].sort(key=attrgetter("created_at"), reverse=True)
 
-        if project.latest_ship() is not None:
+        if owner and project.latest_ship() is not None:
             if ari.is_configured():
                 try:
                     status = ari.get_project_status(project)

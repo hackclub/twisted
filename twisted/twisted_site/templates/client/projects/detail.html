@@ -145,14 +145,13 @@
                     </div>
                 {% endif %}
             {% endif %}
-            {% if owner %}
             <div class="border border-border bg-card">
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary px-3 py-2">
                     <div>
                         <div class="font-bold">Project activity</div>
                         <div class="text-xs text-muted-foreground">Devlogs and progress....</div>
                     </div>
-                    {% if not project.is_shipped %}
+                    {% if owner and not project.is_shipped %}
                         <button type="button"
                                 onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                 class="border border-border bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80 active:translate-y-px">
@@ -174,7 +173,7 @@
                                             <span class="text-muted-foreground"
                                                   title="{{ journal.created_at }}">{{ journal.created_at|naturaltime }}</span>
                                         </div>
-                                        {% if project.user == request.user %}
+                                        {% if owner %}
                                             {% if not project.is_shipped %}
                                                 <div class="flex shrink-0 gap-1">
                                                     {% if journal.type == "untracked" %}
@@ -209,7 +208,7 @@
                                     </div>
                                 </article>
                             {% endwith %}
-                        {% elif activity_item.status %}
+                        {% elif owner and activity_item.status %}
                             {# bad way to check if activity item is a ship #}
                             {% with activity_item as ship %}
                                 {% if ship.status != "pending" %}
@@ -256,8 +255,12 @@
                     {% empty %}
                         <div class="px-4 py-10 text-center">
                             <div class="font-bold">No journal entries</div>
-                            <div class="mt-1 text-sm text-muted-foreground">Your project progress will appear here... after you journal</div>
-                            {% if not project.is_shipped %}
+                            {% if owner %}
+                                <div class="mt-1 text-sm text-muted-foreground">Your project progress will appear here... after you journal</div>
+                            {% else %}
+                                <div class="mt-1 text-sm text-muted-foreground">This project doesn't have any devlogs yet.</div>
+                            {% endif %}
+                            {% if owner and not project.is_shipped %}
                                 <button type="button"
                                         onclick="createWindow(`journal: ${document.getElementById('project-title').value}`, '{% url 'fr.projects.journals.new.hackatime' project.pk %}')"
                                         class="mt-4 border border-border bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground hover:bg-primary/80">
@@ -268,12 +271,6 @@
                     {% endfor %}
                 </div>
             </div>
-            {% else %}
-                <div class="border border-border bg-card px-4 py-8 text-center">
-                    <div class="font-bold">Journals are private</div>
-                    <div class="mt-1 text-sm text-muted-foreground">Only the project owner can see devlogs and review feedback.</div>
-                </div>
-            {% endif %}
         </div>
         <div class="status-field-border flex shrink-0 items-center justify-between bg-card p-2 border-t border-border text-xs">
             <span>{{ project.journals.count }} journal{{ project.journals.count|pluralize }}</span>

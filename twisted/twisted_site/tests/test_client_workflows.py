@@ -133,26 +133,26 @@ class ClientWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    def test_project_detail_hides_journals_and_reviews_from_other_users(self) -> None:
+    def test_project_detail_shows_journals_but_hides_review_feedback_from_others(self) -> None:
         other_user = User.objects.create_user(username="detail-other")
         _ = Profile.objects.create(user=other_user, slack_username="Other User")
         project = Project.objects.create(
             user=self.user,
-            project_name="Private devlog project",
+            project_name="Public devlog project",
             project_description="Public description",
             project_type="software",
         )
         _ = Journal.objects.create(
             project=project,
             type="hackatime",
-            content="secret devlog content",
+            content="shared devlog content",
             minutes_worked=120,
             reduced_minutes=120,
         )
         ship = ProjectShip.objects.create(project=project, status="rejected")
-        ship.note_to_maker = "secret reviewer note"
+        ship.note_to_maker = "private reviewer note"
         ship.final_status = "approved"
-        ship.final_note_to_maker = "secret final note"
+        ship.final_note_to_maker = "private final note"
         ship.save()
 
         detail_url = reverse("fr.projects.detail", kwargs={"project_id": project.pk})
@@ -168,19 +168,18 @@ class ClientWorkflowTests(TestCase):
         # The ARI status lookup only happens for the owner.
         get_status.assert_called_once()
 
-        self.assertContains(owner_response, "secret devlog content")
-        self.assertContains(owner_response, "secret reviewer note")
-        self.assertContains(owner_response, "secret final note")
+        self.assertContains(owner_response, "shared devlog content")
+        self.assertContains(owner_response, "private reviewer note")
+        self.assertContains(owner_response, "private final note")
         self.assertContains(owner_response, "permanently rejected")
 
         self.assertEqual(other_response.status_code, 200)
-        self.assertContains(other_response, "Private devlog project")
+        self.assertContains(other_response, "shared devlog content")
         self.assertContains(other_response, "Public description")
-        self.assertContains(other_response, "Journals are private")
-        self.assertNotContains(other_response, "secret devlog content")
-        self.assertNotContains(other_response, "secret reviewer note")
-        self.assertNotContains(other_response, "secret final note")
+        self.assertNotContains(other_response, "private reviewer note")
+        self.assertNotContains(other_response, "private final note")
         self.assertNotContains(other_response, "permanently rejected")
+        self.assertNotContains(other_response, "Project shipped")
         self.assertNotContains(other_response, "+ New journal")
 
     def test_approved_project_shows_shipped_badge_to_other_users(self) -> None:
@@ -202,5 +201,22 @@ class ClientWorkflowTests(TestCase):
             response = self.client.get(detail_url)
 
         self.assertContains(response, "shipped")
-        self.assertContains(response, "Journals are private")
         get_status.assert_not_called()
+
+    def test_new_journal_button_is_only_shown_to_the_owner(self) -> None:
+        other_user = User.objects.create_user(username="button-other")
+        _ = Profile.objects.create(user=other_user)
+        project = Project.objects.create(
+            user=self.user,
+            project_name="Button project",
+            project_description="Description",
+            project_type="software",
+        )
+        detail_url = reverse("fr.projects.detail", kwargs={"project_id": project.pk})
+
+        owner_response = self.client.get(detail_url)
+        self.client.force_login(other_user)
+        other_response = self.client.get(detail_url)
+
+        self.assertContains(owner_response, "+ New journal")
+        self.assertNotContains(other_response, "+ New journal")
