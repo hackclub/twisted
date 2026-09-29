@@ -16,6 +16,7 @@ from twisted_site.models import (
     as_user,
 )
 from twisted_site.slack import log_to_channel
+from twisted_site.validation import invalid_http_urls
 
 logger = getLogger(__name__)
 
@@ -83,11 +84,17 @@ class ProjectDetail(View):
 
 
 class ProjectSettings(View):
-    def get(self, request: HttpRequest, project_id: int) -> HttpResponse:
+    def get(
+        self,
+        request: HttpRequest,
+        project_id: int,
+        error: str | None = None,
+    ) -> HttpResponse:
         if self.request.user.is_anonymous:
             return redirect("homepage")
 
         context = TemplateContext()
+        context["error"] = error
 
         project = get_object_or_404(Project, id=project_id)
         context["project"] = project
@@ -128,13 +135,29 @@ class ProjectSettings(View):
         if project_type not in PROJECT_TYPE_CHOICES:
             return HttpResponse("naughty! you arent supposed to do this!")
 
+        url_fields = {
+            "repo": request.POST.get("repo", "").strip(),
+            "playable_url": request.POST.get("playable_url", "").strip(),
+            "screenshot_url": request.POST.get("screenshot_url", "").strip(),
+        }
+        invalid_fields = invalid_http_urls(url_fields)
+        if invalid_fields:
+            labels = ", ".join(
+                field.replace("_url", "").replace("_", " ").title() for field in invalid_fields
+            )
+            return self.get(
+                request,
+                project_id,
+                error=f"{labels} must be full http:// or https:// links.",
+            )
+
         project.project_name = request.POST["name"]
         project.project_description = request.POST["description"]
         project.project_type = project_type
         project.hackatime_project_names = request.POST.getlist("hackatime")
-        project.repo_url = request.POST["repo"]
-        project.playable_url = request.POST.get("playable_url", "")
-        project.screenshot_url = request.POST.get("screenshot_url", "")
+        project.repo_url = url_fields["repo"]
+        project.playable_url = url_fields["playable_url"]
+        project.screenshot_url = url_fields["screenshot_url"]
         project.save()
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"

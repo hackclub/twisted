@@ -62,7 +62,10 @@
             <div class="text-xs uppercase text-ink-400">Repo</div>
             <div class="mt-1 text-sm break-all">
                 {% if project.repo_url %}
-                    <a class="underline" target="_blank" href="{{ project.repo_url }}">{{ project.repo_url }}</a>
+                    <a class="underline"
+                       target="_blank"
+                       rel="noreferrer"
+                       href="{{ project.repo_url }}">{{ project.repo_url }}</a>
                 {% else %}
                     not set
                 {% endif %}
@@ -72,7 +75,10 @@
             <div class="text-xs uppercase text-ink-400">Playable URL</div>
             <div class="mt-1 text-sm break-all">
                 {% if project.playable_url %}
-                    <a class="underline" target="_blank" href="{{ project.playable_url }}">{{ project.playable_url }}</a>
+                    <a class="underline"
+                       target="_blank"
+                       rel="noreferrer"
+                       href="{{ project.playable_url }}">{{ project.playable_url }}</a>
                 {% else %}
                     not set
                 {% endif %}

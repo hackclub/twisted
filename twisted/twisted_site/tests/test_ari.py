@@ -310,6 +310,36 @@ class AriWebhookTests(TestCase):
         self.assertEqual(self.project.hackatime_project_names, ["New Project"])
         send_blocks.assert_called_once()
 
+    def test_ship_updated_event_drops_non_http_urls(self) -> None:
+        self.project.repo_url = "https://github.com/example/original"
+        self.project.playable_url = "https://example.com/original"
+        self.project.screenshot_url = "https://example.com/original.png"
+        self.project.save(update_fields=("repo_url", "playable_url", "screenshot_url"))
+
+        with patch("twisted_site.views.ari.send_blocks"):
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "ship.updated",
+                    "ship": {
+                        "title": "Reviewed title",
+                        "description": "Reviewed description",
+                        "track": "software",
+                        "thumbnail_url": "javascript:alert(1)",
+                        "repo_url": "data:text/html,<script>alert(1)</script>",
+                        "demo_url": "ftp://example.com/new-demo",
+                        "hackatime_projects": [],
+                    },
+                    "changes": [],
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.screenshot_url, "")
+        self.assertEqual(self.project.repo_url, "")
+        self.assertEqual(self.project.playable_url, "")
+
     def test_review_changes_event_requests_changes(self) -> None:
         with patch("twisted_site.views.ari.send_blocks") as send_blocks:
             response = self.post_webhook(

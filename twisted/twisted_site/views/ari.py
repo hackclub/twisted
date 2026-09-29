@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from twisted_site.ari import verify_webhook_signature
 from twisted_site.models import Project, as_user
 from twisted_site.slack import send_blocks
+from twisted_site.validation import sanitize_http_url
 
 
 def _escape_mrkdwn(text: str) -> str:
@@ -219,9 +220,9 @@ class AriView(View):
             project.project_name = data["ship"]["title"]
             project.project_description = data["ship"]["description"]
             project.project_type = data["ship"]["track"]
-            project.screenshot_url = data["ship"]["thumbnail_url"]
-            project.repo_url = data["ship"]["repo_url"]
-            project.playable_url = data["ship"]["demo_url"]
+            project.screenshot_url = sanitize_http_url(data["ship"]["thumbnail_url"])
+            project.repo_url = sanitize_http_url(data["ship"]["repo_url"])
+            project.playable_url = sanitize_http_url(data["ship"]["demo_url"])
             project.hackatime_project_names = data["ship"]["hackatime_projects"]
             project.save()
             _ = send_blocks(

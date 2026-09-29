@@ -11,6 +11,11 @@
         </div>
         <form method="post" class="p-4 space-y-3">
             {% csrf_token %}
+            {% if error %}
+                <div class="border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
+                    {{ error }}
+                </div>
+            {% endif %}
             <div class="flex flex-col gap-1">
                 <label for="name" class="font-bold">Project name</label>
                 <input id="name"

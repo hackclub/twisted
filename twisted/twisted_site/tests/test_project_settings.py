@@ -90,6 +90,35 @@ class ProjectSettingsTests(TestCase):
         self.assertEqual(self.project.project_type, "software")
         log_to_channel.assert_not_called()
 
+    def test_non_http_urls_are_rejected_without_changes(self) -> None:
+        invalid_values = {
+            "repo": ("javascript:alert(1)", "Repo"),
+            "playable_url": ("data:text/html,<script>alert(1)</script>", "Playable"),
+            "screenshot_url": ("ftp://example.com/image.png", "Screenshot"),
+        }
+        for field, (value, label) in invalid_values.items():
+            with self.subTest(field=field):
+                data = self.valid_post_data()
+                data[field] = value
+
+                with (
+                    patch(
+                        "twisted_site.views.client.project.hackatime.projects",
+                        return_value=[],
+                    ),
+                    patch("twisted_site.views.client.project.log_to_channel") as log_to_channel,
+                ):
+                    response = self.client.post(self.settings_url(), data)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, f"{label} must be full http:// or https:// links.")
+                self.project.refresh_from_db()
+                self.assertEqual(self.project.project_name, "Original")
+                self.assertEqual(self.project.repo_url, "")
+                self.assertEqual(self.project.playable_url, "")
+                self.assertEqual(self.project.screenshot_url, "")
+                log_to_channel.assert_not_called()
+
     def test_hackatime_failure_renders_settings_with_no_projects(self) -> None:
         with patch(
             "twisted_site.views.client.project.hackatime.projects",
