@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.test import Client, SimpleTestCase, TestCase
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from twisted_site import ari
@@ -128,6 +128,102 @@ class WebhookSignatureTests(SimpleTestCase):
                 ),
             )
 
+    def test_rejects_signature_forged_with_an_empty_secret(self) -> None:
+        message = f"{_TIMESTAMP}.{_DELIVERY_ID}.".encode() + _BODY
+        forged_signature = hmac.new(b"", message, hashlib.sha256).hexdigest()
+
+        with (
+            patch("twisted_site.ari.ARI_WEBHOOK_SECRET", ""),
+            patch("twisted_site.ari.time.time", return_value=_NOW),
+        ):
+            self.assertFalse(
+                ari.verify_webhook_signature(
+                    _BODY,
+                    _TIMESTAMP,
+                    _DELIVERY_ID,
+                    forged_signature,
+                ),
+            )
+
+    def test_missing_secret_fails_closed_without_raising(self) -> None:
+        for secret in ("", None):
+            with (
+                self.subTest(secret=secret),
+                patch("twisted_site.ari.ARI_WEBHOOK_SECRET", secret),
+                patch("twisted_site.ari.time.time", return_value=_NOW),
+            ):
+                self.assertFalse(
+                    ari.verify_webhook_signature(
+                        _BODY,
+                        _TIMESTAMP,
+                        _DELIVERY_ID,
+                        _VALID_SIGNATURE,
+                    ),
+                )
+
+
+class AriConfigurationTests(SimpleTestCase):
+    @override_settings(DEBUG_REVIEW=False)
+    def test_is_configured_requires_endpoint_and_both_secrets(self) -> None:
+        cases: tuple[dict[str, str | None], bool] = (
+            (
+                {
+                    "ARI_INGEST_ENDPOINT": "https://example.invalid/ari/",
+                    "ARI_SIGNING_SECRET": "signing-secret",
+                    "ARI_WEBHOOK_SECRET": "webhook-secret",
+                },
+                True,
+            ),
+            (
+                {
+                    "ARI_INGEST_ENDPOINT": "https://example.invalid/ari/",
+                    "ARI_SIGNING_SECRET": "signing-secret",
+                    "ARI_WEBHOOK_SECRET": "",
+                },
+                False,
+            ),
+            (
+                {
+                    "ARI_INGEST_ENDPOINT": "https://example.invalid/ari/",
+                    "ARI_SIGNING_SECRET": "signing-secret",
+                    "ARI_WEBHOOK_SECRET": None,
+                },
+                False,
+            ),
+            (
+                {
+                    "ARI_INGEST_ENDPOINT": "https://example.invalid/ari/",
+                    "ARI_SIGNING_SECRET": "",
+                    "ARI_WEBHOOK_SECRET": "webhook-secret",
+                },
+                False,
+            ),
+            (
+                {
+                    "ARI_INGEST_ENDPOINT": "",
+                    "ARI_SIGNING_SECRET": "signing-secret",
+                    "ARI_WEBHOOK_SECRET": "webhook-secret",
+                },
+                False,
+            ),
+        )
+        for constants, expected in cases:
+            with (
+                self.subTest(constants=constants),
+                patch.multiple("twisted_site.ari", **constants),
+            ):
+                self.assertEqual(ari.is_configured(), expected)
+
+    @override_settings(DEBUG_REVIEW=True)
+    def test_debug_review_is_configured_without_any_secrets(self) -> None:
+        with patch.multiple(
+            "twisted_site.ari",
+            ARI_INGEST_ENDPOINT="",
+            ARI_SIGNING_SECRET="",
+            ARI_WEBHOOK_SECRET="",
+        ):
+            self.assertTrue(ari.is_configured())
+
 
 class AriSigningTests(SimpleTestCase):
     def test_signs_string_and_bytes_identically(self) -> None:
@@ -241,6 +337,35 @@ class AriWebhookTests(TestCase):
             )
 
         self.assertEqual(response.status_code, 401)
+        self.ship.refresh_from_db()
+        self.assertEqual(self.ship.status, "pending")
+
+    def test_rejects_webhook_when_secret_is_not_configured(self) -> None:
+        body = json.dumps(
+            {
+                "external_id": f"twisted-{self.project.pk}",
+                "event": "review.approved",
+            },
+        ).encode()
+
+        with (
+            self.assertLogs("twisted_site.views.ari", level="ERROR") as logs,
+            patch("twisted_site.ari.ARI_WEBHOOK_SECRET", ""),
+            patch("twisted_site.ari.time.time", return_value=_NOW),
+        ):
+            response = self.client.post(
+                reverse("ari"),
+                data=body,
+                content_type="application/json",
+                headers={
+                    "X-Ari-Timestamp": str(_NOW),
+                    "X-Ari-Delivery-Id": "delivery-no-secret",
+                    "X-Ari-Signature": "0" * 64,
+                },
+            )
+
+        self.assertEqual(response.status_code, 503)
+        self.assertTrue(any("ARI_WEBHOOK_SECRET" in message for message in logs.output))
         self.ship.refresh_from_db()
         self.assertEqual(self.ship.status, "pending")
 

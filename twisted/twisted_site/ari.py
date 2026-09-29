@@ -21,8 +21,15 @@ WEBHOOK_MAX_AGE_SECONDS = 5 * 60
 
 
 def is_configured() -> bool:
-    """Return whether outbound ARI submissions can be sent."""
-    return bool(settings.DEBUG_REVIEW) or (bool(ARI_INGEST_ENDPOINT) and bool(ARI_SIGNING_SECRET))
+    """Return whether the ARI integration is fully configured for submissions and webhooks."""
+    return bool(settings.DEBUG_REVIEW) or (
+        bool(ARI_INGEST_ENDPOINT) and bool(ARI_SIGNING_SECRET) and bool(ARI_WEBHOOK_SECRET)
+    )
+
+
+def webhook_secret_configured() -> bool:
+    """Return whether inbound ARI webhooks can be authenticated."""
+    return bool(ARI_WEBHOOK_SECRET)
 
 
 def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, signature: str) -> bool:
@@ -33,6 +40,11 @@ def verify_webhook_signature(body: bytes, timestamp: str, delivery_id: str, sign
     webhooks. Signed with ARI_WEBHOOK_SECRET, which is separate from ARI_SIGNING_SECRET
     (that one signs requests we send to Ari).
     """
+    if not webhook_secret_configured():
+        # Without a secret every HMAC key is b"" and any forged signature would
+        # verify, so unconfigured deployments must reject instead of comparing.
+        return False
+
     if timestamp == "" or delivery_id == "" or signature == "":
         return False
 

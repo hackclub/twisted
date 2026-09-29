@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Any, cast
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
@@ -6,10 +7,12 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from twisted_site.ari import verify_webhook_signature
+from twisted_site.ari import verify_webhook_signature, webhook_secret_configured
 from twisted_site.models import Project, as_user
 from twisted_site.slack import send_blocks
 from twisted_site.validation import sanitize_http_url
+
+logger = logging.getLogger(__name__)
 
 
 def _escape_mrkdwn(text: str) -> str:
@@ -186,6 +189,12 @@ def _build_review_requeued_blocks(
 class AriView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         body = request.body
+
+        if not webhook_secret_configured():
+            logger.error(
+                "ARI_WEBHOOK_SECRET is not set; rejecting inbound ARI webhook delivery",
+            )
+            return HttpResponse(status=503)
 
         if not verify_webhook_signature(
             body,
