@@ -12,9 +12,13 @@
                             {{ project.get_project_type_display }}
                         </span>
                         {% if project.is_shipped %}
-                            {% if project.latest_ship.status == "rejected" %}
-                                <span class="border border-red-600 bg-red-600/20 px-2 py-0.5 text-xs text-red-600">permanently rejected</span>
-                            {% else %}
+                            {% if owner %}
+                                {% if project.latest_ship.status == "rejected" %}
+                                    <span class="border border-red-600 bg-red-600/20 px-2 py-0.5 text-xs text-red-600">permanently rejected</span>
+                                {% else %}
+                                    <span class="border border-success bg-success/20 px-2 py-0.5 text-xs text-success">shipped</span>
+                                {% endif %}
+                            {% elif project.is_approved %}
                                 <span class="border border-success bg-success/20 px-2 py-0.5 text-xs text-success">shipped</span>
                             {% endif %}
                         {% endif %}
@@ -22,7 +26,7 @@
                     <p class="mt-1 max-w-2xl break-words text-sm text-muted-foreground">{{ project.project_description }}</p>
                 </div>
                 <div class="flex shrink-0 flex-wrap gap-1">
-                    {% if project.user == request.user %}
+                    {% if owner %}
                         {% if project.repo_url and project.playable_url and project.screenshot_url and project.time_logged >= 60 %}
                             {% if not project.is_shipped %}
                                 <a href="{% url 'fr.projects.ship' project.id %}"
@@ -88,8 +92,7 @@
                     <div class="mt-1 text-2xl font-bold">{{ project.journals.count }}</div>
                 </div>
             </div>
-            {% if project.is_shipped %}{% endif %}
-            {% if project.user == request.user and not project.is_shipped %}
+            {% if owner and not project.is_shipped %}
                 {% if not project.hackatime_project_names and project.project_type != "hardware" %}
                     <div class="mb-3 border border-warning bg-warning/10 p-3">
                         <div class="font-bold text-warning">Hackatime project not linked yet</div>
@@ -142,6 +145,7 @@
                     </div>
                 {% endif %}
             {% endif %}
+            {% if owner %}
             <div class="border border-border bg-card">
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary px-3 py-2">
                     <div>
@@ -264,6 +268,12 @@
                     {% endfor %}
                 </div>
             </div>
+            {% else %}
+                <div class="border border-border bg-card px-4 py-8 text-center">
+                    <div class="font-bold">Journals are private</div>
+                    <div class="mt-1 text-sm text-muted-foreground">Only the project owner can see devlogs and review feedback.</div>
+                </div>
+            {% endif %}
         </div>
         <div class="status-field-border flex shrink-0 items-center justify-between bg-card p-2 border-t border-border text-xs">
             <span>{{ project.journals.count }} journal{{ project.journals.count|pluralize }}</span>

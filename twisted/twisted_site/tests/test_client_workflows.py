@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from twisted_site.models import Profile, Project, ShopRegion
+from twisted_site.models import Journal, Profile, Project, ProjectShip, ShopRegion
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
@@ -115,3 +115,75 @@ class ClientWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.profile.refresh_from_db()
         self.assertIsNone(self.profile.region)
+
+    def test_project_detail_hides_journals_and_reviews_from_other_users(self) -> None:
+        other_user = User.objects.create_user(username="detail-other")
+        _ = Profile.objects.create(user=other_user, slack_username="Other User")
+        project = Project.objects.create(
+            user=self.user,
+            project_name="Private devlog project",
+            project_description="Public description",
+            project_type="software",
+        )
+        _ = Journal.objects.create(
+            project=project,
+            type="hackatime",
+            content="secret devlog content",
+            minutes_worked=120,
+            reduced_minutes=120,
+        )
+        ship = ProjectShip.objects.create(project=project, status="rejected")
+        ship.note_to_maker = "secret reviewer note"
+        ship.final_status = "approved"
+        ship.final_note_to_maker = "secret final note"
+        ship.save()
+
+        detail_url = reverse("fr.projects.detail", kwargs={"project_id": project.pk})
+
+        with patch(
+            "twisted_site.views.client.project.ari.get_project_status",
+            return_value={"phase": "reviewed", "decision": "approved"},
+        ) as get_status:
+            owner_response = self.client.get(detail_url)
+            self.client.force_login(other_user)
+            other_response = self.client.get(detail_url)
+
+        # The ARI status lookup only happens for the owner.
+        get_status.assert_called_once()
+
+        self.assertContains(owner_response, "secret devlog content")
+        self.assertContains(owner_response, "secret reviewer note")
+        self.assertContains(owner_response, "secret final note")
+        self.assertContains(owner_response, "permanently rejected")
+
+        self.assertEqual(other_response.status_code, 200)
+        self.assertContains(other_response, "Private devlog project")
+        self.assertContains(other_response, "Public description")
+        self.assertContains(other_response, "Journals are private")
+        self.assertNotContains(other_response, "secret devlog content")
+        self.assertNotContains(other_response, "secret reviewer note")
+        self.assertNotContains(other_response, "secret final note")
+        self.assertNotContains(other_response, "permanently rejected")
+        self.assertNotContains(other_response, "+ New journal")
+
+    def test_approved_project_shows_shipped_badge_to_other_users(self) -> None:
+        other_user = User.objects.create_user(username="badge-other")
+        _ = Profile.objects.create(user=other_user)
+        project = Project.objects.create(
+            user=self.user,
+            project_name="Approved project",
+            project_description="Description",
+            project_type="software",
+        )
+        _ = ProjectShip.objects.create(project=project, status="approved")
+        detail_url = reverse("fr.projects.detail", kwargs={"project_id": project.pk})
+
+        self.client.force_login(other_user)
+        with patch(
+            "twisted_site.views.client.project.ari.get_project_status",
+        ) as get_status:
+            response = self.client.get(detail_url)
+
+        self.assertContains(response, "shipped")
+        self.assertContains(response, "Journals are private")
+        get_status.assert_not_called()

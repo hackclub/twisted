@@ -40,14 +40,23 @@ class ProjectDetail(View):
         project = get_object_or_404(Project, id=project_id)
         context["project"] = project
 
+        owner = project.user == request.user
+        context["owner"] = owner
+
+        context["first_pass_status"] = "pending"
+        context["second_pass_status"] = "pending"
+
+        if not owner:
+            # Journals, ship history and reviewer feedback are private to the owner.
+            # Everyone else gets the same public summary the discover listing shows.
+            context["journals"] = []  # pyrefly: ignore[implicit-any-empty-container]
+            return render(request, "client/projects/detail.html", context)
+
         journals = project.journals.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
         ships = project.ships.all()  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue] # pyrefly: ignore[missing-attribute]
 
         context["journals"] = list(chain(journals, ships))
         context["journals"].sort(key=attrgetter("created_at"), reverse=True)
-
-        context["first_pass_status"] = "pending"
-        context["second_pass_status"] = "pending"
 
         if project.latest_ship() is not None:
             if ari.is_configured():
@@ -70,11 +79,6 @@ class ProjectDetail(View):
             else:
                 context["first_pass_status"] = "unavailable"
                 context["second_pass_status"] = "unavailable"
-
-        if project.user == request.user:
-            context["owner"] = True
-        else:
-            context["owner"] = False
 
         return render(
             request,
