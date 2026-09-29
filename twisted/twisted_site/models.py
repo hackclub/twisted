@@ -433,6 +433,17 @@ class AuditLog(models.Model):
         return f"Audit log for {as_user(self.user).profile.slack_username}. PII: {self.pii}"
 
 
+class AriWebhookDelivery(models.Model):
+    """A processed ARI webhook delivery, used to ignore retried deliveries."""
+
+    delivery_id = models.CharField(max_length=200, unique=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+
+    @override
+    def __str__(self) -> str:
+        return f"ARI delivery {self.delivery_id} at {self.received_at}"
+
+
 class _ProjectsManager(Protocol):
     def all(self) -> QuerySet[Project]: ...
 
