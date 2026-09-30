@@ -304,6 +304,7 @@ PROJECT_SHIP_STATUSES = {
 
 
 class ProjectShip(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     project = models.ForeignKey(Project, on_delete=models.PROTECT, related_name="ships")
 
     created_at = models.DateTimeField(auto_now_add=True)
