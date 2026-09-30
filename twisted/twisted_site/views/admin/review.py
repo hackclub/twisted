@@ -3,9 +3,12 @@ from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from twisted_site.models import ProjectShip
+from twisted_site.models import PROJECT_SHIP_STATUSES, ProjectShip
 
 from .admin import AdminView
+
+REVIEW_FILTERS = ("open", "needs_final", "finalized", "all")
+DECIDED_STATUSES = ("approved", "rejected")
 
 
 # Create your views here.
@@ -19,7 +22,30 @@ class ReviewView(AdminView):
         if settings.DEBUG_REVIEW:
             return self.debug_get(request)
 
+        status_filter = request.GET.get("filter", "open")
+        if status_filter not in REVIEW_FILTERS:
+            status_filter = "open"
+
+        ships = ProjectShip.objects.select_related("project", "project__user").order_by(
+            "-created_at",
+        )
+        if status_filter == "open":
+            ships = ships.filter(final_status="pending")
+        elif status_filter == "needs_final":
+            ships = ships.filter(final_status="pending", status__in=DECIDED_STATUSES)
+        elif status_filter == "finalized":
+            ships = ships.exclude(final_status="pending")
+
         context = self.get_context_data(page="review")
+        context["ships"] = ships
+        context["status_filter"] = status_filter
+        context["statuses"] = PROJECT_SHIP_STATUSES
+        context["open_count"] = ProjectShip.objects.filter(final_status="pending").count()
+        context["needs_final_count"] = ProjectShip.objects.filter(
+            final_status="pending",
+            status__in=DECIDED_STATUSES,
+        ).count()
+        context["finalized_count"] = ProjectShip.objects.exclude(final_status="pending").count()
         return render(request, "admin/review.html", context=context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
@@ -31,8 +57,42 @@ class ReviewView(AdminView):
         if settings.DEBUG_REVIEW:
             return self.debug_post(request)
 
-        _ = self.get_context_data(page="review")
-        return redirect(self.request.path_info)
+        status_filter = request.POST.get("filter", "open")
+        if status_filter not in REVIEW_FILTERS:
+            status_filter = "open"
+        redirect_url = f"{self.request.path}?filter={status_filter}"
+
+        try:
+            ship_pk = int(request.POST.get("ship", ""))
+        except ValueError:
+            messages.error(request, "Select a valid ship.")
+            return redirect(redirect_url)
+
+        final_status = request.POST.get("final_status", "")
+        if final_status not in PROJECT_SHIP_STATUSES:
+            messages.error(request, f"'{final_status}' is not a valid final status.")
+            return redirect(redirect_url)
+
+        ship = get_object_or_404(ProjectShip, id=ship_pk)
+
+        if not isinstance(self.audit_log.additional_context, dict):
+            self.audit_log.additional_context = {}
+
+        old_final_status = ship.final_status
+        ship.final_status = final_status
+        ship.final_note_to_maker = request.POST.get("final_note_to_maker", "")
+        ship.final_audit_note = request.POST.get("final_audit_note", "")
+        ship.save(update_fields=("final_status", "final_note_to_maker", "final_audit_note"))
+
+        self.audit_log.pii = True
+        self.audit_log.additional_context["ship_id"] = ship.id
+        self.audit_log.additional_context["project"] = ship.project.project_name
+        self.audit_log.additional_context["final_status"] = f"{old_final_status} -> {final_status}"
+        messages.success(
+            request,
+            f"Final review for {ship.project.project_name} set to {final_status}.",
+        )
+        return redirect(redirect_url)
 
     def debug_get(self, request: HttpRequest) -> HttpResponse:
         context = self.get_context_data(page="review")
