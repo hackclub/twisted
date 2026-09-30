@@ -485,10 +485,14 @@ class AriView(View):
             return HttpResponseBadRequest("Ship not found")
 
         # Reverting discards any manual confirmation along with the decision.
-        if ship.status != "pending" or ship.final_status != "pending":
+        if requeued:
             ship.status = "pending"
             ship.final_status = "pending"
-            ship.save()
+        else:
+            ship.status = "requested_changes"
+            ship.note_to_maker = "The decision for this ship has been reverted."
+            ship.final_status = "pending"
+        ship.save()
 
         if requeued:
             blocks = _build_review_requeued_blocks(project)
