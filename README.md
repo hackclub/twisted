@@ -30,7 +30,7 @@ All instructions below assume you've already cd'd into the `twisted` dir
 2. run `uv run manage.py shell_plus` or `uv run manage.py shell` depending on what you fancy
 3. get your profile by running `profile = Profile.objects.get()` (assuming only one person has signed up)
 4. run `profile.is_staff = True`
-5. run `perms = ProfileStaffPermissions.objects.create(superuser = True, view_users = True, view_pathways = True, manage_pathways = True, manage_fulfillments = True, manage_shop = True, manage_announcements = True, view_auditlogs = True)` (this creates a perms object with all perms)
+5. run `perms = ProfileStaffPermissions.objects.create(superuser = True, view_users = True, view_pathways = True, manage_pathways = True, manage_fulfillments = True, manage_shop = True, view_review = True, manage_review = True, manage_announcements = True, view_auditlogs = True)` (this creates a perms object with all perms)
 6. run `profile.staff_permissions = perms` (this associates the perms object with your profile)
 7. run `profile.save()` (this saves the changes to the DB)
 

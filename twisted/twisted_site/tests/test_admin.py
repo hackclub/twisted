@@ -51,6 +51,7 @@ class AdminAuthorizationTests(TestCase):
         protected_pages = (
             "admin.users",
             "admin.pathways",
+            "admin.review",
             "admin.announcements",
             "admin.logs",
             "admin.fulfillment",
@@ -121,6 +122,7 @@ class AdminAuthorizationTests(TestCase):
             "admin.pathways",
             "admin.fulfillment",
             "admin.shop",
+            "admin.review",
             "admin.announcements",
         ):
             self.assertContains(response, reverse(page))

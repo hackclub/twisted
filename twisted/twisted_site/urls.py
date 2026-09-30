@@ -109,6 +109,7 @@ urlpatterns = [
     path("admin/fulfillment/", admin.FulfillmentView.as_view(), name="admin.fulfillment"),
     path("admin/shop/", admin.ShopView.as_view(), name="admin.shop"),
     path("admin/shop/regions/", admin.ShopRegionsView.as_view(), name="admin.shop.regions"),
+    path("admin/review/", admin.ReviewView.as_view(), name="admin.review"),
     path(
         "admin/announcements/",
         admin.AnnouncementsView.as_view(),
