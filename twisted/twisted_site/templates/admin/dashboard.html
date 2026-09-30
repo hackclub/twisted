@@ -35,12 +35,12 @@
     <c-ui.tabs variant="segmented">
         <c-ui.tabs.tab name="Logged">
             <c-ui.card class="bg-zinc-900">
-                <div class="flex flex-col md:flex-row text-center md:text-left gap-4">
+                <div class="flex flex-col md:flex-row text-center md:text-left gap-4 h-60">
                     <div class="md:w-fit flex flex-row mx-auto">
-                        <div>
+                        <div class="flex flex-col">
                             <div class="text-center">Hours logged</div>
                             <div class="text-center text-lg font-bold">{{ hours_logged }}h</div>
-                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                            <div class="relative mx-auto md:mx-0 mt-2 grow w-60">
                                 <canvas id="hours_logged_chart"></canvas>
                             </div>
                             {{ hours_logged_chart|json_script:"hours_logged_chart_data" }}
@@ -50,9 +50,9 @@
                         </div>
                     </div>
                     <div class="md:w-fit flex flex-row mx-auto">
-                        <div>
+                        <div class="flex flex-col">
                             <div class="text-center">Project type</div>
-                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                            <div class="relative mx-auto md:mx-0 mt-2 grow w-60">
                                 <canvas id="logged_project_type"></canvas>
                             </div>
                             {{ logged_project_type|json_script:"logged_project_type_data" }}
@@ -62,9 +62,9 @@
                         </div>
                     </div>
                     <div class="md:w-fit flex flex-row mx-auto">
-                        <div>
+                        <div class="flex flex-col">
                             <div class="text-center">Hours spent by region</div>
-                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
+                            <div class="relative mx-auto md:mx-0 mt-2 grow w-60">
                                 <canvas id="chart_region_hours"></canvas>
                             </div>
                             {{ logged_region_hours|json_script:"logged_region_hours_data" }}
@@ -82,8 +82,8 @@
                     <div class="md:w-fit">
                         <div class="text-center">Hours shipped</div>
                         <div class="text-center text-lg font-bold">{{ hours_shipped }}h</div>
-                        <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
-                            <canvas id="hours_shipped_chart"></canvas>
+                        <div class="relative mx-auto md:mx-0 mt-2">
+                            <canvas id="hours_shipped_chart" class="h-full"></canvas>
                         </div>
                         {{ hours_shipped_chart|json_script:"hours_shipped_chart_data" }}
                         <script>
@@ -93,8 +93,8 @@
                     <div class="md:w-fit flex flex-row">
                         <div>
                             <div class="text-center">Project type</div>
-                            <div class="relative mx-auto md:mx-0 mt-2 h-40 w-60">
-                                <canvas id="shipped_project_type"></canvas>
+                            <div class="relative mx-auto md:mx-0 mt-2">
+                                <canvas id="shipped_project_type" class="h-full"></canvas>
                             </div>
                             {{ shipped_project_type|json_script:"shipped_project_type_data" }}
                             <script>
