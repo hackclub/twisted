@@ -51,7 +51,7 @@ class HackatimeCallbackTests(TestCase):
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.hackatime_state, "")
 
-    def test_anonymous_callback_redirects_to_login(self) -> None:
+    def test_anonymous_callback_redirects_to_homepage(self) -> None:
         self.client.logout()
 
         response = self.client.get(
@@ -59,7 +59,7 @@ class HackatimeCallbackTests(TestCase):
             {"state": "expected-state", "code": "authorization-code"},
         )
 
-        self.assertRedirects(response, reverse("login"), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse("homepage"), fetch_redirect_response=False)
 
     def test_missing_oauth_parameters_return_bad_request(self) -> None:
         invalid_parameters: tuple[dict[str, str], ...] = (

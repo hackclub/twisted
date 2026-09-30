@@ -429,6 +429,6 @@ class ReviewQueueTests(TestCase):
         self.assertRedirects(response, reverse("admin.dash"))
         ship.refresh_from_db()
         self.assertEqual(ship.final_status, "pending")
-        self.assertFalse(
-            AuditLog.objects.filter(path=reverse("admin.review")).exists(),
-        )
+        denial = AuditLog.objects.filter(path=reverse("admin.review")).get()
+        context = cast("dict[str, object]", denial.additional_context)
+        self.assertEqual(context["allowed"], False)

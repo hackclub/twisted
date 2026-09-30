@@ -58,16 +58,12 @@
                     </div>
                     <span class="block text-center text-sm">Shop</span>
                 </div>
-                {% comment %}
-                <div
-                class="font-vintage w-fit cursor-pointer select-none"
-                data-url="{% url 'fr.discover' %}"
-                onclick="newWindow('Discover', this.dataset.url)"
-            >
-                <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🧭</div>
-                <span class="block text-center text-sm">Discover</span>
-            </div>
-                {% endcomment %}
+                <div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
+                     data-url="{% url 'fr.discover' %}"
+                     onclick="newWindow('Discover', this.dataset.url)">
+                    <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🧭</div>
+                    <span class="block text-center text-sm">Discover</span>
+                </div>
             </div>
             <div id="windows-container"></div>
             <nav id="taskbar"
@@ -95,7 +91,7 @@
                                     <div class="text-absolute-white text-sm font-vintage">{{ profile.twists }} twists</div>
                                 </div>
                                 <div class="font-vintage space-y-1 text-absolute-white text-sm border-t border-twisted-800 pt-2">
-                                    {% if user.is_staff %}
+                                    {% if user.profile.is_staff %}
                                         <a href="{% url 'admin.dash' %}"
                                            class="block text-absolute-white px-2 py-1 hover:bg-twisted-800 active:bg-accent active:text-accent-foreground">Admin Panel</a>
                                     {% endif %}
@@ -436,6 +432,29 @@
                     const safeSrc = getSafeInternalUrl(data.src);
                     if (!safeSrc) return;
                     newWindow(data.title, safeSrc, w, h);
+                }
+                if (data.action === "close") {
+                    let target = null;
+                    try {
+                        target = data.src ? new URL(data.src, window.location.origin).href : null;
+                    } catch (_) {
+                        target = null;
+                    }
+                    document.querySelectorAll(".window").forEach((win) => {
+                        const frame = win.querySelector(".src-frame");
+                        if (!frame || !target) return;
+                        try {
+                            if (new URL(frame.src, window.location.origin).href !== target) return;
+                        } catch (_) {
+                            return;
+                        }
+                        const taskBtn = document.querySelector(
+                            `#taskbar-windows button[data-win-id="${win.dataset.winId}"]`
+                        );
+                        if (currentMaximisedWindow?.win === win) currentMaximisedWindow = null;
+                        win.remove();
+                        if (taskBtn) taskBtn.remove();
+                    });
                 }
                 if (data.action === "refresh-projects") {
                     document.querySelectorAll(".window").forEach((win) => {

@@ -90,12 +90,12 @@ class Profile(models.Model):
                 if user_data.primary_address is not None
                 else "Unknown"
             )
-        except RequestException:
+        except (RequestException, KeyError, ValueError, TypeError):
             country = "Unknown"
 
         self.country = country
         self.country_cached_until = timezone.now() + timedelta(hours=3)
-        self.save()
+        self.save(update_fields=("country", "country_cached_until"))
 
         return country
 

@@ -182,7 +182,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <div id="id"></div>
                             {% for item in shop_items %}
                                 <tr hx-get="{% url 'admin.pathways.shopitems' item.id %}" 
                                     hx-target="#listing-{{ item.id }}" 

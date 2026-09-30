@@ -158,9 +158,8 @@ class AuthCallbackView(View):
 
         referral_code = self.request.COOKIES.get("referral")
         if created and referral_code not in (None, ""):
-            referral_profiles = Profile.objects.filter(my_referral_code=referral_code)
-            if referral_profiles.exists():
-                referral_profile = referral_profiles.get()
+            referral_profile = Profile.objects.filter(my_referral_code=referral_code).first()
+            if referral_profile is not None:
                 profile.referred_by = referral_profile
 
         profile.save()
@@ -192,7 +191,7 @@ class HackatimeCallbackView(View):
             return JsonResponse("not allowed!")
 
         if request.user.is_anonymous:
-            return redirect("login")
+            return redirect("homepage")
 
         profile = as_user(request.user).profile
 

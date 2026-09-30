@@ -8,7 +8,15 @@
             </div>
         </div>
         <div class="mb-4">
-            <form action="">
+            <form method="get" action="">
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox"
+                           name="context_mode"
+                           value="true"
+                           {% if request.GET.context_mode == "true" %}checked{% endif %}
+                           onchange="this.form.submit()">
+                    Only show entries with additional context
+                </label>
             </form>
         </div>
         <div>

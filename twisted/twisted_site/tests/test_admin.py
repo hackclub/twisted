@@ -113,6 +113,58 @@ class AdminAuthorizationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_dashboard_quick_actions_link_to_admin_pages(self) -> None:
+        response = self.client.get(reverse("admin.dash"))
+
+        self.assertEqual(response.status_code, 200)
+        for page in (
+            "admin.users",
+            "admin.pathways",
+            "admin.fulfillment",
+            "admin.shop",
+            "admin.review",
+            "admin.announcements",
+        ):
+            self.assertContains(response, reverse(page))
+
+    def test_audit_log_context_mode_filters_empty_entries(self) -> None:
+        self.permissions.view_auditlogs = True
+        self.permissions.save(update_fields=("view_auditlogs",))
+        _ = AuditLog.objects.create(
+            user=self.user,
+            path="/fake/empty/",
+            post=False,
+            additional_context={},
+        )
+        _ = AuditLog.objects.create(
+            user=self.user,
+            path="/fake/context/",
+            post=True,
+            additional_context={"note": "distinctive-note-123"},
+        )
+
+        response = self.client.get(f"{reverse('admin.logs')}?page=1&context_mode=true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "distinctive-note-123")
+        self.assertNotContains(response, "/fake/empty/")
+
+    def test_user_detail_shows_verification_status(self) -> None:
+        self.permissions.view_users = True
+        self.permissions.save(update_fields=("view_users",))
+        target_user = User.objects.create_user(username="verified-target")
+        target_profile = Profile.objects.create(user=target_user)
+        target_profile.verification_status = "verified"
+        target_profile.save(update_fields=("verification_status",))
+
+        response = self.client.get(
+            reverse("admin.users.detail", kwargs={"user_id": target_user.pk}),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "IDV:")
+        self.assertContains(response, "verified")
+
     def test_admin_dashboard_tolerates_unknown_project_types(self) -> None:
         owner = User.objects.create_user(username="odd-type-owner")
         _ = Profile.objects.create(user=owner)
@@ -200,6 +252,70 @@ class AdminAuthorizationTests(TestCase):
         self.assertTrue(target_profile.is_staff)
         self.assertIsNotNone(target_profile.staff_permissions)
 
+    def test_make_admin_preserves_existing_permissions(self) -> None:
+        self.permissions.superuser = True
+        self.permissions.save(update_fields=("superuser",))
+        target_user = User.objects.create_user(username="keep-perms-target")
+        target_permissions = ProfileStaffPermissions.objects.create(view_users=True)
+        target_profile = Profile.objects.create(
+            user=target_user,
+            staff_permissions=target_permissions,
+        )
+        detail_url = reverse(
+            "admin.users.detail",
+            kwargs={"user_id": target_user.pk},
+        )
+
+        _ = self.client.post(detail_url, {"action": "make_admin"})
+
+        target_profile.refresh_from_db()
+        target_permissions.refresh_from_db()
+        self.assertTrue(target_profile.is_staff)
+        kept_permissions = cast(
+            "ProfileStaffPermissions",
+            target_profile.staff_permissions,
+        )
+        self.assertEqual(kept_permissions.pk, target_permissions.pk)
+        self.assertTrue(target_permissions.view_users)
+
+    def test_superuser_can_remove_admin(self) -> None:
+        self.permissions.superuser = True
+        self.permissions.save(update_fields=("superuser",))
+        target_user = User.objects.create_user(username="demote-target")
+        target_profile = Profile.objects.create(
+            user=target_user,
+            is_staff=True,
+            staff_permissions=ProfileStaffPermissions.objects.create(),
+        )
+        detail_url = reverse(
+            "admin.users.detail",
+            kwargs={"user_id": target_user.pk},
+        )
+
+        response = self.client.post(detail_url, {"action": "remove_admin"})
+
+        self.assertEqual(response.status_code, 302)
+        target_profile.refresh_from_db()
+        self.assertFalse(target_profile.is_staff)
+
+    def test_non_superuser_cannot_remove_admin(self) -> None:
+        target_user = User.objects.create_user(username="demote-denied-target")
+        target_profile = Profile.objects.create(
+            user=target_user,
+            is_staff=True,
+            staff_permissions=ProfileStaffPermissions.objects.create(),
+        )
+        detail_url = reverse(
+            "admin.users.detail",
+            kwargs={"user_id": target_user.pk},
+        )
+
+        response = self.client.post(detail_url, {"action": "remove_admin"})
+
+        self.assertRedirects(response, reverse("admin.dash"))
+        target_profile.refresh_from_db()
+        self.assertTrue(target_profile.is_staff)
+
     def test_change_permissions_rejects_unknown_and_missing_keys(self) -> None:
         self.permissions.superuser = True
         self.permissions.save(update_fields=("superuser",))
@@ -248,7 +364,9 @@ class AdminAuthorizationTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Session.objects.filter(session_key=session_key).exists())
-        self.assertFalse(AuditLog.objects.exists())
+        denial = AuditLog.objects.filter(path=reverse("admin.users")).get()
+        context = cast("dict[str, object]", denial.additional_context)
+        self.assertEqual(context["allowed"], False)
 
     def test_superuser_logout_all_deletes_sessions_and_records_audit(self) -> None:
         self.permissions.superuser = True

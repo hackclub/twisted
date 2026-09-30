@@ -173,7 +173,6 @@ def send_ship(ship: ProjectShip) -> None:
 
 def get_project_status(project: Project) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
     r = send_request("GET", endpoint=f"/status?external_id=twisted-{project.id}")
-    _resp = r.content
     r.raise_for_status()
     status_data: dict[str, Any] = r.json()  # pyrefly: ignore[explicit-any]
     return status_data

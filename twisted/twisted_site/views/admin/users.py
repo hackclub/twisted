@@ -148,10 +148,22 @@ class UserDetailView(AdminView):
         if request.POST.get("action") == "make_admin":
             profile = as_user(user).profile
             profile.is_staff = True
-            profile.staff_permissions = ProfileStaffPermissions.objects.create()
+            if profile.staff_permissions is None:
+                profile.staff_permissions = ProfileStaffPermissions.objects.create()
             self.audit_log.pii = True
             self.audit_log.additional_context["permission_changed"] = "Made user an admin"
             messages.success(request, f"Made @{as_user(user).profile.slack_username} an admin.")
+            profile.save()
+
+        if request.POST.get("action") == "remove_admin":
+            profile = as_user(user).profile
+            profile.is_staff = False
+            self.audit_log.pii = True
+            self.audit_log.additional_context["permission_changed"] = "Removed user from admin"
+            messages.success(
+                request,
+                f"Removed @{as_user(user).profile.slack_username} from admin.",
+            )
             profile.save()
 
         return redirect(self.request.path)

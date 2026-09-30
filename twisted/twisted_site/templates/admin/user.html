@@ -30,6 +30,9 @@
                         <c-ui.badge size="sm" color="{{ user.profile.ysws_eligible|yesno:'green,red' }}">
                             {{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}
                         </c-ui.badge>
+                        <c-ui.badge size="sm" color="{% if user.profile.verification_status == 'verified' %}green{% else %}red{% endif %}">
+                            IDV: {{ user.profile.verification_status|default:"unknown" }}
+                        </c-ui.badge>
                         {% if user.profile.referred_by %}
                             <c-ui.badge size="sm"
                                         color="blue"
@@ -199,6 +202,15 @@
                     </tbody>
                 </c-ui.table>
             </c-ui.card>
+            <form method="post"
+                  onsubmit="return confirm('Remove this user from admin?');"
+                  class="mt-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove_admin">
+                <c-ui.button type="submit" variant="danger">
+                    Remove admin
+                </c-ui.button>
+            </form>
         {% else %}
             <c-ui.card class="bg-ink-900">
                 <h1 class="text-lg font-bold">Not an admin!</h1>

@@ -57,6 +57,7 @@ class ImageUploadTests(TestCase):
         response = self.upload(file)
 
         self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith(reverse("homepage")))
         self.assertFalse(UploadedFile.objects.exists())
 
     def test_disallowed_content_type_is_rejected_before_upload(self) -> None:

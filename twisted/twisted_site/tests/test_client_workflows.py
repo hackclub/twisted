@@ -151,6 +151,20 @@ class ClientWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_dashboard_links_the_discover_window(self) -> None:
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("fr.discover"))
+
+    def test_homepage_links_the_faqs_page(self) -> None:
+        self.client.logout()
+
+        response = self.client.get(reverse("homepage"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("faqs"))
+
     def test_project_detail_shows_journals_but_hides_review_feedback_from_others(self) -> None:
         other_user = User.objects.create_user(username="detail-other")
         _ = Profile.objects.create(user=other_user, slack_username="Other User")

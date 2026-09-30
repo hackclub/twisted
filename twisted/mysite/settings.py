@@ -141,6 +141,10 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
+# Anonymous users hitting @login_required views land on the homepage (which hosts
+# the login form) instead of Django's default /accounts/login/ (which 404s here).
+LOGIN_URL = "homepage"
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",

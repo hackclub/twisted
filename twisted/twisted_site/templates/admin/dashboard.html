@@ -15,21 +15,31 @@
                     Manage Users
                 </c-ui.button>
             </a>
-            <c-ui.button>
-                Edit Pathways
-            </c-ui.button>
-            <c-ui.button>
-                Fulfill orders
-            </c-ui.button>
-            <c-ui.button>
-                Edit shop
-            </c-ui.button>
-            <c-ui.button>
-                Review projects
-            </c-ui.button>
-            <c-ui.button>
-                Announce stuff
-            </c-ui.button>
+            <a href="{% url 'admin.pathways' %}">
+                <c-ui.button>
+                    Edit Pathways
+                </c-ui.button>
+            </a>
+            <a href="{% url 'admin.fulfillment' %}">
+                <c-ui.button>
+                    Fulfill orders
+                </c-ui.button>
+            </a>
+            <a href="{% url 'admin.shop' %}">
+                <c-ui.button>
+                    Edit shop
+                </c-ui.button>
+            </a>
+            <a href="{% url 'admin.review' %}">
+                <c-ui.button>
+                    Review projects
+                </c-ui.button>
+            </a>
+            <a href="{% url 'admin.announcements' %}">
+                <c-ui.button>
+                    Announce stuff
+                </c-ui.button>
+            </a>
         </p>
     </c-ui.card>
     <c-ui.tabs variant="segmented">
