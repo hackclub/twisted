@@ -125,8 +125,7 @@
                                 <span title="{{ ship.created_at }}">{{ ship.created_at }}</span>
                             </div>
                             <div class="mt-2 flex gap-2 flex-wrap">
-                                <c-ui.badge size="sm">first pass: {{ ship.get_status_display }}</c-ui.badge>
-                                <c-ui.badge size="sm">final review: {{ ship.get_final_status_display }}</c-ui.badge>
+                                <c-ui.badge size="sm">review: {{ ship.get_status_display }}</c-ui.badge>
                             </div>
                             {% if ship.note_to_maker %}
                                 <p class="mt-2 text-sm text-ink-400">{{ ship.note_to_maker|linebreaksbr }}</p>

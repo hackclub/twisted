@@ -78,15 +78,6 @@ class AdminView(View):
                     href=resolve_url("admin.shop"),
                 ),
             )
-        if self.perms.view_review:
-            sidebar_links.append(
-                SidebarLink(
-                    name="review",
-                    icon="message-new",
-                    text="Review",
-                    href=resolve_url("admin.review"),
-                ),
-            )
         if self.perms.manage_announcements:
             sidebar_links.append(
                 SidebarLink(

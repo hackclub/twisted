@@ -564,61 +564,6 @@ class AriWebhookTests(TestCase):
         self.assertEqual(self.ship.status, "pending")
         send_blocks.assert_not_called()
 
-    def test_new_decision_resets_a_stale_final_confirmation(self) -> None:
-        self.ship.status = "rejected"
-        self.ship.final_status = "approved"
-        self.ship.final_note_to_maker = "Old confirmation"
-        self.ship.save()
-        with patch("twisted_site.views.ari.send_blocks"):
-            response = self.post_webhook(
-                {
-                    "external_id": f"twisted-{self.project.pk}",
-                    "event": "review.approved",
-                    "review": {"note_to_maker": "Nice work", "justification": {}},
-                },
-            )
-
-        self.assertEqual(response.status_code, 200)
-        self.ship.refresh_from_db()
-        self.assertEqual(self.ship.status, "approved")
-        self.assertEqual(self.ship.final_status, "pending")
-
-    def test_repeated_decision_preserves_final_confirmation(self) -> None:
-        self.ship.status = "approved"
-        self.ship.final_status = "approved"
-        self.ship.final_note_to_maker = "Confirmed"
-        self.ship.save()
-        with patch("twisted_site.views.ari.send_blocks"):
-            response = self.post_webhook(
-                {
-                    "external_id": f"twisted-{self.project.pk}",
-                    "event": "review.approved",
-                    "review": {"note_to_maker": "Still good", "justification": {}},
-                },
-            )
-
-        self.assertEqual(response.status_code, 200)
-        self.ship.refresh_from_db()
-        self.assertEqual(self.ship.final_status, "approved")
-        self.assertEqual(self.ship.note_to_maker, "Still good")
-
-    def test_reverted_event_resets_final_confirmation(self) -> None:
-        self.ship.status = "approved"
-        self.ship.final_status = "approved"
-        self.ship.save()
-        with patch("twisted_site.views.ari.send_blocks"):
-            response = self.post_webhook(
-                {
-                    "external_id": f"twisted-{self.project.pk}",
-                    "event": "review.reverted",
-                },
-            )
-
-        self.assertEqual(response.status_code, 200)
-        self.ship.refresh_from_db()
-        self.assertEqual(self.ship.status, "pending")
-        self.assertEqual(self.ship.final_status, "pending")
-
     def test_malformed_payloads_return_bad_request(self) -> None:
         external_id = f"twisted-{self.project.pk}"
         base_ship: dict[str, object] = {

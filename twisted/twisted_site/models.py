@@ -166,9 +166,6 @@ class ProfileStaffPermissions(models.Model):
 
     manage_shop = models.BooleanField(default=False)
 
-    view_review = models.BooleanField(default=False)
-    manage_review = models.BooleanField(default=False)
-
     manage_announcements = models.BooleanField(default=False)
 
     view_auditlogs = models.BooleanField(default=False)
@@ -316,14 +313,6 @@ class ProjectShip(models.Model):
     audit_note = models.TextField(blank=True, default="")
     technical_features = models.CharField(blank=True, default="", max_length=255)
     deflation_reason = models.CharField(blank=True, default="", max_length=255)
-
-    final_status = models.CharField(
-        default="pending",
-        choices=PROJECT_SHIP_STATUSES,
-        max_length=200,
-    )
-    final_note_to_maker = models.TextField(blank=True, default="")
-    final_audit_note = models.TextField(blank=True, default="")
 
     @override
     def __str__(self) -> str:

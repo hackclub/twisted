@@ -9,7 +9,6 @@ from .pathways import (
     PathwayShopItemDetailView,
 )
 from .projects import ProjectDetailView
-from .review import ReviewView
 from .shop import ShopRegionsView, ShopView
 from .users import UserDetailView, UsersView
 
@@ -23,7 +22,6 @@ __all__ = [
     "PathwayListView",
     "PathwayShopItemDetailView",
     "ProjectDetailView",
-    "ReviewView",
     "ShopRegionsView",
     "ShopView",
     "UserDetailView",

@@ -183,8 +183,6 @@ class ClientWorkflowTests(TestCase):
         )
         ship = ProjectShip.objects.create(project=project, status="rejected")
         ship.note_to_maker = "private reviewer note"
-        ship.final_status = "approved"
-        ship.final_note_to_maker = "private final note"
         ship.save()
 
         detail_url = reverse("fr.projects.detail", kwargs={"project_id": project.pk})
@@ -202,14 +200,12 @@ class ClientWorkflowTests(TestCase):
 
         self.assertContains(owner_response, "shared devlog content")
         self.assertContains(owner_response, "private reviewer note")
-        self.assertContains(owner_response, "private final note")
         self.assertContains(owner_response, "permanently rejected")
 
         self.assertEqual(other_response.status_code, 200)
         self.assertContains(other_response, "shared devlog content")
         self.assertContains(other_response, "Public description")
         self.assertNotContains(other_response, "private reviewer note")
-        self.assertNotContains(other_response, "private final note")
         self.assertNotContains(other_response, "permanently rejected")
         self.assertNotContains(other_response, "Project shipped")
         self.assertNotContains(other_response, "+ New journal")

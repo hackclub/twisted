@@ -402,10 +402,8 @@ class AriView(View):
         if ship is None:
             return HttpResponseBadRequest("Ship not found")
 
-        # A new reviewer decision supersedes any previous manual confirmation.
         if ship.status != "requested_changes":
             ship.status = "requested_changes"
-            ship.final_status = "pending"
         ship.note_to_maker = note_to_maker
         ship.save()
 
@@ -456,10 +454,8 @@ class AriView(View):
         if ship is None:
             return HttpResponseBadRequest("Ship not found")
 
-        # A new reviewer decision supersedes any previous manual confirmation.
         if ship.status != status:
             ship.status = status
-            ship.final_status = "pending"
         ship.note_to_maker = note_to_maker
         ship.audit_note = audit_note
         if justification is not None:
@@ -484,10 +480,8 @@ class AriView(View):
         if ship is None:
             return HttpResponseBadRequest("Ship not found")
 
-        # Reverting discards any manual confirmation along with the decision.
-        if ship.status != "pending" or ship.final_status != "pending":
+        if ship.status != "pending":
             ship.status = "pending"
-            ship.final_status = "pending"
             ship.save()
 
         if requeued:

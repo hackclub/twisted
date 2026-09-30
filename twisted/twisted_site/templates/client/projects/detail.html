@@ -218,13 +218,6 @@
                                         {{ ship.note_to_maker|default:"no message!"|linebreaksbr }}
                                     </c-ship-message>
                                 {% endif %}
-                                {% if ship.final_status != "pending" %}
-                                    <c-ship-message title="final review complete"
-                                                    status="{{ ship.get_final_status_display }}"
-                                                    :time="ship.updated_at">
-                                        {{ ship.final_note_to_maker|default:"no message!"|linebreaksbr }}
-                                    </c-ship-message>
-                                {% endif %}
                                 <div class="mb-3 border border-success bg-success/10">
                                     <div class="p-2 px-3 border-b border-success flex gap-2">
                                         <span class="font-bold text-success">Project shipped</span>
@@ -242,10 +235,6 @@
                                             <div class="w-24 mb-auto">
                                                 <c-project-ship-mark status="{{ second_pass_status }}" />
                                                 <p class="text-center w-full text-sm">second pass</p>
-                                            </div>
-                                            <div class="w-24 mb-auto">
-                                                <c-project-ship-mark status="{{ ship.final_status }}" />
-                                                <p class="text-center w-full text-sm">final review</p>
                                             </div>
                                         </div>
                                     </div>
