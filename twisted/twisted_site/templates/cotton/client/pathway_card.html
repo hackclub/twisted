@@ -22,12 +22,12 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <div class="grow bg-secondary border border-border px-3 py-2 text-center shrink-0">
-                <button onclick="createWindow('shop', this.dataset.url)" data-url="{% url 'fr.shop' %}?pathway={{ pathway_info.pathway.id }}" type="button" class="w-full h-full">
+            <div class="group grow bg-secondary border border-border px-3 py-2 text-center shrink-0 transition-colors hover:bg-primary hover:text-primary-foreground">
+                <button onclick="createWindow('shop', this.dataset.url)" data-url="{% url 'fr.shop' %}?pathway={{ pathway_info.pathway.id }}" type="button" class="w-full h-full cursor-pointer">
                     <div class="my-auto">
                         <div class="text-lg sm:text-xl font-bold">view shop</div>
                         {% if pathway_info.time_spent.unlocked %}
-                        <div class="text-xs text-muted-foreground">{{ pathway_info.time_spent.golden_twists }} golden twists</div>
+                        <div class="text-xs text-muted-foreground group-hover:text-primary-foreground/80">{{ pathway_info.time_spent.golden_twists }} golden twists</div>
                         {% endif %}
                     </div>
                 </button>
@@ -40,12 +40,12 @@
                     <div class="text-xs text-muted-foreground">spent {{ pathway_info.time_spent.minutes|minutes_to_hours_minutes }}</div>
                 </div>
                 {% elif unspent_mins >= pathway_info.pathway.min_mins %}
-                <div class="bg-success/60 border border-border px-3 py-2 text-center shrink-0">
+                <div class="group bg-success/60 border border-border px-3 py-2 text-center shrink-0 transition-colors hover:bg-primary hover:text-primary-foreground">
                     <form method="post" action="{% url 'fr.pathways.unlock' pathway_info.pathway.id %}">
                         {% csrf_token %}
                         <button type="submit" class="w-full cursor-pointer">
                             <div class="text-lg sm:text-xl font-bold">unlock</div>
-                            <div class="text-xs text-muted-foreground">spends {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
+                            <div class="text-xs text-muted-foreground group-hover:text-primary-foreground/80">spends {{ pathway_info.pathway.min_mins|minutes_to_hours_minutes }}</div>
                         </button>
                     </form>
                 </div>
