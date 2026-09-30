@@ -60,41 +60,41 @@
         {% if messages %}
             <div class="shrink-0 space-y-1 px-3 pt-2">
                 {% for message in messages %}
-                    <div class="border px-3 py-2 text-sm {% if message.tags == 'error' %}border-destructive bg-destructive/10 text-destructive-foreground{% else %}border-success bg-success/10 text-success{% endif %}">
+                    <div class="border px-3 py-2 text-sm {% if message.tags == 'error' %}border-destructive bg-destructive/10 text-destructive{% else %}border-success bg-success/10 text-success{% endif %}">
                         {{ message }}
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
         <div class="sunken-panel min-h-0 flex-1 overflow-y-auto bg-background p-3">
-            {% if user.profile.region %}
-                {% if pathway %}
-                    {% if pathway_timespent %}
-                        <div class="p-2 bg-card border border-border mb-2">
-                            {{ pathway_timespent.golden_twists }} golden twist{{ pathway_timespent.golden_twists|pluralize }} for this pathway
-                        </div>
-                        <form method="post" action="?pathway={{ pathway.id }}" class="mb-2 flex flex-wrap items-center gap-2 border border-border bg-card p-2">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="deposit">
-                            <input type="hidden" name="pathway" value="{{ pathway.id }}">
-                            <label for="deposit-amount" class="text-sm text-muted-foreground">Deposit twists (1 twist = 1 golden twist)</label>
-                            <input id="deposit-amount"
-                                   name="amount"
-                                   type="number"
-                                   min="1"
-                                   value="1"
-                                   class="w-24 bg-background border border-border p-1 text-right">
-                            <button type="submit"
-                                    class="border border-primary bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80">
-                                Deposit
-                            </button>
-                        </form>
-                    {% else %}
-                        <div class="p-2 bg-card border border-border mb-2 text-sm text-muted-foreground">
-                            Unlock this pathway to deposit twists and shop here.
-                        </div>
-                    {% endif %}
+            {% if pathway %}
+                {% if pathway_timespent %}
+                    <div class="p-2 bg-card border border-border mb-2">
+                        {{ pathway_timespent.golden_twists }} golden twist{{ pathway_timespent.golden_twists|pluralize }} for this pathway
+                    </div>
+                    <form method="post" action="?pathway={{ pathway.id }}" class="mb-2 flex flex-wrap items-center gap-2 border border-border bg-card p-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="deposit">
+                        <input type="hidden" name="pathway" value="{{ pathway.id }}">
+                        <label for="deposit-amount" class="text-sm text-muted-foreground">Deposit twists (1 twist = 1 golden twist)</label>
+                        <input id="deposit-amount"
+                               name="amount"
+                               type="number"
+                               min="1"
+                               value="1"
+                               class="w-24 bg-background border border-border p-1 text-right">
+                        <button type="submit"
+                                class="border border-primary bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80">
+                            Deposit
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="p-2 bg-card border border-border mb-2 text-sm text-muted-foreground">
+                        Unlock this pathway to deposit twists and shop here.
+                    </div>
                 {% endif %}
+            {% endif %}
+            {% if user.profile.region %}
                 {% if shop_items %}
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {% for listing in shop_items %}

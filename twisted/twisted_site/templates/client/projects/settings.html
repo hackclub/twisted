@@ -12,7 +12,7 @@
         <form method="post" class="p-4 space-y-3">
             {% csrf_token %}
             {% if error %}
-                <div class="border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground">
+                <div class="border border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive">
                     {{ error }}
                 </div>
             {% endif %}
