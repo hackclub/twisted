@@ -3,7 +3,7 @@
 {% block body %}
     <a href="https://hackclub.com"
        target="_blank"
-       rel="noopener"
+       rel="noreferrer"
        class="fixed top-0 left-4 z-50">
         <img src="https://assets.hackclub.com/flag-orpheus-top.svg"
              alt="Hack Club"
@@ -77,6 +77,10 @@
             <a href="https://hackclub.enterprise.slack.com/archives/C0A8G9BSCSG"
                class="flex items-center justify-center border border-border bg-secondary px-3 py-2.5 font-mono text-sm font-semibold text-secondary-foreground transition hover:border-primary hover:bg-primary hover:text-primary-foreground">
                 Slack
+            </a>
+            <a href="{% url 'faqs' %}"
+               class="flex items-center justify-center border border-border bg-secondary px-3 py-2.5 font-mono text-sm font-semibold text-secondary-foreground transition hover:border-primary hover:bg-primary hover:text-primary-foreground">
+                FAQs
             </a>
             <a href="https://docs.twisted.hackclub.com"
                class="flex items-center justify-center border border-border bg-secondary px-3 py-2.5 font-mono text-sm font-semibold text-secondary-foreground transition hover:border-primary hover:bg-primary hover:text-primary-foreground">

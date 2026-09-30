@@ -1,11 +1,20 @@
 from django.contrib import messages
 from django.db.models import ProtectedError
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 
 from twisted_site.models import ShopRegion
 
 from .admin import AdminView
+
+
+def _posted_region(request: HttpRequest) -> ShopRegion | None:
+    """Return the region referenced by ``region_id``, or None when it is missing/invalid."""
+    try:
+        region_pk = int(request.POST.get("region_id", ""))
+    except ValueError:
+        return None
+    return ShopRegion.objects.filter(id=region_pk).first()
 
 
 # Create your views here.
@@ -56,7 +65,11 @@ class ShopRegionsView(AdminView):
             messages.success(request, f'Successfully created region "{region.name}"!')
 
         elif action == "update":
-            region = get_object_or_404(ShopRegion, id=request.POST.get("region_id"))
+            region = _posted_region(request)
+            if region is None:
+                messages.error(request, "Select a valid region to update.")
+                return redirect("admin.shop.regions")
+
             submitted_name = request.POST.get("name")
             name = submitted_name.strip() if submitted_name is not None else ""
             if name == "":
@@ -73,7 +86,10 @@ class ShopRegionsView(AdminView):
             messages.success(request, f'Successfully renamed region to "{region.name}"!')
 
         elif action == "delete":
-            region = get_object_or_404(ShopRegion, id=request.POST.get("region_id"))
+            region = _posted_region(request)
+            if region is None:
+                messages.error(request, "Select a valid region to delete.")
+                return redirect("admin.shop.regions")
 
             self.audit_log.additional_context["action"] = "delete_region"
             self.audit_log.additional_context["region_id"] = region.id

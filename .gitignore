@@ -18,3 +18,6 @@ twisted/*.sqlite3
 twisted/.env
 
 .logs
+
+LICENSE
+LICENSE*

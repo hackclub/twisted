@@ -12,7 +12,7 @@
             previewdiv.innerHTML = parsed;
             previewdiv.querySelectorAll('a[href]').forEach(function (link) {
                 link.setAttribute('target', '_blank');
-                link.setAttribute('rel', 'noopener noreferrer');
+                link.setAttribute('rel', 'noreferrer');
             });
         }
         rendermarkdown()

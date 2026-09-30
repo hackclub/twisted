@@ -3,6 +3,7 @@ import os
 
 from django.contrib import messages
 from django.contrib.sessions.models import Session
+from django.db import models as django_models
 from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse
@@ -12,6 +13,14 @@ from django.template.response import TemplateResponse
 from twisted_site.models import ProfileStaffPermissions, User, as_user
 
 from .admin import AdminView
+
+#: Permission fields a superuser may change through the admin UI. Derived from
+#: the model so it stays in sync; anything else (e.g. `id`) is rejected.
+STAFF_PERMISSION_FIELDS = frozenset(
+    field.name
+    for field in ProfileStaffPermissions._meta.get_fields()  # noqa: SLF001
+    if isinstance(field, django_models.BooleanField)
+)
 
 
 # Create your views here.
@@ -118,7 +127,10 @@ class UserDetailView(AdminView):
             if request_perms is None or not request_perms.superuser:
                 messages.error(request, "You are not allowed to change the permissions!")
                 return redirect(self.request.path)
-            key: str = request.POST["key"]
+            key = request.POST.get("key", "")
+            if key not in STAFF_PERMISSION_FIELDS:
+                messages.error(request, f"Unknown permission '{key}'.")
+                return redirect(f"{self.request.path}#adminperms")
             value = request.POST.get("value") == "True"
             target_profile = as_user(user).profile
             perms = target_profile.staff_permissions
@@ -136,10 +148,22 @@ class UserDetailView(AdminView):
         if request.POST.get("action") == "make_admin":
             profile = as_user(user).profile
             profile.is_staff = True
-            profile.staff_permissions = ProfileStaffPermissions.objects.create()
+            if profile.staff_permissions is None:
+                profile.staff_permissions = ProfileStaffPermissions.objects.create()
             self.audit_log.pii = True
             self.audit_log.additional_context["permission_changed"] = "Made user an admin"
             messages.success(request, f"Made @{as_user(user).profile.slack_username} an admin.")
+            profile.save()
+
+        if request.POST.get("action") == "remove_admin":
+            profile = as_user(user).profile
+            profile.is_staff = False
+            self.audit_log.pii = True
+            self.audit_log.additional_context["permission_changed"] = "Removed user from admin"
+            messages.success(
+                request,
+                f"Removed @{as_user(user).profile.slack_username} from admin.",
+            )
             profile.save()
 
         return redirect(self.request.path)

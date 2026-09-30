@@ -1,5 +1,3 @@
-import json
-
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
@@ -33,7 +31,10 @@ class DashboardView(AdminView):
             date = journal.created_at.date().isoformat()
             hours_logged_chart[date] = hours_logged_chart.get(date, 0) + hours
 
-            logged_project_type[journal.project.get_project_type_display()] += hours
+            project_type_label = journal.project.get_project_type_display()
+            logged_project_type[project_type_label] = (
+                logged_project_type.get(project_type_label, 0) + hours
+            )
 
             country = as_user(journal.project.user).profile.get_country()
 
@@ -43,25 +44,18 @@ class DashboardView(AdminView):
             if journal.project.is_shipped():
                 hours_shipped += hours
                 hours_shipped_chart[date] = hours_shipped_chart.get(date, 0) + hours
-                shipped_project_type[journal.project.get_project_type_display()] += hours
+                shipped_project_type[project_type_label] = (
+                    shipped_project_type.get(project_type_label, 0) + hours
+                )
 
         context["hours_logged"] = round(hours_logged, 2)
-        context["hours_logged_chart"] = json.dumps(
-            [["Date", "Hours"], *list(hours_logged_chart.items())],
-        )
-        context["logged_project_type"] = json.dumps(
-            [["Type", "Hours"], *list(logged_project_type.items())],
-        )
-        context["logged_region_hours"] = json.dumps(
-            [["Country", "Hours"], *list(logged_region_hours.items())],
-        )
+        # Rendered with json_script in the template (escapes </script> etc.).
+        context["hours_logged_chart"] = [["Date", "Hours"], *list(hours_logged_chart.items())]
+        context["logged_project_type"] = [["Type", "Hours"], *list(logged_project_type.items())]
+        context["logged_region_hours"] = [["Country", "Hours"], *list(logged_region_hours.items())]
 
         context["hours_shipped"] = round(hours_shipped, 2)
-        context["hours_shipped_chart"] = json.dumps(
-            [["Date", "Hours"], *list(hours_shipped_chart.items())],
-        )
-        context["shipped_project_type"] = json.dumps(
-            [["Type", "Hours"], *list(shipped_project_type.items())],
-        )
+        context["hours_shipped_chart"] = [["Date", "Hours"], *list(hours_shipped_chart.items())]
+        context["shipped_project_type"] = [["Type", "Hours"], *list(shipped_project_type.items())]
 
         return TemplateResponse(request, "admin/dashboard.html", context=context)

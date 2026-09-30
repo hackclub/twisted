@@ -6,7 +6,14 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from twisted_site.models import Pathway, ShopItem, ShopItemRegionalPricing, ShopRegion, User
+from twisted_site.models import (
+    Pathway,
+    PathwayTimeSpent,
+    ShopItem,
+    ShopItemRegionalPricing,
+    ShopRegion,
+    User,
+)
 
 from .admin import AdminView
 
@@ -25,9 +32,8 @@ class PathwayListView(AdminView):
             return HttpResponse("err")
 
         context = self.get_context_data(page="pathways")
-        context["pathways"] = Pathway.objects.all().order_by("start")
-
         pathways = Pathway.objects.order_by("start").all()
+        context["pathways"] = pathways
 
         current_pathways: list[Pathway] = []
         past_pathways: list[Pathway] = []
@@ -161,11 +167,18 @@ class PathwayDetailView(AdminView):
 
         mins_per_participant = pathway.mins_spent_per_participant()
         users = User.objects.filter(id__in=mins_per_participant.keys()).select_related("profile")
+        golden_per_participant = dict(
+            PathwayTimeSpent.objects.filter(pathway=pathway).values_list(
+                "user_id",
+                "golden_twists",
+            ),
+        )
 
         participants: list[dict[str, Any]] = [  # pyrefly: ignore[explicit-any]
             {
                 "user": user,
                 "mins": mins_per_participant[user.id],  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+                "golden_twists": golden_per_participant.get(user.id, 0),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
                 "percent": min(
                     100,
                     round(mins_per_participant[user.id] / pathway.min_mins * 100),  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]

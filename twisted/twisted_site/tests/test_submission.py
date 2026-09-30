@@ -38,7 +38,17 @@ class SubmitProjectTests(TestCase):
     def detail_url(self) -> str:
         return reverse("fr.projects.detail", kwargs={"project_id": self.project.pk})
 
+    def make_project_shippable(self) -> None:
+        _ = Journal.objects.create(
+            project=self.project,
+            type="untracked",
+            content="A sufficiently detailed journal entry for the submission tests.",
+            minutes_worked=60,
+            reduced_minutes=60,
+        )
+
     def test_owner_submission_creates_ship_and_notifies_integrations(self) -> None:
+        self.make_project_shippable()
         with (
             patch("twisted_site.views.client.project.ari.send_ship") as send_ship,
             patch("twisted_site.views.client.project.log_to_channel") as log_to_channel,
@@ -51,6 +61,7 @@ class SubmitProjectTests(TestCase):
         log_to_channel.assert_called_once()
 
     def test_failed_ari_delivery_removes_new_ship_and_shows_an_error(self) -> None:
+        self.make_project_shippable()
         with (
             self.assertLogs("twisted_site.views.client.project", level="ERROR"),
             patch(
@@ -64,6 +75,26 @@ class SubmitProjectTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "temporarily unavailable")
         self.assertFalse(ProjectShip.objects.filter(project=self.project).exists())
+
+    def test_project_with_under_sixty_minutes_cannot_be_shipped(self) -> None:
+        _ = Journal.objects.create(
+            project=self.project,
+            type="untracked",
+            content="Not enough logged time yet.",
+            minutes_worked=59,
+            reduced_minutes=59,
+        )
+        with (
+            patch("twisted_site.views.client.project.ari.send_ship") as send_ship,
+            patch("twisted_site.views.client.project.log_to_channel") as log_to_channel,
+        ):
+            response = self.client.post(self.ship_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "at least 60 minutes")
+        self.assertFalse(ProjectShip.objects.filter(project=self.project).exists())
+        send_ship.assert_not_called()
+        log_to_channel.assert_not_called()
 
     def test_ship_link_is_available_at_exactly_sixty_minutes(self) -> None:
         self.project.repo_url = "https://github.com/example/repo"
@@ -111,6 +142,7 @@ class SubmitProjectTests(TestCase):
         send_ship.assert_not_called()
 
     def test_unconfigured_ari_does_not_create_a_ship(self) -> None:
+        self.make_project_shippable()
         with (
             patch("twisted_site.views.client.project.ari.is_configured", return_value=False),
             patch("twisted_site.views.client.project.ari.send_ship") as send_ship,

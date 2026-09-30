@@ -3,9 +3,12 @@ from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from twisted_site.models import ProjectShip
+from twisted_site.models import PROJECT_SHIP_STATUSES, ProjectShip
 
 from .admin import AdminView
+
+REVIEW_FILTERS = ("open", "needs_final", "finalized", "all")
+DECIDED_STATUSES = ("approved", "rejected")
 
 
 # Create your views here.
@@ -19,7 +22,8 @@ class ReviewView(AdminView):
         if settings.DEBUG_REVIEW:
             return self.debug_get(request)
 
-        context = self.get_context_data(page="review")
+        context = self.get_context_data()
+
         return render(request, "admin/review.html", context=context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
@@ -31,7 +35,6 @@ class ReviewView(AdminView):
         if settings.DEBUG_REVIEW:
             return self.debug_post(request)
 
-        _ = self.get_context_data(page="review")
         return redirect(self.request.path_info)
 
     def debug_get(self, request: HttpRequest) -> HttpResponse:

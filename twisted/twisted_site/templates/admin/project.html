@@ -1,10 +1,8 @@
-{% load time_filters %}
+{% load static time_filters %}
 <c-base>
     <c-slot name="head">
-        <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-        <script src="
-        https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js
-        "></script>
+        <script src="{% static 'vendor/marked/marked.umd.js' %}"></script>
+        <script src="{% static 'vendor/dompurify/purify.min.js' %}"></script>
         <script>
             function popoverCloser(elem) {
                 elem.addEventListener('click', function(event) {
@@ -62,7 +60,10 @@
             <div class="text-xs uppercase text-ink-400">Repo</div>
             <div class="mt-1 text-sm break-all">
                 {% if project.repo_url %}
-                    <a class="underline" target="_blank" href="{{ project.repo_url }}">{{ project.repo_url }}</a>
+                    <a class="underline"
+                       target="_blank"
+                       rel="noreferrer"
+                       href="{{ project.repo_url }}">{{ project.repo_url }}</a>
                 {% else %}
                     not set
                 {% endif %}
@@ -72,7 +73,10 @@
             <div class="text-xs uppercase text-ink-400">Playable URL</div>
             <div class="mt-1 text-sm break-all">
                 {% if project.playable_url %}
-                    <a class="underline" target="_blank" href="{{ project.playable_url }}">{{ project.playable_url }}</a>
+                    <a class="underline"
+                       target="_blank"
+                       rel="noreferrer"
+                       href="{{ project.playable_url }}">{{ project.playable_url }}</a>
                 {% else %}
                     not set
                 {% endif %}
@@ -89,7 +93,7 @@
                             <div class="flex items-center gap-2 text-sm text-ink-400">
                                 <span class="font-bold text-white">{{ journal.reduced_minutes|minutes_to_hours_minutes }}</span>
                                 <span>logged via {{ journal.get_type_display }}</span>
-                                <span>&bull;</span>
+                                <span>•</span>
                                 <span title="{{ journal.created_at }}">{{ journal.created_at }}</span>
                             </div>
                             <div>
@@ -117,7 +121,7 @@
                         <c-ui.card class="bg-ink-900 mb-2">
                             <div class="flex items-center gap-2 text-sm text-ink-400">
                                 <span class="font-bold text-white">Ship submitted</span>
-                                <span>&bull;</span>
+                                <span>•</span>
                                 <span title="{{ ship.created_at }}">{{ ship.created_at }}</span>
                             </div>
                             <div class="mt-2 flex gap-2 flex-wrap">

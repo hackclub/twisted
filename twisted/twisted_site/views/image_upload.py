@@ -154,18 +154,18 @@ def _upload_fileobj(
         logger.exception("Error during file upload to R2")
         return {"status": "error", "error": "Could not upload file"}
 
-    except Exception as e:
+    except Exception:
         logger.exception("Unknown error during file upload")
         return {
             "status": "error",
-            "error": f"Unknown error occurred: {e!s}",
+            "error": "Upload failed, please try again later.",
         }
 
 
 def file_uploader(
     image: "DjangoUploadedFile[Any]",  # pyrefly: ignore[explicit-any]
 ) -> dict[str, Any]:  # pyrefly: ignore[explicit-any]
-    """Basic imgur uploader return as json data."""
+    """Upload an image to R2 object storage, returning its public link."""
     if image.name is None:
         return {"status": "error", "error": "Uploaded file is missing a filename"}
 

@@ -13,6 +13,7 @@ class DashboardView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
         profile = as_user(self.request.user).profile
+        _ = profile.refresh_twists()
 
         context: dict[str, Any] = {"profile": profile}  # pyrefly: ignore[explicit-any]
 
@@ -21,13 +22,18 @@ class DashboardView(View):
         project_id: str | None = request.GET.get("project")
 
         if project_id not in (None, ""):
-            project = get_object_or_404(Project, id=project_id)
-            startup_windows.append(
-                {
-                    "href": resolve_url("fr.projects.detail", project.id),
-                    "title": project.project_name,
-                },
-            )
+            try:
+                project_pk = int(project_id)
+            except ValueError:
+                project_pk = None
+            if project_pk is not None:
+                project = get_object_or_404(Project, id=project_pk)
+                startup_windows.append(
+                    {
+                        "href": resolve_url("fr.projects.detail", project.id),
+                        "title": project.project_name,
+                    },
+                )
 
         if request.GET.get("discover") is not None:
             startup_windows.append({"href": resolve_url("fr.discover"), "title": "discover"})

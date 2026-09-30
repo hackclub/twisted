@@ -120,6 +120,7 @@
                             <tr>
                                 <th>Participant</th>
                                 <th>Time logged</th>
+                                <th>Golden twists</th>
                                 <th>Progress</th>
                                 <th>Status</th>
                             </tr>
@@ -135,6 +136,7 @@
                                         </a>
                                     </td>
                                     <td>{{ participant.mins|minutes_to_hours_minutes }}</td>
+                                    <td>{{ participant.golden_twists }}</td>
                                     <td class="min-w-32">
                                         <c-ui.progress value="{{ participant.percent }}"
                                                        color="{% if participant.qualified %}green{% else %}accent{% endif %}"
@@ -180,7 +182,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <div id="id"></div>
                             {% for item in shop_items %}
                                 <tr hx-get="{% url 'admin.pathways.shopitems' item.id %}" 
                                     hx-target="#listing-{{ item.id }}" 

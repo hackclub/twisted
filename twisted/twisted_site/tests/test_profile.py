@@ -99,3 +99,15 @@ class ProfileCountryTests(TestCase):
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.country, "Unknown")
         self.assertIsNotNone(self.profile.country_cached_until)
+
+    def test_malformed_identity_payload_is_cached_as_unknown(self) -> None:
+        with patch(
+            "twisted_site.models.hca.get_user_data",
+            side_effect=KeyError("identity"),
+        ):
+            country = self.profile.get_country()
+
+        self.assertEqual(country, "Unknown")
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.country, "Unknown")
+        self.assertIsNotNone(self.profile.country_cached_until)

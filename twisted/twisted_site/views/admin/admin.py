@@ -135,6 +135,12 @@ class AdminView(View):
 
         if not self.allowed:
             messages.error(request, "You arent allowed to visit this page!")
+            # Anonymous users are redirected above, so request.user is always a
+            # real user here and the denial can be recorded.
+            if not isinstance(self.audit_log.additional_context, dict):
+                self.audit_log.additional_context = {}
+            self.audit_log.additional_context["allowed"] = False
+            self.audit_log.save()
             return redirect("admin.dash")
 
         self.audit_log.save()

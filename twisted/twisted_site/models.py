@@ -90,12 +90,12 @@ class Profile(models.Model):
                 if user_data.primary_address is not None
                 else "Unknown"
             )
-        except RequestException:
+        except (RequestException, KeyError, ValueError, TypeError):
             country = "Unknown"
 
         self.country = country
         self.country_cached_until = timezone.now() + timedelta(hours=3)
-        self.save()
+        self.save(update_fields=("country", "country_cached_until"))
 
         return country
 
@@ -113,6 +113,43 @@ class Profile(models.Model):
         for project in self.shipped_projects():
             time_shipped += project.time_logged()
         return time_shipped
+
+    def twists_earned(self) -> int:
+        """Lifetime twists earned from journaled project time at TWISTS_PER_HOUR."""
+        total = (
+            Journal.objects.filter(project__user=self.user).aggregate(total=Sum("reduced_minutes"))[
+                "total"
+            ]
+            or 0
+        )
+        return cast("int", total) * TWISTS_PER_HOUR // 60
+
+    def shop_locked_twists(self) -> int:
+        """Twists already allocated: pathway balances plus active (non-rejected) orders."""
+        deposited = (
+            PathwayTimeSpent.objects.filter(user=self.user).aggregate(total=Sum("golden_twists"))[
+                "total"
+            ]
+            or 0
+        )
+        ordered = (
+            ShopOrder.objects.filter(user=self.user)
+            .exclude(status="rejected")
+            .aggregate(total=Sum("price_paid"))["total"]
+            or 0
+        )
+        return cast("int", deposited) + cast("int", ordered)
+
+    def available_twists(self) -> int:
+        """Spendable twists: lifetime earnings minus everything already allocated."""
+        return max(0, self.twists_earned() - self.shop_locked_twists())
+
+    def refresh_twists(self) -> int:
+        """Recompute the spendable twist balance from earnings and allocations."""
+        balance = self.available_twists()
+        self.twists = balance
+        self.save(update_fields=("twists",))
+        return balance
 
 
 class ProfileStaffPermissions(models.Model):
@@ -143,13 +180,24 @@ class ProfileStaffPermissions(models.Model):
 
 PROJECT_TYPE_CHOICES = {"software": "Software", "hardware": "Hardware"}
 
+#: Field limits for Project, shared by the model, the client settings form and the ARI
+#: webhook validator so the three can never drift apart.
+PROJECT_NAME_MAX_LENGTH = 50
+PROJECT_DESCRIPTION_MAX_LENGTH = 2000
+PROJECT_URL_MAX_LENGTH = 200
+PROJECT_SCREENSHOT_URL_MAX_LENGTH = 500
+
+#: Twists earned per hour of journaled project time. Flat for now; a future
+#: complexity multiplier (40-60/hour) can replace this constant with a per-project rate.
+TWISTS_PER_HOUR = 50
+
 
 class Project(models.Model):
     id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="projects")
 
-    project_name = models.CharField(max_length=50)
-    project_description = models.TextField(max_length=2000)
+    project_name = models.CharField(max_length=PROJECT_NAME_MAX_LENGTH)
+    project_description = models.TextField(max_length=PROJECT_DESCRIPTION_MAX_LENGTH)
 
     project_type = models.CharField(choices=PROJECT_TYPE_CHOICES, max_length=100)
 
@@ -157,9 +205,13 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     hackatime_project_names = models.JSONField(default=list, blank=True)
-    repo_url = models.CharField(max_length=200, blank=True, default="")
-    playable_url = models.CharField(max_length=200, blank=True, default="")
-    screenshot_url = models.CharField(max_length=500, blank=True, default="")
+    repo_url = models.CharField(max_length=PROJECT_URL_MAX_LENGTH, blank=True, default="")
+    playable_url = models.CharField(max_length=PROJECT_URL_MAX_LENGTH, blank=True, default="")
+    screenshot_url = models.CharField(
+        max_length=PROJECT_SCREENSHOT_URL_MAX_LENGTH,
+        blank=True,
+        default="",
+    )
 
     @override
     def __str__(self) -> str:
@@ -252,6 +304,7 @@ PROJECT_SHIP_STATUSES = {
 
 
 class ProjectShip(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
     project = models.ForeignKey(Project, on_delete=models.PROTECT, related_name="ships")
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -408,6 +461,41 @@ class ShopItem(models.Model):
         return self.item_name  # ty: ignore[unsound-return-statement]
 
 
+SHOP_ORDER_STATUSES = {
+    "pending": "Pending fulfillment",
+    "fulfilled": "Fulfilled",
+    "rejected": "Rejected",
+}
+
+
+class ShopOrder(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="shop_orders")
+    item = models.ForeignKey(
+        "twisted_site.ShopItem",
+        on_delete=models.PROTECT,
+        related_name="orders",
+    )
+    pathway = models.ForeignKey(
+        "twisted_site.Pathway",
+        on_delete=models.PROTECT,
+        related_name="orders",
+    )
+
+    region_name = models.CharField(max_length=200, blank=True, default="")
+    price_paid = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+
+    status = models.CharField(default="pending", choices=SHOP_ORDER_STATUSES, max_length=20)
+    staff_note = models.TextField(blank=True, default="")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @override
+    def __str__(self) -> str:
+        return f"Order #{self.id} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+
+
 class AuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="audit_logs")
@@ -420,6 +508,17 @@ class AuditLog(models.Model):
     @override
     def __str__(self) -> str:
         return f"Audit log for {as_user(self.user).profile.slack_username}. PII: {self.pii}"
+
+
+class AriWebhookDelivery(models.Model):
+    """A processed ARI webhook delivery, used to ignore retried deliveries."""
+
+    delivery_id = models.CharField(max_length=200, unique=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+
+    @override
+    def __str__(self) -> str:
+        return f"ARI delivery {self.delivery_id} at {self.received_at}"
 
 
 class _ProjectsManager(Protocol):
