@@ -171,7 +171,7 @@
                     </thead>
                     <tbody>
                         {% for key, val in staff_perms.items %}
-                        {% if key not in 'id' %}
+                        {% if key != 'id' %}
                         <tr>
                             <td>{{ key.title }}</td>
                             <td>

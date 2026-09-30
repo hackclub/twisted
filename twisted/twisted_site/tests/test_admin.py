@@ -200,6 +200,42 @@ class AdminAuthorizationTests(TestCase):
         self.assertTrue(target_profile.is_staff)
         self.assertIsNotNone(target_profile.staff_permissions)
 
+    def test_change_permissions_rejects_unknown_and_missing_keys(self) -> None:
+        self.permissions.superuser = True
+        self.permissions.save(update_fields=("superuser",))
+        target_user = User.objects.create_user(username="mass-assignment-target")
+        target_permissions = ProfileStaffPermissions.objects.create()
+        target_profile = Profile.objects.create(
+            user=target_user,
+            staff_permissions=target_permissions,
+        )
+        detail_url = reverse(
+            "admin.users.detail",
+            kwargs={"user_id": target_user.pk},
+        )
+
+        for payload in (
+            {"action": "change_permissions", "key": "id", "value": "True"},
+            {"action": "change_permissions", "key": "is_staff", "value": "True"},
+            {"action": "change_permissions"},
+        ):
+            with self.subTest(payload=payload):
+                response = self.client.post(detail_url, payload)
+
+                self.assertRedirects(
+                    response,
+                    f"{detail_url}#adminperms",
+                    fetch_redirect_response=False,
+                )
+                target_profile.refresh_from_db()
+                target_permissions.refresh_from_db()
+                self.assertFalse(target_permissions.view_users)
+                updated_permissions = cast(
+                    "ProfileStaffPermissions",
+                    target_profile.staff_permissions,
+                )
+                self.assertEqual(target_permissions.pk, updated_permissions.pk)
+
     def test_logout_all_requires_superuser_and_does_not_delete_sessions(self) -> None:
         session = SessionStore()
         _ = session.create()
