@@ -114,6 +114,43 @@ class Profile(models.Model):
             time_shipped += project.time_logged()
         return time_shipped
 
+    def twists_earned(self) -> int:
+        """Lifetime twists earned from journaled project time at TWISTS_PER_HOUR."""
+        total = (
+            Journal.objects.filter(project__user=self.user).aggregate(total=Sum("reduced_minutes"))[
+                "total"
+            ]
+            or 0
+        )
+        return cast("int", total) * TWISTS_PER_HOUR // 60
+
+    def shop_locked_twists(self) -> int:
+        """Twists already allocated: pathway balances plus active (non-rejected) orders."""
+        deposited = (
+            PathwayTimeSpent.objects.filter(user=self.user).aggregate(total=Sum("golden_twists"))[
+                "total"
+            ]
+            or 0
+        )
+        ordered = (
+            ShopOrder.objects.filter(user=self.user)
+            .exclude(status="rejected")
+            .aggregate(total=Sum("price_paid"))["total"]
+            or 0
+        )
+        return cast("int", deposited) + cast("int", ordered)
+
+    def available_twists(self) -> int:
+        """Spendable twists: lifetime earnings minus everything already allocated."""
+        return max(0, self.twists_earned() - self.shop_locked_twists())
+
+    def refresh_twists(self) -> int:
+        """Recompute the spendable twist balance from earnings and allocations."""
+        balance = self.available_twists()
+        self.twists = balance
+        self.save(update_fields=("twists",))
+        return balance
+
 
 class ProfileStaffPermissions(models.Model):
     superuser = models.BooleanField(default=False)
@@ -149,6 +186,10 @@ PROJECT_NAME_MAX_LENGTH = 50
 PROJECT_DESCRIPTION_MAX_LENGTH = 2000
 PROJECT_URL_MAX_LENGTH = 200
 PROJECT_SCREENSHOT_URL_MAX_LENGTH = 500
+
+#: Twists earned per hour of journaled project time. Flat for now; a future
+#: complexity multiplier (40-60/hour) can replace this constant with a per-project rate.
+TWISTS_PER_HOUR = 50
 
 
 class Project(models.Model):
@@ -417,6 +458,41 @@ class ShopItem(models.Model):
     @override
     def __str__(self) -> str:
         return self.item_name  # ty: ignore[unsound-return-statement]
+
+
+SHOP_ORDER_STATUSES = {
+    "pending": "Pending fulfillment",
+    "fulfilled": "Fulfilled",
+    "rejected": "Rejected",
+}
+
+
+class ShopOrder(models.Model):
+    id: int  # pyright: ignore[reportUninitializedInstanceVariable]
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="shop_orders")
+    item = models.ForeignKey(
+        "twisted_site.ShopItem",
+        on_delete=models.PROTECT,
+        related_name="orders",
+    )
+    pathway = models.ForeignKey(
+        "twisted_site.Pathway",
+        on_delete=models.PROTECT,
+        related_name="orders",
+    )
+
+    region_name = models.CharField(max_length=200, blank=True, default="")
+    price_paid = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+
+    status = models.CharField(default="pending", choices=SHOP_ORDER_STATUSES, max_length=20)
+    staff_note = models.TextField(blank=True, default="")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @override
+    def __str__(self) -> str:
+        return f"Order #{self.id} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
 
 
 class AuditLog(models.Model):

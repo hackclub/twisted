@@ -1,8 +1,95 @@
 <c-base>
-    <c-ui.button variant="primary">
-        Primary Button
-    </c-ui.button>
-    <c-ui.button variant="default">
-        Default Button
-    </c-ui.button>
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+        <h1 class="text-2xl font-black">Fulfillment ({{ pending_count }} pending)</h1>
+        <div class="ml-auto flex gap-2">
+            <a href="?status=pending">
+                <c-ui.button variant="{% if status_filter == 'pending' %}primary{% else %}default{% endif %}">
+                    Pending
+                </c-ui.button>
+            </a>
+            <a href="?status=fulfilled">
+                <c-ui.button variant="{% if status_filter == 'fulfilled' %}primary{% else %}default{% endif %}">
+                    Fulfilled
+                </c-ui.button>
+            </a>
+            <a href="?status=rejected">
+                <c-ui.button variant="{% if status_filter == 'rejected' %}primary{% else %}default{% endif %}">
+                    Rejected
+                </c-ui.button>
+            </a>
+            <a href="?status=all">
+                <c-ui.button variant="{% if status_filter == 'all' %}primary{% else %}default{% endif %}">
+                    All
+                </c-ui.button>
+            </a>
+        </div>
+    </div>
+    {% if orders %}
+        <c-ui.card class="bg-ink-900 p-0">
+            <c-ui.table>
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Maker</th>
+                        <th>Item</th>
+                        <th>Pathway</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Placed</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>
+                                <a href="{% url 'admin.users.detail' user_id=order.user.id %}"
+                                   class="flex items-center gap-2">
+                                    <c-ui.avatar size="sm" src="{{ order.user.profile.slack_pfp_url }}" />
+                                    @{{ order.user.profile.slack_username }}
+                                </a>
+                            </td>
+                            <td>{{ order.item.item_name }}</td>
+                            <td>{{ order.pathway.name }}</td>
+                            <td>{{ order.price_paid }} ({{ order.region_name|default:"no region" }})</td>
+                            <td>
+                                <c-ui.badge color="{% if order.status == 'fulfilled' %}green{% elif order.status == 'rejected' %}red{% else %}orange{% endif %}">
+                                    {{ order.get_status_display }}
+                                </c-ui.badge>
+                                {% if order.staff_note %}
+                                    <div class="mt-1 text-xs text-ink-400">{{ order.staff_note }}</div>
+                                {% endif %}
+                            </td>
+                            <td title="{{ order.created_at }}">{{ order.created_at }}</td>
+                            <td>
+                                {% if order.status == "pending" %}
+                                    <form method="post" class="flex flex-col gap-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="order" value="{{ order.id }}">
+                                        <c-ui.input name="note" placeholder="Staff note (optional)" />
+                                        <div class="flex gap-2">
+                                            <c-ui.button type="submit" name="action" value="fulfill" variant="primary">
+                                                Fulfill
+                                            </c-ui.button>
+                                            <c-ui.button type="submit" name="action" value="reject" variant="danger">
+                                                Reject + refund
+                                            </c-ui.button>
+                                        </div>
+                                    </form>
+                                {% else %}
+                                    <span class="text-sm text-ink-400">Done</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </c-ui.table>
+        </c-ui.card>
+    {% else %}
+        <c-ui.card class="bg-ink-900">
+            <h1 class="text-lg font-bold">No orders here</h1>
+            <p>There are no {{ status_filter }} orders right now.</p>
+        </c-ui.card>
+    {% endif %}
 </c-base>

@@ -13,6 +13,7 @@ class DashboardView(View):
         if self.request.user.is_anonymous:
             return redirect("homepage")
         profile = as_user(self.request.user).profile
+        _ = profile.refresh_twists()
 
         context: dict[str, Any] = {"profile": profile}  # pyrefly: ignore[explicit-any]
 
