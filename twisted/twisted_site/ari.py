@@ -140,7 +140,7 @@ def send_ship(ship: ProjectShip) -> None:
     journals: list[dict[str, str | int]] = []
     orm_journals = cast("Iterable[Journal]", ship.project.journals.all())  # pyrefly: ignore[missing-attribute]
     for journal in orm_journals:
-        content = f"# Journal type: {journal.get_type_display()}\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+        content = f"# Journal type: {journal.get_type_display()} / {journal.minutes_worked}min\n\n{journal.content}"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
         journals.append(
             {
                 "at": journal.created_at.isoformat(),
@@ -163,7 +163,7 @@ def send_ship(ship: ProjectShip) -> None:
             "shipped_at": shipped_at,
             "thumbnail_url": thumbnail_url,
             "hackatime_projects": hackatime_projects,
-            "evidence": ["devlog"],
+            "evidence": ["hackatime", "lapse"],
             "journals": journals,
             "meta": meta,
         },
