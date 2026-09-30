@@ -46,6 +46,24 @@ class ClientWorkflowTests(TestCase):
         self.assertEqual(project.project_type, "software")
         log_to_channel.assert_called_once()
 
+    def test_project_creation_escapes_slack_markup(self) -> None:
+        with patch("twisted_site.views.client.projects.log_to_channel") as log_to_channel:
+            response = self.client.post(
+                reverse("fr.projects.create"),
+                {
+                    "name": "<!here> <https://evil.example|free twists>",
+                    "description": "Fish & chips <yum>",
+                    "type": "software",
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        message = cast("str", log_to_channel.call_args.args[0])
+        self.assertIn("&lt;!here&gt;", message)
+        self.assertIn("&lt;https://evil.example|free twists&gt;", message)
+        self.assertIn("Fish &amp; chips &lt;yum&gt;", message)
+        self.assertNotIn("<!here>", message)
+
     def test_project_creation_requires_all_fields(self) -> None:
         response = self.client.post(reverse("fr.projects.create"), {"name": "Incomplete"})
 

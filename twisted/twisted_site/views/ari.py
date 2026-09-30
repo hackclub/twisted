@@ -18,7 +18,7 @@ from twisted_site.models import (
     Project,
     as_user,
 )
-from twisted_site.slack import send_blocks
+from twisted_site.slack import escape_mrkdwn, send_blocks
 from twisted_site.validation import sanitize_http_url
 
 logger = logging.getLogger(__name__)
@@ -103,12 +103,8 @@ def _notify_maker(project: Project, *, blocks: list[SlackBlock], text: str) -> N
         logger.exception("Failed to notify maker about ship update for project %s", project.id)
 
 
-def _escape_mrkdwn(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
 def _quote_block(value: str) -> str:
-    lines = _escape_mrkdwn(value).splitlines()
+    lines = escape_mrkdwn(value).splitlines()
     if len(lines) == 0:
         lines = [""]
 
@@ -124,14 +120,14 @@ def _build_ship_update_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f":package: Your ship for *{_escape_mrkdwn(project.project_name)}* has been updated by a reviewer!",
+                "text": f":package: Your ship for *{escape_mrkdwn(project.project_name)}* has been updated by a reviewer!",
             },
         },
     ]
 
     for change in changes:
         blocks.append({"type": "divider"})
-        field_name = _escape_mrkdwn(change["field"].replace("_", " ").title())
+        field_name = escape_mrkdwn(change["field"].replace("_", " ").title())
         blocks.append(
             {
                 "type": "section",
@@ -158,7 +154,7 @@ def _build_review_changes_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f":memo: Your ship for *{_escape_mrkdwn(project.project_name)}* needs some changes!",
+                "text": f":memo: Your ship for *{escape_mrkdwn(project.project_name)}* needs some changes!",
             },
         },
         {"type": "divider"},
@@ -189,7 +185,7 @@ def _build_review_approved_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f":tada: Your ship for *{_escape_mrkdwn(project.project_name)}* was approved!",
+                "text": f":tada: Your ship for *{escape_mrkdwn(project.project_name)}* was approved!",
             },
         },
     ]
@@ -216,7 +212,7 @@ def _build_review_rejected_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f":x: Your ship for *{_escape_mrkdwn(project.project_name)}* was rejected.",
+                "text": f":x: Your ship for *{escape_mrkdwn(project.project_name)}* was rejected.",
             },
         },
     ]
@@ -252,7 +248,7 @@ def _build_review_reverted_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f":leftwards_arrow_with_hook: The decision on your ship for *{_escape_mrkdwn(project.project_name)}* was reverted, it's back with reviewers.",
+                "text": f":leftwards_arrow_with_hook: The decision on your ship for *{escape_mrkdwn(project.project_name)}* was reverted, it's back with reviewers.",
             },
         },
     ]
@@ -266,7 +262,7 @@ def _build_review_requeued_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f":repeat: Your ship for *{_escape_mrkdwn(project.project_name)}* is back in the review queue for another look.",
+                "text": f":repeat: Your ship for *{escape_mrkdwn(project.project_name)}* is back in the review queue for another look.",
             },
         },
     ]
@@ -389,7 +385,7 @@ class AriView(View):
         _notify_maker(
             project,
             blocks=_build_ship_update_blocks(project, _changes(data.get("changes"))),
-            text=f"Your ship for {project.project_name} has been updated by a reviewer!",
+            text=f"Your ship for {escape_mrkdwn(project.project_name)} has been updated by a reviewer!",
         )
 
         return HttpResponse("Request processed!")
@@ -413,7 +409,7 @@ class AriView(View):
         _notify_maker(
             project,
             blocks=_build_review_changes_blocks(project, note_to_maker),
-            text=f"Your ship for {project.project_name} needs some changes!",
+            text=f"Your ship for {escape_mrkdwn(project.project_name)} needs some changes!",
         )
 
         return HttpResponse("Request processed!")
@@ -472,7 +468,7 @@ class AriView(View):
         _notify_maker(
             project,
             blocks=blocks,
-            text=f"Your ship for {project.project_name} was {status}!",
+            text=f"Your ship for {escape_mrkdwn(project.project_name)} was {status}!",
         )
 
         return HttpResponse("Request processed!")
@@ -487,10 +483,14 @@ class AriView(View):
 
         if requeued:
             blocks = _build_review_requeued_blocks(project)
-            text = f"Your ship for {project.project_name} is back in the review queue."
+            text = (
+                f"Your ship for {escape_mrkdwn(project.project_name)} is back in the review queue."
+            )
         else:
             blocks = _build_review_reverted_blocks(project)
-            text = f"The decision on your ship for {project.project_name} was reverted."
+            text = (
+                f"The decision on your ship for {escape_mrkdwn(project.project_name)} was reverted."
+            )
         _notify_maker(project, blocks=blocks, text=text)
 
         return HttpResponse("Request processed!")

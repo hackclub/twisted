@@ -8,7 +8,7 @@ from django.views import View
 from requests import RequestException
 
 from twisted_site.models import Journal, Project, TemplateContext
-from twisted_site.slack import log_to_channel
+from twisted_site.slack import escape_mrkdwn, log_to_channel
 
 logger = getLogger(__name__)
 
@@ -136,7 +136,7 @@ class NewProjectHackatimeJournal(View):
         journal.save()
 
         log_to_channel(
-            f":haiku: *New journal for {project.project_name}!*\n- {journal.reduced_minutes} minutes",
+            f":haiku: *New journal for {escape_mrkdwn(project.project_name)}!*\n- {journal.reduced_minutes} minutes",
         )
 
         return self.get(request, project_id, context={"success": True})
@@ -333,7 +333,7 @@ class EditJournal(View):
         journal.save()
 
         log_to_channel(
-            f":haiku: *Journal edited for {journal.project.project_name}!*\n- {journal.reduced_minutes} minutes",
+            f":haiku: *Journal edited for {escape_mrkdwn(journal.project.project_name)}!*\n- {journal.reduced_minutes} minutes",
         )
 
         return self.get(request, journal.id, context={"success": True})

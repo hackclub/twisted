@@ -20,7 +20,7 @@ from django.views import View
 
 from twisted_site import hackatime
 from twisted_site.models import Profile, as_user
-from twisted_site.slack import log_to_channel, slack_bot
+from twisted_site.slack import escape_mrkdwn, log_to_channel, slack_bot
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +177,9 @@ class AuthCallbackView(View):
         profile.hackatime_state = secrets.token_urlsafe(32)
         profile.save()
 
-        log_to_channel(f":ms-arrow-up-right: *{profile.slack_username}* just logged in!")
+        log_to_channel(
+            f":ms-arrow-up-right: *{escape_mrkdwn(profile.slack_username)}* just logged in!",
+        )
 
         return redirect(
             f"https://hackatime.hackclub.com/oauth/authorize?client_id={hackatime_client_id}&redirect_uri={hackatime_redirect_uri}&response_type=code&scope={scopes}&state={profile.hackatime_state}",

@@ -55,3 +55,22 @@ class SlackClientTests(SimpleTestCase):
 
         self.assertIsNone(result)
         self.assertIn("Failed to log to Slack channel", logs.output[0])
+
+
+class EscapeMrkdwnTests(SimpleTestCase):
+    def test_escapes_markup_characters(self) -> None:
+        self.assertEqual(
+            slack.escape_mrkdwn("a & b <c> d"),
+            "a &amp; b &lt;c&gt; d",
+        )
+
+    def test_neutralizes_mentions_and_link_spoofing(self) -> None:
+        message = slack.escape_mrkdwn("<!here> look at <https://evil.example|this> & that")
+
+        self.assertNotIn("<!here>", message)
+        self.assertNotIn("<https://evil.example|this>", message)
+        self.assertIn("&lt;!here&gt;", message)
+        self.assertIn("&lt;https://evil.example|this&gt;", message)
+
+    def test_plain_text_is_unchanged(self) -> None:
+        self.assertEqual(slack.escape_mrkdwn("Cool project 3000!"), "Cool project 3000!")

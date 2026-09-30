@@ -14,6 +14,17 @@ slack_bot = WebClient(token=SLACK_TOKEN)
 logger = logging.getLogger(__name__)
 
 
+def escape_mrkdwn(text: str) -> str:
+    """
+    Escape user-controlled text for Slack mrkdwn.
+
+    Escaping ``&``, ``<`` and ``>`` neutralizes link spoofing (``<url|label>``)
+    as well as broadcast mentions (``<!channel>``/``<!here>``), which Slack only
+    parses in their unescaped form.
+    """
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def send_blocks(
     *,
     channel: str,

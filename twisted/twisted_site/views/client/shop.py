@@ -15,7 +15,7 @@ from twisted_site.models import (
     ShopRegion,
     as_user,
 )
-from twisted_site.slack import log_to_channel
+from twisted_site.slack import escape_mrkdwn, log_to_channel
 
 
 def _selected_pathway(request: HttpRequest) -> Pathway | None:
@@ -226,8 +226,8 @@ class ShopView(View):
             _ = profile.refresh_twists()
 
         log_to_channel(
-            f":shopping-bags: *{profile.slack_username}* ordered *{item.item_name}* "
-            f"from *{pathway.name}* for *{price.price} golden twists* (order #{order.id})",
+            f":shopping-bags: *{escape_mrkdwn(profile.slack_username)}* ordered *{escape_mrkdwn(item.item_name)}* "
+            f"from *{escape_mrkdwn(pathway.name)}* for *{price.price} golden twists* (order #{order.id})",
         )
         messages.success(
             request,

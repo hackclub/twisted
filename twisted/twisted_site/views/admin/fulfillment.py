@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from twisted_site.models import PathwayTimeSpent, Profile, ShopOrder, as_user
-from twisted_site.slack import log_to_channel
+from twisted_site.slack import escape_mrkdwn, log_to_channel
 
 from .admin import AdminView
 
@@ -97,7 +97,7 @@ class FulfillmentView(AdminView):
         if action == "fulfill":
             messages.success(request, f"Order #{order.id} marked as fulfilled.")
             log_to_channel(
-                f":package: Order *#{order.id}* (*{order.item.item_name}* for *{maker_name}*) "
+                f":package: Order *#{order.id}* (*{escape_mrkdwn(order.item.item_name)}* for *{escape_mrkdwn(maker_name)}*) "
                 "was fulfilled!",
             )
         else:
@@ -106,7 +106,7 @@ class FulfillmentView(AdminView):
                 f"Order #{order.id} rejected; {order.price_paid} golden twists refunded.",
             )
             log_to_channel(
-                f":x: Order *#{order.id}* (*{order.item.item_name}* for *{maker_name}*) "
+                f":x: Order *#{order.id}* (*{escape_mrkdwn(order.item.item_name)}* for *{escape_mrkdwn(maker_name)}*) "
                 "was rejected and refunded.",
             )
 

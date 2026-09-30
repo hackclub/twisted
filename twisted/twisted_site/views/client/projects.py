@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render, resolve_url
 from django.views import View
 
 from twisted_site.models import PROJECT_TYPE_CHOICES, Project, as_user
-from twisted_site.slack import log_to_channel
+from twisted_site.slack import escape_mrkdwn, log_to_channel
 
 
 # Create your views here.
@@ -59,7 +59,7 @@ class CreateProject(View):
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
 
         log_to_channel(
-            f"*{as_user(request.user).profile.slack_username}* created a <{project_url}|new project>!\n- *Name*: {project_name}\n- *Description*: {project_description}\n- {project_type.title()}",
+            f"*{escape_mrkdwn(as_user(request.user).profile.slack_username)}* created a <{project_url}|new project>!\n- *Name*: {escape_mrkdwn(project_name)}\n- *Description*: {escape_mrkdwn(project_description)}\n- {project_type.title()}",
         )
 
         return redirect("fr.projects.detail", project.id)

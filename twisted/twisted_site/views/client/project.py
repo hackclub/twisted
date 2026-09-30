@@ -19,7 +19,7 @@ from twisted_site.models import (
     TemplateContext,
     as_user,
 )
-from twisted_site.slack import log_to_channel
+from twisted_site.slack import escape_mrkdwn, log_to_channel
 from twisted_site.validation import invalid_http_urls
 
 logger = getLogger(__name__)
@@ -195,7 +195,7 @@ class ProjectSettings(View):
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         hackatime_names = ", ".join(project.hackatime_project_names)
         log_to_channel(
-            f":settings: Updated settings for *<{project_url}|{project.project_name}>*!\n- *Description*: {project.project_description}\n- *Type*: {project_type}\n- *Hackatime*: {_or_none(hackatime_names)}\n- *Repo*: {_or_none(project.repo_url)}\n- *Demo*: {_or_none(project.playable_url)}\n- *Screenshot*: {_or_none(project.screenshot_url)}",
+            f":settings: Updated settings for *<{project_url}|{escape_mrkdwn(project.project_name)}>*!\n- *Description*: {escape_mrkdwn(project.project_description)}\n- *Type*: {project_type}\n- *Hackatime*: {escape_mrkdwn(_or_none(hackatime_names))}\n- *Repo*: {escape_mrkdwn(_or_none(project.repo_url))}\n- *Demo*: {escape_mrkdwn(_or_none(project.playable_url))}\n- *Screenshot*: {escape_mrkdwn(_or_none(project.screenshot_url))}",
         )
 
         return redirect("fr.projects.detail", project.id)
@@ -294,7 +294,7 @@ class SubmitProject(View):
 
         project_url = f"{self.request.scheme}://{self.request.get_host()}{resolve_url('dashboard')}?project={project.id}"
         log_to_channel(
-            f":shipitparrot: Project *<{project_url}|{project.project_name}> shipped with *{project.time_logged()} minutes*",
+            f":shipitparrot: Project *<{project_url}|{escape_mrkdwn(project.project_name)}> shipped with *{project.time_logged()} minutes*",
         )
 
         return redirect("fr.projects.detail", project.id)
