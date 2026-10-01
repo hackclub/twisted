@@ -12,7 +12,7 @@
                         <input type="hidden"
                                value="{{ project.project_name }}"
                                id="discover-project-{{ project.id }}">
-                        <div class="group flex cursor-pointer flex-col gap-2 border border-border bg-card p-3 select-none hover:bg-secondary"
+                        <div class="group flex cursor-pointer flex-col gap-2 border border-border bg-card p-3 select-none hover:bg-secondary active:bg-secondary/60"
                              data-project-id="{{ project.id }}"
                              data-project-url="{% url 'fr.projects.detail' project.id %}">
                             <div class="flex items-start justify-between gap-2">
