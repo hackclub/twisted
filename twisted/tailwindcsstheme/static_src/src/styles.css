@@ -14,6 +14,14 @@
 }
 
 @font-face {
+  font-family: 'Noto Sans Symbols 2';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/notosanssymbols2/v25/I_uyMoGduATTei9eI8daxVHDyfisHr71-vrgfE71.woff2) format('woff2');
+}
+
+@font-face {
 	font-family: "Pirkkala";
 	src: url("/static/fonts/pirkkala.ttf") format("truetype");
 	font-weight: 200;
@@ -68,6 +76,7 @@
 @theme {
 	--font-vintage: "Pirkkala", sans-serif;
 	--font-latin: "Figtree", sans-serif;
+	--font-symbol: "Noto Sans Symbols 2", sans-serif;
 
 	--background-image-gradbg: radial-gradient(
 		circle,
