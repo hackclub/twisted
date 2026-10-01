@@ -79,7 +79,7 @@
                             </div>
                             {{ logged_region_hours|json_script:"logged_region_hours_data" }}
                             <script>
-                                pieChart("chart_region_hours", "logged_region_hours_data");
+                                pieChart("chart_region_hours", "logged_region_hours_data", false);
                             </script>
                         </div>
                     </div>
