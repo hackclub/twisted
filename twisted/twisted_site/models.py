@@ -4,7 +4,7 @@ from typing import Any, Protocol, cast, override
 from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import QuerySet, Sum, TextField
 from django.utils import timezone
 from requests import RequestException
@@ -114,42 +114,41 @@ class Profile(models.Model):
             time_shipped += project.time_logged()
         return time_shipped
 
-    def twists_earned(self) -> int:
-        """Lifetime twists earned from journaled project time at TWISTS_PER_HOUR."""
-        total = (
-            Journal.objects.filter(project__user=self.user).aggregate(total=Sum("reduced_minutes"))[
-                "total"
-            ]
-            or 0
-        )
-        return cast("int", total) * TWISTS_PER_HOUR // 60
+    @transaction.atomic
+    def add_currency(self, amount: int, note: str) -> None:
+        if amount < 0:
+            err = "Amount is negative!"
+            raise ValueError(err)
+        CurrencyLog.objects.create(profile=self, old_balance=self.twists, difference=amount, note=note)
+        self.twists += amount
+        self.save()
 
-    def shop_locked_twists(self) -> int:
-        """Twists already allocated: pathway balances plus active (non-rejected) orders."""
-        deposited = (
-            PathwayTimeSpent.objects.filter(user=self.user).aggregate(total=Sum("golden_twists"))[
-                "total"
-            ]
-            or 0
-        )
-        ordered = (
-            ShopOrder.objects.filter(user=self.user)
-            .exclude(status="rejected")
-            .aggregate(total=Sum("price_paid"))["total"]
-            or 0
-        )
-        return cast("int", deposited) + cast("int", ordered)
+    @transaction.atomic
+    def remove_currency(self, amount: int, note: str) -> None:
+        if amount < 0:
+            err = "Amount is negative!"
+            raise ValueError(err)
 
-    def available_twists(self) -> int:
-        """Spendable twists: lifetime earnings minus everything already allocated."""
-        return max(0, self.twists_earned() - self.shop_locked_twists())
+        if self.twists < amount:
+            err = "Insufficient balance!"
+            raise ValueError(err)
 
-    def refresh_twists(self) -> int:
-        """Recompute the spendable twist balance from earnings and allocations."""
-        balance = self.available_twists()
-        self.twists = balance
-        self.save(update_fields=("twists",))
-        return balance
+        CurrencyLog.objects.create(profile=self, old_balance=self.twists, difference=-amount, note=note)
+        self.twists -= amount
+        self.save()
+
+
+class CurrencyLog(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="currency_logs")
+
+    old_balance = models.IntegerField()
+    difference = models.IntegerField()
+
+    note = models.CharField(max_length=999)
+
+    def __str__(self) -> str:
+        """Get string for the object."""
+        return f"@{self.profile.username}: {self.old_balance} + {self.difference}"
 
 
 class ProfileStaffPermissions(models.Model):
@@ -384,6 +383,37 @@ class Pathway(models.Model):
                 qualified.append(User.objects.get(id=userid))
         return qualified
 
+    @transaction.atomic
+    def add_currency(self, profile: Profile, amount: int, note: str) -> None:
+        pathway_ts = PathwayTimeSpent.objects.get(user=profile.user, pathway=self)
+        if amount < 0:
+            err = "Amount is negative!"
+            raise ValueError(err)
+
+        if pathway_ts.golden_twists < amount:
+            err = "Insufficient balance!"
+            raise ValueError(err)
+
+        PathwayCurrencyLog.objects.create(pathway_ts=pathway_ts, old_balance=pathway_ts.golden_twists, difference=amount, note=note)
+        pathway_ts.golden_twists += amount
+        pathway_ts.save()
+
+    @transaction.atomic
+    def remove_currency(self, profile: Profile, amount: int, note: str) -> None:
+        pathway_ts = PathwayTimeSpent.objects.get(user=profile.user, pathway=self)
+        if amount < 0:
+            err = "Amount is negative!"
+            raise ValueError(err)
+
+        if pathway_ts.golden_twists < amount:
+            err = "Insufficient balance!"
+            raise ValueError(err)
+
+        PathwayCurrencyLog.objects.create(pathway_ts=pathway_ts, old_balance=pathway_ts.golden_twists, difference=-amount, note=note)
+        pathway_ts.golden_twists -= amount
+        pathway_ts.save()
+
+
 
 class PathwayTimeSpent(models.Model):
     pathway_id: int  # pyright: ignore[reportUninitializedInstanceVariable]
@@ -402,6 +432,15 @@ class PathwayTimeSpent(models.Model):
     @override
     def __str__(self) -> str:
         return f"{self.user} - {self.pathway}"
+
+
+class PathwayCurrencyLog(models.Model):
+    pathway_ts = models.ForeignKey(PathwayTimeSpent, related_name="currency_logs", on_delete=models.PROTECT)
+
+    old_balance = models.IntegerField()
+    difference = models.IntegerField()
+
+    note = models.CharField(max_length=999)
 
 
 class ShopRegion(models.Model):

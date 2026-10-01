@@ -17,7 +17,6 @@ class PathwaysView(View):
             return redirect("homepage")
 
         profile = as_user(request.user).profile
-        _ = profile.refresh_twists()
         pathways = Pathway.objects.order_by("start").all()
 
         time_spent_lookup = {
