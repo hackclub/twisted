@@ -5,12 +5,12 @@
         <div class="flex gap-2 shrink-0">
             <button type="button"
                     onclick="restoreSavedDraft()"
-                    class="px-2 py-1 bg-primary text-primary-foreground border border-border hover:bg-primary/80">
+                    class="px-2 py-1 bg-primary text-primary-foreground border border-border hover:bg-primary/80 active:translate-y-px">
                 Restore
             </button>
             <button type="button"
                     onclick="dismissSavedDraft()"
-                    class="px-2 py-1 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                    class="px-2 py-1 bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
                 Dismiss
             </button>
         </div>
@@ -20,20 +20,20 @@
                 type="button"
                 onclick="switchedit()"
                 disabled
-                class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
             Write
         </button>
         <button id="previewbutton"
                 type="button"
                 onclick="switchpreview()"
-                class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                class="px-3 py-1 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
             Preview
         </button>
     </div>
     <div class="flex-1 min-h-0 min-w-0 overflow-hidden">
         <div id="edittab" class="flex flex-col w-full h-full min-h-0">
             <div class="py-1 px-3 flex gap-2 border-b border-border">
-                <button type="button" onclick="makeBold()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                <button type="button" onclick="makeBold()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linejoin="round" d="M6.75 3.744h-.753v8.25h7.125a4.125 4.125 0 0 0 0-8.25H6.75Zm0 0v.38m0 16.122h6.747a4.5 4.5 0 0 0 0-9.001h-7.5v9h.753Zm0 0v-.37m0-15.751h6a3.75 3.75 0 1 1 0 7.5h-6m0-7.5v7.5m0 0v8.25m0-8.25h6.375a4.125 4.125 0 0 1 0 8.25H6.75m.747-15.38h4.875a3.375 3.375 0 0 1 0 6.75H7.497v-6.75Zm0 7.5h5.25a3.75 3.75 0 0 1 0 7.5h-5.25v-7.5Z"></path></svg>
                 </button>
                 <!-- TODO: implement dis
@@ -41,7 +41,7 @@
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"></path><path d="M6 20V4"></path><path d="M18 20V4"></path></svg>
                     </button>
                 -->
-                <button type="button" onclick="makeItalic()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                <button type="button" onclick="makeItalic()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.248 20.246H9.05m0 0h3.696m-3.696 0 5.893-16.502m0 0h-3.697m3.697 0h3.803"></path></svg>
                 </button>
                 <div class="border border-border/50 rounded-xl"></div>
@@ -50,14 +50,14 @@
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 6H3"></path><path d="M21 12H8"></path><path d="M21 18H8"></path><path d="M3 12v6"></path></svg>
                     </button>
                 -->
-                <button type="button" onclick="makeCodeBlock()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                <button type="button" onclick="makeCodeBlock()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                 </button>
-                <button type="button" onclick="insertUrl('url')" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                <button type="button" onclick="insertUrl('url')" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"></path></svg>
                 </button>
                 <div class="border border-border/50 rounded-xl"></div>
-                <button type="button" onclick="triggerImageUpload()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground">
+                <button type="button" onclick="triggerImageUpload()" class="p-2 disabled:bg-primary disabled:text-primary-foreground bg-secondary text-secondary-foreground border border-border hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"></path></svg>
                 </button>
                 <!-- TODO: implement dis
@@ -75,7 +75,7 @@
                       class="block w-full h-full min-h-0 resize-none bg-background text-foreground p-3 font-mono border-0 outline-none"
                       placeholder="Write your journal entry here. Ctrl+V an image into this textbox to insert it. (supports markdown!)"
                       oninput="renderpreview()">{{ content }}</textarea>
-            <div onclick="triggerImageUpload()" class="cursor-pointer py-1 px-3 flex gap-2 border-t border-border text-white/60 hover:text-white hover:bg-border/50 transition-all duration-200">
+            <div onclick="triggerImageUpload()" class="cursor-pointer py-1 px-3 flex gap-2 border-t border-border text-white/60 hover:text-white hover:bg-border/50 active:bg-border/70 active:text-white transition-all duration-200">
                 Paste or click to add images
             </div>
             <!--<div class="px-3 pt-1 border-t border-border bg-background flex gap-3">
