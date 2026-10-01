@@ -82,10 +82,9 @@ class FulfillmentView(AdminView):
                     user=order.user,
                     defaults={"minutes": 0, "unlocked": False, "golden_twists": 0},
                 )
-                time_spent.golden_twists += order.price_paid
-                time_spent.save(update_fields=("golden_twists",))
                 maker_profile: Profile = as_user(order.user).profile
-                _ = maker_profile.refresh_twists()
+                time_spent.pathway.add_currency(maker_profile, order.price_paid, f"Refunded shop order for {order.item.item_name} (#{order.id})")
+                time_spent.save(update_fields=("golden_twists",))
 
             order.staff_note = staff_note
             order.save(update_fields=("status", "staff_note"))

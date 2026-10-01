@@ -98,7 +98,6 @@ class DepositTests(TestCase):
             unlocked=True,
             minutes=60,
         )
-        _ = self.profile.refresh_twists()
         self.client = Client()
         self.client.force_login(self.user)
 
@@ -184,7 +183,6 @@ class PurchaseTests(TestCase):
             item=self.item,
             price=25,
         )
-        _ = self.profile.refresh_twists()
         self.client = Client()
         self.client.force_login(self.user)
 

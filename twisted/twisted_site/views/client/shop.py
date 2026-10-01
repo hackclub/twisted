@@ -36,7 +36,6 @@ class ShopView(View):
             return redirect("homepage")
 
         profile = as_user(request.user).profile
-        _ = profile.refresh_twists()
 
         context: dict[str, object] = {}
 
@@ -144,17 +143,8 @@ class ShopView(View):
                 messages.error(request, "Unlock this pathway before depositing twists.")
                 return self._shop_redirect(request, pathway)
 
-            available = profile.available_twists()
-            if amount > available:
-                messages.error(
-                    request,
-                    f"You only have {available} twists available to deposit.",
-                )
-                return self._shop_redirect(request, pathway)
-
-            time_spent.golden_twists += amount
-            time_spent.save(update_fields=("golden_twists",))
-            _ = profile.refresh_twists()
+            profile.remove_currency(amount, f"Transfer to pathway: {pathway}")
+            pathway.add_currency(profile, amount, "Transferred from user balance")
 
         messages.success(
             request,
@@ -214,8 +204,7 @@ class ShopView(View):
 
             item.stock -= 1
             item.save(update_fields=("stock",))
-            time_spent.golden_twists -= price.price
-            time_spent.save(update_fields=("golden_twists",))
+            pathway.remove_currency(profile, price.price, f"Bought shop item {item.item_name}")
             order = ShopOrder.objects.create(
                 user=request.user,
                 item=item,
@@ -223,7 +212,6 @@ class ShopView(View):
                 region_name=region.name,
                 price_paid=price.price,
             )
-            _ = profile.refresh_twists()
 
         log_to_channel(
             f":shopping-bags: *{escape_mrkdwn(profile.slack_username)}* ordered *{escape_mrkdwn(item.item_name)}* "

@@ -90,7 +90,7 @@ function areaChart(canvasId, dataId) {
     });
 }
 
-function pieChart(canvasId, dataId) {
+function pieChart(canvasId, dataId, legend=true) {
     const { rows } = chartRows(dataId);
     const canvas = document.getElementById(canvasId);
 
@@ -118,6 +118,7 @@ function pieChart(canvasId, dataId) {
             animation: { duration: 250 },
             plugins: {
                 legend: {
+                    display: legend,
                     position: "bottom",
                     labels: { color: CHART_TICK_COLOR, boxWidth: 12, boxHeight: 12 },
                 },

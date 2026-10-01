@@ -19,7 +19,7 @@
                     </div>
                     <div class="text-center mb-3">
                         <p>You have <b>{{ unspent_mins|minutes_to_hours_minutes }}</b> to spend.</p>
-                        <p class="text-sm text-muted-foreground">You have <b>{{ twists_available }} twist{{ twists_available|pluralize }}</b> available — deposit them into a pathway's shop to spend them.</p>
+                        <p class="text-sm text-muted-foreground">You have <b>{{ user.profile.twists }} twist{{ user.profile.twists|pluralize }}</b> available. Deposit them into a pathway's shop to spend them.</p>
                     </div>
                     <div class="grid gap-3">
                     {% for pathway_info in current_pathways %}
