@@ -442,6 +442,11 @@ class PathwayCurrencyLog(models.Model):
 
     note = models.CharField(max_length=999)
 
+    def __str__(self) -> str:
+        """Get string for the object."""
+        return f"@{self.pathway_ts.user.profile.username}: {self.old_balance} + {self.difference}"
+
+
 
 class ShopRegion(models.Model):
     id: int  # pyright: ignore[reportUninitializedInstanceVariable]
