@@ -17,7 +17,7 @@
                         <input type="hidden"
                                value="{{ project.project_name }}"
                                id="project-{{ project.id }}">
-                        <div class="group flex w-24 cursor-pointer flex-col items-center p-2 select-none hover:bg-secondary"
+                        <div class="group flex w-24 cursor-pointer flex-col items-center p-2 select-none hover:bg-secondary active:bg-secondary/60"
                              data-project-id="{{ project.id }}"
                              data-project-url="{% url 'fr.projects.detail' project.id %}">
                             <div class="flex h-16 w-16 items-center justify-center border border-transparent p-1">

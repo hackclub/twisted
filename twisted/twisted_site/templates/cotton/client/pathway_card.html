@@ -22,12 +22,12 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <div class="group grow bg-secondary border border-border px-3 py-2 text-center shrink-0 transition-colors hover:bg-primary hover:text-primary-foreground">
+            <div class="group grow bg-secondary border border-border px-3 py-2 text-center shrink-0 transition-colors hover:bg-primary hover:text-primary-foreground active:translate-y-px active:bg-accent active:text-accent-foreground">
                 <button onclick="createWindow('shop', this.dataset.url)" data-url="{% url 'fr.shop' %}?pathway={{ pathway_info.pathway.id }}" type="button" class="w-full h-full cursor-pointer">
                     <div class="my-auto">
                         <div class="text-lg sm:text-xl font-bold">view shop</div>
                         {% if pathway_info.time_spent.unlocked %}
-                        <div class="text-xs text-muted-foreground group-hover:text-primary-foreground/80">{{ pathway_info.time_spent.golden_twists }} golden twists</div>
+                        <div class="text-xs text-muted-foreground group-hover:text-primary-foreground/80 group-active:text-accent-foreground/80">{{ pathway_info.time_spent.golden_twists }} golden twists</div>
                         {% endif %}
                     </div>
                 </button>
