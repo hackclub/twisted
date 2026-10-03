@@ -47,7 +47,7 @@ oauth.register(
     client_kwargs={
         "scope": (
             "openid email name profile verification_status slack_id phone birthdate address basic_info"
-            if settings.AUTH_DEBUG
+            if not settings.AUTH_DEBUG
             else "openid email name profile verification_status slack_id"
         ),
     },
