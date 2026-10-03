@@ -192,7 +192,7 @@ STORAGES = {
     },
 }
 CSRF_COOKIE_HTTPONLY = False
-NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm")
+NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm.cmd" if os.name == "nt" else "npm")
 
 # Django Messages Framework
 MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"

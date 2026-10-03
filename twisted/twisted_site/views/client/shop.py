@@ -49,7 +49,12 @@ class ShopView(View):
         context["pathways"] = pathways
         context["twists_available"] = profile.twists
         shop_items: list[ShopItem] = []
-        pathway = _selected_pathway(request)
+        requested_pathway = _selected_pathway(request)
+        pathway = (
+            pathways.filter(pk=requested_pathway.pk).first()
+            if requested_pathway is not None
+            else None
+        )
         if pathway is not None:
             context["pathway"] = pathway
             shop_items = list(ShopItem.objects.filter(pathway=pathway))
