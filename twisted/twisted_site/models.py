@@ -139,6 +139,7 @@ class Profile(models.Model):
 
 
 class CurrencyLog(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
     profile = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="currency_logs")
 
     old_balance = models.IntegerField()
@@ -435,6 +436,8 @@ class PathwayTimeSpent(models.Model):
 
 
 class PathwayCurrencyLog(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
     pathway_ts = models.ForeignKey(PathwayTimeSpent, related_name="currency_logs", on_delete=models.PROTECT)
 
     old_balance = models.IntegerField()
