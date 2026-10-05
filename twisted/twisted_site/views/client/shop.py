@@ -138,7 +138,6 @@ class ShopView(View):
             messages.error(request, "Deposit amount must be positive.")
             return self._shop_redirect(request, pathway)
 
-        profile = as_user(request.user).profile
         with transaction.atomic():
             time_spent = (
                 PathwayTimeSpent.objects.select_for_update()
