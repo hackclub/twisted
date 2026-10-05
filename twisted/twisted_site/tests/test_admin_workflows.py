@@ -1,17 +1,14 @@
 from datetime import UTC, datetime
-from typing import cast, override
+from typing import override
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from twisted_site.models import (
-    AuditLog,
     Pathway,
     Profile,
     ProfileStaffPermissions,
-    Project,
-    ProjectShip,
     ShopItem,
     ShopItemRegionalPricing,
     ShopRegion,
