@@ -93,6 +93,12 @@ class NewProjectHackatimeJournal(View):
         if available_minutes is None:
             return self.get(request, project_id)
 
+        if available_minutes < 0:
+            return self.get(
+                request,
+                project_id,
+                info="There is no unjournaled Hackatime time available.",
+            )
 
         reduced_minutes = min(available_minutes, HACKATIME_MAX_LOGGABLE_MINUTES)
 
