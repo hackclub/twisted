@@ -114,6 +114,43 @@ class Profile(models.Model):
             time_shipped += project.time_logged()
         return time_shipped
 
+    def twists_earned(self) -> int:
+        """Lifetime twists earned from journaled project time at TWISTS_PER_HOUR."""
+        total = (
+            Journal.objects.filter(project__user=self.user).aggregate(total=Sum("reduced_minutes"))[
+                "total"
+            ]
+            or 0
+        )
+        return cast("int", total) * TWISTS_PER_HOUR // 60
+
+    def shop_locked_twists(self) -> int:
+        """Twists already allocated: pathway balances plus active (non-rejected) orders."""
+        deposited = (
+            PathwayTimeSpent.objects.filter(user=self.user).aggregate(total=Sum("golden_twists"))[
+                "total"
+            ]
+            or 0
+        )
+        ordered = (
+            ShopOrder.objects.filter(user=self.user)
+            .exclude(status="rejected")
+            .aggregate(total=Sum("price_paid"))["total"]
+            or 0
+        )
+        return cast("int", deposited) + cast("int", ordered)
+
+    def available_twists(self) -> int:
+        """Spendable twists: lifetime earnings minus everything already allocated."""
+        return max(0, self.twists_earned() - self.shop_locked_twists())
+
+    def refresh_twists(self) -> int:
+        """Recompute the spendable twist balance from earnings and allocations."""
+        balance = self.available_twists()
+        self.twists = balance
+        self.save(update_fields=("twists",))
+        return balance
+
     @transaction.atomic
     def add_currency(self, amount: int, note: str) -> None:
         if amount < 0:
@@ -389,10 +426,6 @@ class Pathway(models.Model):
         pathway_ts = PathwayTimeSpent.objects.get(user=profile.user, pathway=self)
         if amount < 0:
             err = "Amount is negative!"
-            raise ValueError(err)
-
-        if pathway_ts.golden_twists < amount:
-            err = "Insufficient balance!"
             raise ValueError(err)
 
         PathwayCurrencyLog.objects.create(pathway_ts=pathway_ts, old_balance=pathway_ts.golden_twists, difference=amount, note=note)
