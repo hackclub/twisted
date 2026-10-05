@@ -23,7 +23,15 @@
                             {% endif %}
                         {% endif %}
                     </div>
-                    <p class="mt-1 max-w-2xl break-words text-sm text-muted-foreground">{{ project.project_description }}</p>
+                    <div class="mt-1 flex items-center gap-2">
+                        <img src="{{ project.user.profile.slack_pfp_url }}"
+                                alt=""
+                                class="h-5 w-5 shrink-0 rounded-sm border border-border object-cover">
+                        <span class="truncate text-xs text-muted-foreground group-hover:text-secondary-foreground/80">
+                            {{ project.user.profile.slack_username|default:project.user.username }}
+                        </span>
+                    </div>
+
                 </div>
                 <div class="flex shrink-0 flex-wrap gap-1">
                     {% if owner %}
@@ -81,7 +89,12 @@
                 </div>
             </div>
         </div>
+
         <div class="min-h-0 flex-1 overflow-y-auto bg-background p-3">
+            <div class="border border-border my-2 px-2">
+                <span class="text-xs uppercase tracking-widest text-muted-foreground">Project Description</span>
+                <p class="my-1 max-w-2xl break-words text-sm">{{ project.project_description }}</p>
+            </div>
             <div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-2">
                 <div class="border border-border bg-card p-3">
                     <div class="text-xs uppercase text-muted-foreground">Time logged</div>
@@ -145,6 +158,7 @@
                     </div>
                 {% endif %}
             {% endif %}
+
             <div class="border border-border bg-card">
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-secondary px-3 py-2">
                     <div>

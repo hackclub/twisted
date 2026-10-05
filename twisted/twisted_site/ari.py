@@ -144,7 +144,7 @@ def send_ship(ship: ProjectShip) -> None:
         journals.append(
             {
                 "at": journal.created_at.isoformat(),
-                "minutes": journal.reduced_minutes,
+                "minutes": journal.reduced_minutes if journal.type == "untracked" else 0,
                 "text": content,
                 "markdown": content,
             },

@@ -2,8 +2,11 @@ from dataclasses import dataclass
 from typing import Literal, TypedDict, cast
 
 import requests
+from django.conf import settings
 
 HCA_BASE_URL = "https://auth.hackclub.com/api/v1"
+
+AUTH_DEBUG = settings.AUTH_DEBUG
 
 
 class _AddressPayload(TypedDict, total=False):
@@ -71,6 +74,34 @@ def get_auth_headers(access_token: str, headers: dict[str, str] | None = None) -
 
 
 def get_user_data(access_token: str) -> Identity:
+    if AUTH_DEBUG:
+        address = Address(
+            id="debugaddr!address",
+            first_name="Heidi",
+            last_name="Hacksworth",
+            line_1="The Hack Foundation",
+            line_2="212 Battery St.",
+            city="Burlington",
+            state="Vermont",
+            postal_code="90069",
+            country="United States",
+            phone_number="HEIDIPHONE",
+            primary=True,
+        )
+        return Identity(
+            id="debug!heidi",
+            ysws_eligible=True,
+            verification_status="verified",
+            first_name="Heidi",
+            last_name="Hacksworth",
+            primary_email="heidi@hackclub.com",
+            slack_id="UHEIDIBOT",
+            phone_number="HEIDIPHONE",
+            birthday="2016/01/01",
+            addresses=[address],
+            primary_address=address,
+        )
+
     headers = get_auth_headers(access_token)
 
     r = requests.get(f"{HCA_BASE_URL}/me", headers=headers, timeout=10)

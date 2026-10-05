@@ -32,6 +32,8 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.environ.get("DEBUG", "false").lower() in ["true", "on", "1"]
 DEBUG_REVIEW = os.environ.get("DEBUG_REVIEW", str(DEBUG)).lower() in ["true", "on", "1"]
 
+AUTH_DEBUG = os.environ.get("AUTH_DEBUG", str(DEBUG)).lower() in ["true", "on", "1"]
+
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
@@ -190,7 +192,7 @@ STORAGES = {
     },
 }
 CSRF_COOKIE_HTTPONLY = False
-NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm")
+NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm.cmd" if os.name == "nt" else "npm")
 
 # Django Messages Framework
 MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"

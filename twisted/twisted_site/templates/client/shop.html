@@ -1,171 +1,182 @@
 {% extends "client/osbase.html" %}
 {% load static time_filters %}
 {% block body %}
-    <div class="flex h-full w-full flex-col bg-surface text-foreground font-vintage">
-        <div class="flex shrink-0 items-center gap-4 border-b border-border bg-card px-3 py-2">
-            <div class="grow">
-                <span class="text-sm text-muted-foreground">Pathway
-                    <form method="get" id="pathwaySelectForm">
-                        <select class="bg-background p-2 border border-border" name="pathway" id="pathwaySelect" data-value="{{ pathway.id }}">
-                            <option value="" class="bg-background border border-border" selected disabled>Select an option</option>
-                            {% if pathway %}
-                            <option value="{{ pathway.id }}" class="bg-background border-b border-border focus:bg-red-500">{{ pathway.name }}</option>
-                            {% endif %}
-                            {% for iterpathway in pathways %}
-                            {% if iterpathway != pathway %}
-                            <option value="{{ iterpathway.id }}" class="bg-background border-b border-border focus:bg-red-500">{{ iterpathway.name }}</option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                        <script>
-                            pathwaySelect = document.getElementById('pathwaySelect')
-                            pathwaySelect.value = pathwaySelect.dataset.value
-                            pathwaySelect.addEventListener('change', () => {
-                                document.getElementById('pathwaySelectForm').submit()
-                            })
-                        </script>
-                    </form>
-                </span>
-            </div>
-            <div class="text-sm text-muted-foreground text-right">
-                <div>{{ twists_available }} twist{{ twists_available|pluralize }} available</div>
-            </div>
-            <div>
-                <span class="text-sm text-muted-foreground">Your Region
-                    <form method="post" id="regionSelectForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="setRegion">
-                        <select
-                            class="bg-background p-2 border border-border"
-                            name="region"
-                            id="regionSelect"
-                            data-value="{{ user.profile.region.id }}">
-                            <option value="" class="bg-background border border-border" selected disabled>Select an option</option>
-                            {% for region in regions %}
-                                <option value="{{ region.id }}" class="bg-background border-b border-border">{{ region.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <script>
-                            regionSelect = document.getElementById("regionSelect")
-                            regionSelect.value = regionSelect.dataset.value
-                            regionSelect.addEventListener('change', () => {
-                                form = document.getElementById('regionSelectForm')
-                                form.requestSubmit()
-                            })
-                        </script>
-                    </form>
-                </span>
-            </div>
-        </div>
-        {% if messages %}
-            <div class="shrink-0 space-y-1 px-3 pt-2">
-                {% for message in messages %}
-                    <div class="border px-3 py-2 text-sm {% if message.tags == 'error' %}border-destructive bg-destructive/10 text-destructive{% else %}border-success bg-success/10 text-success{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        <div class="sunken-panel min-h-0 flex-1 overflow-y-auto bg-background p-3">
-            {% if pathway %}
-                {% if pathway_timespent %}
-                    <div class="p-2 bg-card border border-border mb-2">
-                        {{ pathway_timespent.golden_twists }} golden twist{{ pathway_timespent.golden_twists|pluralize }} for this pathway
-                    </div>
-                    <form method="post" action="?pathway={{ pathway.id }}" class="mb-2 flex flex-wrap items-center gap-2 border border-border bg-card p-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="deposit">
-                        <input type="hidden" name="pathway" value="{{ pathway.id }}">
-                        <label for="deposit-amount" class="text-sm text-muted-foreground">Deposit twists (1 twist = 1 golden twist)</label>
-                        <input id="deposit-amount"
-                               name="amount"
-                               type="number"
-                               min="1"
-                               value="1"
-                               class="w-24 bg-background border border-border p-1 text-right">
-                        <button type="submit"
-                                class="border border-primary bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80">
-                            Deposit
-                        </button>
-                    </form>
-                {% else %}
-                    <div class="p-2 bg-card border border-border mb-2 text-sm text-muted-foreground">
-                        Unlock this pathway to deposit twists and shop here.
-                    </div>
-                {% endif %}
-            {% endif %}
-            {% if user.profile.region %}
-                {% if shop_items %}
-                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {% for listing in shop_items %}
-                        <div class="group flex flex-col gap-2 border border-border bg-card p-3 select-none">
-                            <div class="mx-auto inline-block">
-                                {% if listing.item.image_url %}
-                                <img class="size-15" src="{{ listing.item.image_url }}" alt="📦">
-                                {% else %}
-                                <p class="pt-3 text-5xl size-15">
-                                    📦
-                                </p>
-                                {% endif %}
-                            </div>
-                            <div class="text-center">
-                                <div class="font-bold text-lg">
-                                    {{ listing.item.item_name }}
-                                </div>
-                                <div class="mt-2">
-                                    {{ listing.item.item_description|truncatechars:30 }}
-                                </div>
-                                <div class="mt-2">
-                                    {{ listing.price.price }} twist{{ listing.price.price|pluralize }}
-                                </div>
-                                <div class="mt-1 text-xs text-muted-foreground">
-                                    {{ listing.item.stock }} in stock
-                                </div>
-                                {% if pathway_timespent %}
-                                    <form method="post" action="?pathway={{ pathway.id }}" class="mt-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="purchase">
-                                        <input type="hidden" name="pathway" value="{{ pathway.id }}">
-                                        <input type="hidden" name="item" value="{{ listing.item.id }}">
-                                        <button type="submit"
-                                                {% if pathway_timespent.golden_twists < listing.price.price %}disabled{% endif %}
-                                                class="w-full border border-primary bg-primary px-3 py-1 text-sm font-bold text-primary-foreground hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-50">
-                                            Buy
-                                        </button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        </div>
+<div class="flex h-full w-full flex-col bg-surface text-foreground font-vintage">
+    <div class="flex shrink-0 items-center gap-4 border-b border-border bg-card px-3 py-2">
+        <div class="grow">
+            <form method="get" id="pathwaySelectForm">
+                <select class="bg-background py-2 px-3 border border-border hover:bg-card transition cursor-pointer" name="pathway" id="pathwaySelect">
+                    <option value="" class="bg-background border border-border" disabled {% if not pathway %}selected{% endif %}>
+                        pathway
+                    </option>
+                    {% for iterpathway in pathways %}
+                    <option value="{{ iterpathway.id }}" {% if pathway.id == iterpathway.id %}selected{% endif %}>
+                        {{ iterpathway.name }}
+                    </option>
                     {% endfor %}
-                </div>
-                {% else %}
-                <div class="flex h-full items-center justify-center">
-                    <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
-                        <div class="text-lg font-bold">No shop items here yet :c</div>
-                        <div class="mt-1 text-sm text-muted-foreground">Check back later or select a different pathway</div>
-                    </div>
-                </div>
-                {% endif %}
-            {% else %}
-            <div class="h-full">
-                <div class="absolute right-4 justify-end">
-                    <div class="ml-auto text-right">
-                        <div>
-                            ^^^^
-                        </div>
-                        <div>
-                            select a region here!
-                        </div>
-                    </div>
-                </div>
-                <div class="flex h-full items-center justify-center">
-                    <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
-                        <div class="text-lg font-bold">No region selected</div>
-                        <div class="mt-1 text-sm text-muted-foreground">Please select a region to get started.</div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
+                </select>
+            </form>
+        </div>
+        <div>
+            <form method="post" id="regionSelectForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="setRegion">
+                <select class="bg-background p-2 border border-border hover:bg-card transition cursor-pointer" name="region" id="regionSelect">
+                    <option value="" class="bg-background border border-border" disabled {% if not user.profile.region %}selected{% endif %}>
+                        Region
+                    </option>
+                    {% for region in regions %}
+                    <option value="{{ region.id }}" {% if user.profile.region_id == region.id %}selected{% endif %}>
+                        {{ region.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
         </div>
     </div>
+    <script>
+        document.getElementById("pathwaySelect").addEventListener("change", (event) => {
+            event.currentTarget.form.requestSubmit()
+        })
+        document.getElementById("regionSelect").addEventListener("change", (event) => {
+            event.currentTarget.form.requestSubmit()
+        })
+    </script>
+    {% if messages %}
+    <div class="shrink-0 space-y-1 px-3 pt-2">
+        {% for message in messages %}
+        <div
+            class="border px-3 py-2 text-sm {% if message.tags == 'error' %}border-destructive bg-destructive/10 text-destructive{% else %}border-success bg-success/10 text-success{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="sunken-panel min-h-0 flex-1 overflow-y-auto bg-background p-3">
+        {% if not user.profile.region %}
+        <div class="flex h-full items-center justify-center">
+            <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                <div class="text-lg font-bold">No region selected</div>
+                <div class="mt-1 text-sm text-muted-foreground">Select a region to see available shop items.</div>
+            </div>
+        </div>
+        {% elif not pathway %}
+        <div class="flex h-full items-center justify-center">
+            <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                {% if pathways %}
+                <div class="text-lg font-bold">Select a pathway</div>
+                <div class="mt-1 text-sm text-muted-foreground">Choose an unlocked pathway to browse its shop.</div>
+                {% else %}
+                <div class="text-lg font-bold">No unlocked pathways</div>
+                <div class="mt-1 text-sm text-muted-foreground">Unlock a pathway to browse its shop.</div>
+                {% endif %}
+            </div>
+        </div>
+        {% elif pathway_timespent %}
+        <div class="mb-2 grid grid-cols-2 items-center gap-2 border border-border bg-card px-3 py-2 text-sm">
+            <p class="text-xl text-primary">Twists:</p>
+            <div class="flex items-center justify-end pl-3 gap-2">
+                <p class="text-right">
+                    <span class="text-muted-foreground">Pathway:</span>
+                    <strong class="ml-1 tabular-nums text-yellow-600">
+                        {{ pathway_timespent.golden_twists }} golden
+                    </strong>
+                </p>
+                <p class="text-right">
+                    <span class="text-muted-foreground">Overall:</span>
+                    <strong class="ml-1 tabular-nums text-green-600">
+                        {{ twists_available }}
+                    </strong>
+                </p>
+            </div>
+        </div>
+        <form method="post" action="?pathway={{ pathway.id }}"
+            class="mb-2 flex flex-wrap items-center justify-between gap-2 border border-border bg-card p-2">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="deposit">
+            <input type="hidden" name="pathway" value="{{ pathway.id }}">
+            <div class="p-0.5 text-sm">
+                <label for="deposit-amount" class="text-lg text-accent">Deposit twists </label>
+                <p class="text-xs">(1 <span class="text-green-600"> twist</span> = 1 <span class="text-yellow-600">golden twist</span>)</p>
+            </div>
+            <div class="grid w-60% grid-cols-2 gap-2 sm:w-64">
+                <input id="deposit-amount" name="amount" type="number" min="1" max="{{ twists_available }}" value="1"
+                    {% if twists_available < 1 %}disabled{% endif %}
+                    class="h-10 w-full min-w-0 border border-border bg-background px-3 text-right text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-50">
+                <button type="submit" {% if twists_available < 1 %}disabled{% endif %}
+                    class="h-10 w-full border border-primary bg-primary px-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-background/80 hover:text-accent focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50">
+                    Deposite
+                </button>
+            </div>
+        </form>
+        {% if shop_items %}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for listing in shop_items %}
+            <div
+                class="group flex flex-col overflow-hidden rounded-xs border border-border bg-card transition-shadow hover:shadow-md">
+
+                <div class="flex h-40 items-center justify-center bg-muted/30">
+                    {% if listing.item.image_url %}
+                    <img class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                        src="{{ listing.item.image_url }}" alt="{{ listing.item.item_name }}">
+                    {% else %}
+                    <span class="text-7xl">📦</span>
+                    {% endif %}
+                </div>
+
+                <div class="flex flex-1 flex-col p-4">
+                    <div class="text-lg font-bold">
+                        {{ listing.item.item_name }}
+                    </div>
+
+                    <div class="mt-1 min-h-10 text-sm text-muted-foreground">
+                        {{ listing.item.item_description|truncatechars:60 }}
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="text-lg font-bold">
+                            {{ listing.price.price }} golden twist{{ listing.price.price|pluralize }}
+                        </div>
+
+                        <div class="text-xs text-muted-foreground">
+                            {{ listing.item.stock }} in stock
+                        </div>
+                    </div>
+
+                    {% if pathway_timespent %}
+                    <form method="post" action="?pathway={{ pathway.id }}" class="mt-4">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="action" value="purchase">
+
+                        <input type="hidden" name="pathway" value="{{ pathway.id }}">
+
+                        <input type="hidden" name="item" value="{{ listing.item.id }}">
+
+                        <button type="submit" {% if pathway_timespent.golden_twists < listing.price.price %}disabled{% endif %}
+                            class="w-full rounded-md border-2 border-accent bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-50 shadow-accent shadow-[3px_3px_0px_0px]">
+                            <!-- tried to copy the button from the taskbar (idk the exact style) -->
+                            {% if pathway_timespent.golden_twists < listing.price.price %}Not enough golden twists{% else %}Buy{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="flex h-full items-center justify-center">
+            <div class="border border-border bg-card px-8 py-6 text-center shadow-sm">
+                <div class="text-lg font-bold">No shop items available</div>
+                <div class="mt-1 text-sm text-muted-foreground">This pathway has no in-stock items priced for your region.</div>
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="border border-border bg-card p-2 text-sm text-muted-foreground">
+            This pathway is not available for shopping.
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock body %}
