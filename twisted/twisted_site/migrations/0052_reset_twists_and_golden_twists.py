@@ -11,7 +11,7 @@ def reset_twists(apps, _schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("twisted_site", "0051_shoporder"),
+        ("twisted_site", "0045_shoporder"),
     ]
 
     operations = [
