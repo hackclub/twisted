@@ -662,6 +662,18 @@ reload = [
 ]
 
 [[package]]
+name = "django-tasks-local"
+version = "2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e4/2a/35904b6a673f9e865d929d338d958c5263822a4bb021a29faf601b3a24b1/django_tasks_local-2.0.tar.gz", hash = "sha256:23e7df79a4766cbb0a76d87a2b844ab4798fb5c22880454a0fcb6acd73c50869", size = 9288, upload-time = "2026-01-21T22:18:02.384Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c1/a4/b8031fad49e863ca6bcab81489d67538a61b0993402f9eccf9c2799ad7d3/django_tasks_local-2.0-py3-none-any.whl", hash = "sha256:a8ce8f5e39d449993c77d1db964b470601002d69c8bf01c4997cfa4d625feda0", size = 7424, upload-time = "2026-01-21T22:18:04.063Z" },
+]
+
+[[package]]
 name = "frozenlist"
 version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1360,6 +1372,7 @@ dependencies = [
     { name = "django-mathfilters" },
     { name = "django-qsstats-magic" },
     { name = "django-tailwind", extra = ["cookiecutter", "honcho", "reload"] },
+    { name = "django-tasks-local" },
     { name = "gunicorn" },
     { name = "pillow" },
     { name = "psycopg", extra = ["binary"] },
@@ -1393,6 +1406,7 @@ requires-dist = [
     { name = "django-mathfilters", specifier = ">=1.0.0" },
     { name = "django-qsstats-magic", specifier = ">=1.1.0" },
     { name = "django-tailwind", extras = ["cookiecutter", "honcho", "reload"], specifier = ">=4.5.0" },
+    { name = "django-tasks-local", specifier = ">=2.0" },
     { name = "gunicorn", specifier = ">=26.0.0" },
     { name = "pillow", specifier = ">=11.3.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.4" },
