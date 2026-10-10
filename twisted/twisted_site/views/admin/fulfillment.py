@@ -89,9 +89,6 @@ class FulfillmentView(AdminView):
             order.staff_note = staff_note
             order.save(update_fields=("status", "staff_note"))
 
-            if maker_profile is not None:
-                _ = maker_profile.refresh_twists()
-
         self.audit_log.additional_context["action"] = f"order_{action}"
         self.audit_log.additional_context["order_id"] = order.id
 
