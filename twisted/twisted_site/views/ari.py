@@ -26,8 +26,8 @@ from twisted_site.validation import sanitize_http_url
 
 logger = logging.getLogger(__name__)
 
-#: Slack block payloads are nested JSON objects; the builders below produce this shape.
-SlackBlock = dict[str, str] | dict[str, str | dict[str, str]]
+#: Slack block payloads contain nested objects and arrays.
+SlackBlock = dict[str, object]
 
 #: Reviewer metadata fields that map to bounded CharFields on ProjectShip.
 REVIEW_METADATA_MAX_LENGTH = 255
@@ -152,12 +152,20 @@ def _build_review_changes_blocks(
     project: Project,
     note_to_maker: str,
 ) -> list[SlackBlock]:
+    profile = as_user(project.user).profile
+    maker_name = profile.slack_username or as_user(project.user).username
+    project_url = f"https://twisted.hackclub.com/dashboard/?project={project.id}"
+
     return [
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f":memo: Your ship for *{escape_mrkdwn(project.project_name)}* needs some changes!",
+                "text": (
+                    f":twisted-ysws: *Your {escape_mrkdwn(project.project_name)} ship needs one little tweak!*\n\n"
+                    f"Hey *{escape_mrkdwn(maker_name)}*! You're almost there!\n"
+                    "Before we can finish reviewing your ship, please do the thing the reviewer suggested."
+                ),
             },
         },
         {"type": "divider"},
@@ -165,7 +173,7 @@ def _build_review_changes_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*Note from reviewer:*\n{_quote_block(note_to_maker)}",
+                "text": f":memo: *A note from your reviewer*\n{_quote_block(note_to_maker)}",
             },
         },
         {"type": "divider"},
@@ -173,8 +181,29 @@ def _build_review_changes_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Feel free to drop us a message over at #twisted-help if you think this is a mistake!",
+                "text": (
+                    ":question: *Need help?*\n"
+                    "If you have questions or think something went wrong, drop us a message in <#C0BQM80CQQ6>. "
+                    "We're happy to help!\n\n"
+                    "Keep building, keep shipping! :twisted-ysws:"
+                ),
             },
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "View Your Ship",
+                        "emoji": True,
+                    },
+                    "value": "view_proj",
+                    "url": project_url,
+                    "action_id": "actionId-01",
+                },
+            ],
         },
     ]
 
