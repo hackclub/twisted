@@ -504,22 +504,40 @@ class AriWebhookTests(TestCase):
         self.assertEqual(self.ship.status, "rejected")
         self.assertEqual(self.ship.note_to_maker, "Not eligible")
 
-    def test_reverted_and_requeued_events_reset_pending_status(self) -> None:
-        for event in ("review.reverted", "review.requeued"):
-            with self.subTest(event=event):
-                self.ship.status = "approved"
-                self.ship.save(update_fields=("status",))
-                with patch("twisted_site.views.ari.send_blocks"):
-                    response = self.post_webhook(
-                        {
-                            "external_id": f"twisted-{self.project.pk}",
-                            "event": event,
-                        },
-                    )
+    def test_requeued_event_resets_pending_status(self) -> None:
+        self.ship.status = "approved"
+        self.ship.final_status = "approved"
+        self.ship.save()
 
-                self.assertEqual(response.status_code, 200)
-                self.ship.refresh_from_db()
-                self.assertEqual(self.ship.status, "pending")
+        with patch("twisted_site.views.ari.send_blocks"):
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "review.requeued",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.ship.refresh_from_db()
+        self.assertEqual(self.ship.status, "pending")
+        self.assertEqual(self.ship.final_status, "pending")
+
+    def test_reverted_event_requests_changes(self) -> None:
+        self.ship.status = "approved"
+        self.ship.save(update_fields=("status",))
+
+        with patch("twisted_site.views.ari.send_blocks"):
+            response = self.post_webhook(
+                {
+                    "external_id": f"twisted-{self.project.pk}",
+                    "event": "review.reverted",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.ship.refresh_from_db()
+        self.assertEqual(self.ship.status, "requested_changes")
+        self.assertEqual(self.ship.final_status, "pending")
 
     def test_event_without_ship_returns_bad_request(self) -> None:
         _ = self.ship.delete()
@@ -616,7 +634,7 @@ class AriWebhookTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.ship.refresh_from_db()
-        self.assertEqual(self.ship.status, "pending")
+        self.assertEqual(self.ship.status, "requested_changes")
         self.assertEqual(self.ship.final_status, "pending")
 
     def test_malformed_payloads_return_bad_request(self) -> None:

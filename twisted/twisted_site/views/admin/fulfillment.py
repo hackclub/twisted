@@ -61,6 +61,7 @@ class FulfillmentView(AdminView):
 
         staff_note = request.POST.get("note", "").strip()
 
+        maker_profile: Profile | None = None
         with transaction.atomic():
             order = ShopOrder.objects.select_for_update().filter(id=order_pk).first()
             if order is None:
@@ -82,12 +83,14 @@ class FulfillmentView(AdminView):
                     user=order.user,
                     defaults={"minutes": 0, "unlocked": False, "golden_twists": 0},
                 )
-                maker_profile: Profile = as_user(order.user).profile
+                maker_profile = as_user(order.user).profile
                 time_spent.pathway.add_currency(maker_profile, order.price_paid, f"Refunded shop order for {order.item.item_name} (#{order.id})")
-                time_spent.save(update_fields=("golden_twists",))
 
             order.staff_note = staff_note
             order.save(update_fields=("status", "staff_note"))
+
+            if maker_profile is not None:
+                _ = maker_profile.refresh_twists()
 
         self.audit_log.additional_context["action"] = f"order_{action}"
         self.audit_log.additional_context["order_id"] = order.id

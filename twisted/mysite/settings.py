@@ -225,3 +225,11 @@ ARI_WEBHOOK_SECRET = os.environ.get("ARI_WEBHOOK_SECRET")
 # Slack
 SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
 SLACK_LOG_CHANNEL = os.environ.get("SLACK_LOG_CHANNEL")
+
+
+# Django Tasks
+TASKS = {
+    "default": {
+        "BACKEND": "django_tasks_local.ThreadPoolBackend", # For lightweight in-app threading
+    },
+}

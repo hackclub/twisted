@@ -36,6 +36,7 @@ class ShopView(View):
             return redirect("homepage")
 
         profile = as_user(request.user).profile
+        _ = profile.refresh_twists()
 
         context: dict[str, object] = {}
 
@@ -125,6 +126,9 @@ class ShopView(View):
             messages.error(request, "Select a pathway first.")
             return self._shop_redirect(request, None)
 
+        profile = as_user(request.user).profile
+        _ = profile.refresh_twists()
+
         try:
             amount = int(request.POST.get("amount", ""))
         except ValueError:
@@ -134,7 +138,6 @@ class ShopView(View):
             messages.error(request, "Deposit amount must be positive.")
             return self._shop_redirect(request, pathway)
 
-        profile = as_user(request.user).profile
         with transaction.atomic():
             time_spent = (
                 PathwayTimeSpent.objects.select_for_update()
@@ -148,8 +151,16 @@ class ShopView(View):
                 messages.error(request, "Unlock this pathway before depositing twists.")
                 return self._shop_redirect(request, pathway)
 
+            if amount > profile.twists:
+                messages.error(
+                    request,
+                    f"You only have {profile.twists} twists available to deposit.",
+                )
+                return self._shop_redirect(request, pathway)
+
             profile.remove_currency(amount, f"Transfer to pathway: {pathway}")
             pathway.add_currency(profile, amount, "Transferred from user balance")
+            time_spent.refresh_from_db(fields=("golden_twists",))
 
         messages.success(
             request,
@@ -170,6 +181,7 @@ class ShopView(View):
             return self._shop_redirect(request, pathway)
 
         profile = as_user(request.user).profile
+        _ = profile.refresh_twists()
         with transaction.atomic():
             time_spent = (
                 PathwayTimeSpent.objects.select_for_update()
@@ -217,6 +229,7 @@ class ShopView(View):
                 region_name=region.name,
                 price_paid=price.price,
             )
+            _ = profile.refresh_twists()
 
         log_to_channel(
             f":shopping-bags: *{escape_mrkdwn(profile.slack_username)}* ordered *{escape_mrkdwn(item.item_name)}* "

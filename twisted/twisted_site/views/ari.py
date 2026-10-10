@@ -1,3 +1,5 @@
+import time
+from django.tasks import task
 import json
 import logging
 from typing import cast
@@ -8,7 +10,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from slack_sdk.errors import SlackClientError
 
-from twisted_site.ari import verify_webhook_signature, webhook_secret_configured
+from twisted_site.ari import send_ship, verify_webhook_signature, webhook_secret_configured
 from twisted_site.models import (
     PROJECT_NAME_MAX_LENGTH,
     PROJECT_SCREENSHOT_URL_MAX_LENGTH,
@@ -16,6 +18,7 @@ from twisted_site.models import (
     PROJECT_URL_MAX_LENGTH,
     AriWebhookDelivery,
     Project,
+    ProjectShip,
     as_user,
 )
 from twisted_site.slack import escape_mrkdwn, send_blocks
@@ -267,6 +270,10 @@ def _build_review_requeued_blocks(
         },
     ]
 
+@task
+def send_ship_after_delay(ship:ProjectShip) -> None:
+    time.sleep(0.5)
+    send_ship(ship)
 
 # Create your views here.
 @method_decorator(csrf_exempt, name="dispatch")
@@ -398,6 +405,15 @@ class AriView(View):
         review = _json_object(data.get("review"), "review")
         note_to_maker = _optional_string(review, "note_to_maker", "review.note_to_maker")
 
+        silent = False
+        reship = False
+
+        if "!silent" in note_to_maker:
+            silent = True
+        if "!reship" in note_to_maker:
+            reship = True
+        note_to_maker = note_to_maker.replace("!silent", "").replace("!reship", "")
+
         ship = project.latest_ship()
         if ship is None:
             return HttpResponseBadRequest("Ship not found")
@@ -409,11 +425,16 @@ class AriView(View):
         ship.note_to_maker = note_to_maker
         ship.save()
 
-        _notify_maker(
-            project,
-            blocks=_build_review_changes_blocks(project, note_to_maker),
-            text=f"Your ship for {escape_mrkdwn(project.project_name)} needs some changes!",
-        )
+        if not silent:
+            _notify_maker(
+                project,
+                blocks=_build_review_changes_blocks(project, note_to_maker),
+                text=f"Your ship for {escape_mrkdwn(project.project_name)} needs some changes!",
+            )
+        if reship:
+            ship = ProjectShip(project=project)
+            ship.save()
+            send_ship_after_delay.enqueue(ship)
 
         return HttpResponse("Request processed!")
 
