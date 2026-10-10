@@ -271,8 +271,9 @@ def _build_review_requeued_blocks(
     ]
 
 @task
-def send_ship_after_delay(ship:ProjectShip) -> None:
+def send_ship_after_delay(ship_id:int) -> None:
     time.sleep(0.5)
+    ship = ProjectShip.objects.get(id=ship_id)
     send_ship(ship)
 
 # Create your views here.
@@ -434,7 +435,7 @@ class AriView(View):
         if reship:
             ship = ProjectShip(project=project)
             ship.save()
-            send_ship_after_delay.enqueue(ship)
+            send_ship_after_delay.enqueue(ship.id)
 
         return HttpResponse("Request processed!")
 
