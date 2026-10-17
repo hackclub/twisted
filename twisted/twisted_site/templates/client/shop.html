@@ -9,6 +9,11 @@
                     <option value="" class="bg-background border border-border" disabled {% if not pathway %}selected{% endif %}>
                         pathway
                     </option>
+                    {% if pathway and not pathway_unlocked %}
+                    <option value="{{ pathway.id }}" selected>
+                        {{ pathway.name }} (locked)
+                    </option>
+                    {% endif %}
                     {% for iterpathway in pathways %}
                     <option value="{{ iterpathway.id }}" {% if pathway.id == iterpathway.id %}selected{% endif %}>
                         {{ iterpathway.name }}
@@ -72,7 +77,8 @@
                 {% endif %}
             </div>
         </div>
-        {% elif pathway_timespent %}
+        {% else %}
+        {% if pathway_unlocked %}
         <div class="mb-2 grid grid-cols-2 items-center gap-2 border border-border bg-card px-3 py-2 text-sm">
             <p class="text-xl text-primary">Twists:</p>
             <div class="flex items-center justify-end pl-3 gap-2">
@@ -109,6 +115,11 @@
                 </button>
             </div>
         </form>
+        {% else %}
+        <div class="mb-2 border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+            Unlock this pathway to deposit twists and buy from its shop.
+        </div>
+        {% endif %}
         {% if shop_items %}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {% for listing in shop_items %}
@@ -143,7 +154,7 @@
                         </div>
                     </div>
 
-                    {% if pathway_timespent %}
+                    {% if pathway_unlocked %}
                     <form method="post" action="?pathway={{ pathway.id }}" class="mt-4">
                         {% csrf_token %}
 
@@ -159,6 +170,11 @@
                             {% if pathway_timespent.golden_twists < listing.price.price %}Not enough golden twists{% else %}Buy{% endif %}
                         </button>
                     </form>
+                    {% else %}
+                    <button type="button" disabled
+                        class="mt-4 w-full rounded-md border-2 border-accent bg-primary px-4 py-2 text-sm font-bold text-primary-foreground cursor-not-allowed opacity-50 shadow-accent shadow-[3px_3px_0px_0px]">
+                        Pathway locked
+                    </button>
                     {% endif %}
                 </div>
             </div>
@@ -172,10 +188,6 @@
             </div>
         </div>
         {% endif %}
-        {% else %}
-        <div class="border border-border bg-card p-2 text-sm text-muted-foreground">
-            This pathway is not available for shopping.
-        </div>
         {% endif %}
     </div>
 </div>
