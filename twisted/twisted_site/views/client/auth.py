@@ -143,7 +143,7 @@ class AuthCallbackView(View):
                 display_name = cast("str | None", slack_profile.get("real_name"))
             if display_name in (None, ""):
                 display_name = name
-            avatar_url = cast("str | None", slack_profile.get("image_512"))
+            avatar_url = f"https://cachet.hackclub.com/users/{slack_id}/r"
             if avatar_url in (None, ""):
                 avatar_url = _default_avatar_url()
 
