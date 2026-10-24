@@ -549,6 +549,7 @@
             realWin.remove();
             taskBtn.remove();
         });
+        return realWin
     }
 
         function minimiseWindow(win) {
@@ -857,8 +858,8 @@
             console.log('WELCOME TO TWISTED!!!')
             console.log('shh....')
 
-        console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
-    }, 500)
+            console.log('{{ request.scheme }}://{{ request.get_host }}{% url 'dashboard' %}?discover')
+        }, 500)
     </script>
     {% if startup_windows %}
         <div id="_startup" class="hidden">
@@ -867,9 +868,17 @@
                         data-title="{{ window.title }}"
                         title="{{ window.title }}"
                         onload="
-            console.log('loading...');
-            newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);
-        "></iframe>
+                console.log('loading...');
+                
+    {% if window.x and window.y %}
+                const win = newWindow(this.dataset.title, this.dataset.href, 600, 600, {{ window.x }}, {{ window.y }});
+            {% if window.fullscreen %}
+                fullscreenWindow(win)
+            {% endif %}
+    {% else %}
+                newWindow(this.dataset.title, this.dataset.href, 600, 600, 50, 50);
+    {% endif %}
+                "></iframe>
             {% endfor %}
         </div>
     {% endif %}

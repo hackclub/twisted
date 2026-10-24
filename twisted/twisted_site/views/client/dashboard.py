@@ -20,6 +20,25 @@ class DashboardView(View):
 
         project_id: str | None = request.GET.get("project")
 
+        specified_startup_windows: str | None = request.GET.getlist("windows")
+        fullscreen_startup_window: bool | None = request.GET.get("fullscreen_win")
+
+        if (specified_startup_windows):
+            x = 50
+            y = 50
+            for win in specified_startup_windows:
+                startup_windows.append(
+                                                                {
+                                                                    "href": resolve_url(f"fr.{win}"),
+                                                                    "x": x,
+                                                                    "y": y,
+                                                                    "fullscreen": fullscreen_startup_window
+                                                                },
+                                                            )
+                x += 30
+                y += 30
+
+
         if project_id not in (None, ""):
             try:
                 project_pk = int(project_id)

@@ -1,21 +1,22 @@
 {% load static time_filters humanize humanizelib maths mathfilters %}
-<div class="bg-background border border-primary p-3 sm:p-4 shadow-sm">
+<div class="pathway bg-background border border-primary p-3 sm:p-4 shadow-sm">
     <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <div class="flex-1 min-w-0">
-            <h2 class="text-xl sm:text-2xl font-bold truncate">
+            <info id="pathway-mins-req">{{ pathway_info.pathway.min_mins }}</info>
+            <h2 id="pathway-name" class="text-xl sm:text-2xl font-bold truncate">
                 {{ pathway_info.pathway.name|default:"none! please dm @kavyansh." }}
             </h2>
             <div class="text-sm text-muted-foreground mt-1">
                 {% if pathway_info.pathway.in_progress or pathway_info.pathway.ended %}
                 Started
                 {% endif %}
-                <span class="underline decoration-dotted"
+                <span id="pathway-start-time" class="underline decoration-dotted"
                         title="{{ pathway_info.pathway.start }}">
                     {{ pathway_info.pathway.start|naturaltime }}
                 </span>
                 <span class="mx-1">•</span>
                 Ends
-                <span class="underline decoration-dotted"
+                <span id="pathway-end-time" class="underline decoration-dotted"
                         title="{{ pathway_info.pathway.end }}">
                     {{ pathway_info.pathway.end|naturaltime }}
                 </span>
