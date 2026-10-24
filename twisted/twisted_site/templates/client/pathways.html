@@ -5,7 +5,7 @@
         <div class="flex-1 min-h-0 overflow-y-auto sunken-panel p-3 sm:p-4 font-vintage">
             {% if not pathways %}
                 <div class="flex flex-col items-center justify-center min-h-full text-center py-12">
-                    <div class="text-4xl mb-3">:(</div>
+                    <div class="text-4xl mb-3">:&lpar;</div>
                     <div class="text-xl font-bold">No pathways yet!</div>
                     <div class="text-sm text-muted-foreground mt-1">Come check later.</div>
                 </div>
@@ -21,7 +21,7 @@
                         <p>You have <b>{{ unspent_mins|minutes_to_hours_minutes }}</b> to spend.</p>
                         <p class="text-sm text-muted-foreground">You have <b>{{ user.profile.twists }} twist{{ user.profile.twists|pluralize }}</b> available. Deposit them into a pathway's shop to spend them.</p>
                     </div>
-                    <div class="grid gap-3">
+                    <div id="current-paths-grid" class="grid gap-3">
                     {% for pathway_info in current_pathways %}
                         <c-client.pathway-card :pathway_info="pathway_info" />
                     {% endfor %}
@@ -36,7 +36,7 @@
                             <h1 class="font-bold text-lg whitespace-nowrap">Future Pathways</h1>
                             <div class="h-px bg-border flex-1"></div>
                         </div>
-                        <div class="grid gap-2">
+                        <div class="grid gap-2" id="future-paths-grid">
                         {% for pathway_info in future_pathways %}
                             <c-client.pathway-card :pathway_info="pathway_info" />
                         {% endfor %}
@@ -50,9 +50,9 @@
                             <h1 class="font-bold text-lg whitespace-nowrap">Past Pathways</h1>
                             <div class="h-px bg-border flex-1"></div>
                         </div>
-                        <div class="grid gap-2">
+                        <div class="grid gap-2" id="past-paths-grid">
                             {% for pathway_info in past_pathways %}
-                                <div class="border p-3 {% if pathway_info.unlocked %}bg-success/20 border-success{% else %}bg-muted border-border{% endif %}">
+                                <div class="past_pathway border p-3 {% if pathway_info.unlocked %}bg-success/20 border-success{% else %}bg-muted border-border{% endif %}">
                                     <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3">
                                         <h2 class="flex-1 min-w-0 font-bold text-base sm:text-lg">{{ pathway_info.pathway.name }}</h2>
                                         <span class="text-xs text-muted-foreground whitespace-nowrap">
