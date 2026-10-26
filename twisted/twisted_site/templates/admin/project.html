@@ -1,8 +1,10 @@
-{% load static time_filters %}
+{% load static time_filters uploads %}
 <c-base>
     <c-slot name="head">
         <script src="{% static 'vendor/marked/marked.umd.js' %}"></script>
         <script src="{% static 'vendor/dompurify/purify.min.js' %}"></script>
+        <script src="{% static 'js/journal_markdown.js' %}"
+                data-allowed-image-base="{% r2_public_url %}"></script>
         <script>
             function popoverCloser(elem) {
                 elem.addEventListener('click', function(event) {

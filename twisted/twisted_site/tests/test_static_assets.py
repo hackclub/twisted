@@ -25,6 +25,8 @@ class LocalStaticAssetTests(TestCase):
 
         self.assertContains(response, "vendor/marked/marked.umd.js")
         self.assertContains(response, "vendor/dompurify/purify.min.js")
+        self.assertContains(response, "js/journal_markdown.js")
+        self.assertContains(response, 'data-allowed-image-base="https://example.invalid/uploads"')
         self.assertNotIn("cdn.jsdelivr.net", content)
         self.assertNotIn("gstatic.com", content)
 
@@ -63,6 +65,7 @@ class LocalStaticAssetTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "vendor/marked/marked.umd.js")
         self.assertContains(response, "vendor/dompurify/purify.min.js")
+        self.assertContains(response, "js/journal_markdown.js")
         self.assertNotIn("cdn.jsdelivr.net", content)
 
     def test_chart_data_is_rendered_with_json_script(self) -> None:
