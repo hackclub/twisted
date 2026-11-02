@@ -1,0 +1,30 @@
+{% extends "client/osbase.html" %} {% load static %} {% block body %}
+<main
+  class="bg-card text-card-foreground flex flex-col w-full h-full min-h-0 p-3"
+>
+  <div class="flex items-center gap-2 mb-2">
+    <div class="h-px bg-border flex-1"></div>
+    <h1 class="font-bold text-lg whitespace-nowrap">Leaderboard</h1>
+    <div class="h-px bg-border flex-1"></div>
+  </div>
+
+  {% for entry in page %}
+  <div
+    class="bg-background border border-primary p-3 sm:p-4 shadow-sm"
+    style="
+      border-radius: 0.5rem;
+      display: flex;
+      flex-direction: row;
+      height: 4rem;
+      margin-bottom: 1rem;
+    "
+  >
+    <p style="font-size: xx-large; padding-right: 5rem">{{forloop.counter}}.</p>
+    <div>
+      <p>{{entry.slack_username}}</p>
+      <p>{{entry.twists}} twists.</p>
+    </div>
+  </div>
+  {% endfor %}
+</main>
+{% endblock body %}
