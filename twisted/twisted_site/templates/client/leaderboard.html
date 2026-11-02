@@ -7,12 +7,12 @@
     <h1 class="font-bold text-lg whitespace-nowrap">Leaderboard</h1>
     <div class="h-px bg-border flex-1"></div>
   </div>
-
   {% for entry in page %}
   <div
-    class="bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
+    class="leaderboard-{{forloop.counter}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
   >
-    <p class="pr-5 text-5xl" >{{forloop.counter}}.</p>
+    <p class="pr-5 text-5xl">{{forloop.counter}}.</p>
+    <img class="rounded-4xl mr-4" src="{{entry.slack_pfp_url}}" />
     <div>
       <p>{{entry.slack_username}}</p>
       <p>{{entry.twists}} twists.</p>

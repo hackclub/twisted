@@ -254,3 +254,19 @@ button {
 info {
 	display: none;
 }
+
+.leaderboard-1 {
+	color: yellow;
+	text-shadow: 1rem;
+	background: linear-gradient(45deg, yellow,gold);
+}
+
+.leaderboard-2 {
+	color: transparent;
+	background-color: silver;
+}
+
+.leaderboard-3 {
+	color: transparent;
+	background-color: rgb(205, 127, 50);
+}
