@@ -10,16 +10,9 @@
 
   {% for entry in page %}
   <div
-    class="bg-background border border-primary p-3 sm:p-4 shadow-sm"
-    style="
-      border-radius: 0.5rem;
-      display: flex;
-      flex-direction: row;
-      height: 4rem;
-      margin-bottom: 1rem;
-    "
+    class="bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
   >
-    <p style="font-size: xx-large; padding-right: 5rem">{{forloop.counter}}.</p>
+    <p class="pr-5 text-5xl" >{{forloop.counter}}.</p>
     <div>
       <p>{{entry.slack_username}}</p>
       <p>{{entry.twists}} twists.</p>
