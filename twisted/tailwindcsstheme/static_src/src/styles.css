@@ -255,18 +255,21 @@ info {
 	display: none;
 }
 
-.leaderboard-1 {
-	color: yellow;
-	text-shadow: 1rem;
+
+.leaderboard-1 p {
+	color: transparent;
 	background: linear-gradient(45deg, yellow,gold);
+	background-clip: text;
 }
 
-.leaderboard-2 {
+.leaderboard-2 p {
 	color: transparent;
-	background-color: silver;
+	background: linear-gradient(45deg, gray,silver);
+	background-clip: text;
 }
 
-.leaderboard-3 {
+.leaderboard-3 p {
 	color: transparent;
-	background-color: rgb(205, 127, 50);
+	background: linear-gradient(45deg, rgb(117, 70, 23),rgb(205, 127, 50));
+	background-clip: text;
 }

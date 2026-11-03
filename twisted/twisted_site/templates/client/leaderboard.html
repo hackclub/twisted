@@ -7,17 +7,106 @@
     <h1 class="font-bold text-lg whitespace-nowrap">Leaderboard</h1>
     <div class="h-px bg-border flex-1"></div>
   </div>
-  {% for entry in page %}
-  <div
-    class="leaderboard-{{forloop.counter}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
-  >
-    <p class="pr-5 text-5xl">{{forloop.counter}}.</p>
-    <img class="rounded-4xl mr-4" src="{{entry.slack_pfp_url}}" />
-    <div>
-      <p>{{entry.slack_username}}</p>
-      <p>{{entry.twists}} twists.</p>
+  <div class="m-3 flex justify-center">
+    <button
+      data-target="0"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      {%
+      if
+      mode=""
+      ="0"
+      %}disabled{%
+      endif
+      %}
+      onclick="changeMode(this.dataset.target)"
+    >
+      Twists
+    </button>
+    <button
+      data-target="1"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      {%
+      if
+      mode=""
+      ="1"
+      %}disabled{%
+      endif
+      %}
+      onclick="changeMode(this.dataset.target)"
+    >
+      Time
+    </button>
+    <button
+      data-target="2"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      {%
+      if
+      mode=""
+      ="2"
+      %}disabled{%
+      endif
+      %}
+      onclick="changeMode(this.dataset.target)"
+    >
+      Total Time
+    </button>
+  </div>
+  <p class="text-accent/50 text-center text-sm">
+    {% if mode == 0 %} how many twists people have! {% elif mode == 1 %} how
+    many shipped hours people have! {% elif mode == 2 %} how much time people
+    have logged! {% endif %}
+  </p>
+  <div>
+    {% for entry in page %}
+    <div
+      class="leaderboard-{{forloop.counter}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
+    >
+      <p class="pr-5 text-5xl">{{forloop.counter}}.</p>
+      <img class="rounded-4xl mr-4 max-h-44" src="{{entry.slack_pfp_url}}" />
+      <div>
+        <p class="text-xl font-bold">{{entry.slack_username}}</p>
+        <p>
+          {% if mode == 0 %} {{entry.twists}} twists. {% elif mode == 1 %}
+          {{entry.time_shipped}} hours. {% elif mode == 2 %}
+          {{entry.time_logged}} hours. {% endif %}
+        </p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="h-screen"></div>
+  <div class="flex items-center gap-2 mb-2">
+    <div class="h-px bg-border flex-1"></div>
+  </div>
+  <div>
+    {% if yourrank == -1 %}
+    <i>You have opted out of the leaderboard.</i>
+    {% else %}
+    <i>Your rank:</i>
+    <div
+      class="leaderboard-{{yourrank}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
+    >
+      <p class="pr-5 text-5xl">{{yourrank}}.</p>
+      <img class="rounded-4xl mr-4 max-h-44" src="{{profile.slack_pfp_url}}" />
+      <div>
+        <p class="text-xl font-bold">{{profile.slack_username}}</p>
+        <p>
+          {% if mode == 0 %} {{profile.twists}} twists. {% elif mode == 1 %}
+          {{profile.time_shipped}} hours. {% elif mode == 2 %}
+          {{profile.time_logged}} hours. {% endif %}
+        </p>
+      </div>
+    {% endif %}
     </div>
   </div>
-  {% endfor %}
+  <script>
+    function changeMode(mode) {
+      const url = new URL(window.location.href);
+
+      url.searchParams.set("mode", mode);
+
+      window.location.href = url.href;
+    }
+  </script>
 </main>
 {% endblock body %}
