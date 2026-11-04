@@ -36,7 +36,7 @@ class LeaderboardView(View):
 
 
         for profile in Profile.objects.iterator():
-            if not profile.leaderboard_banned:
+            if not profile.leaderboard_banned and profile.leaderboard_opted:
                 profiles.append(profile)
 
         for i in range(500):
@@ -82,11 +82,12 @@ class LeaderboardView(View):
         print(f"Mode: {ctx["mode"]}, Page: {page}, Offset: {pageOffset}")
         return render(request, "client/leaderboard.html", ctx)
 
-    def post(self, request: HttpRequest, user_id: int) -> HttpResponse | None:
+    def post(self, request: HttpRequest) -> HttpResponse | None:
             if self.request.user.is_anonymous:
                 return HttpResponse("err")
     
-            user = get_object_or_404(User, id=user_id)
-    
+            prf: Profile = get_object_or_404(Profile, id=self.request.user.id)
+            prf.leaderboard_opted = request.POST.get("opt") == "True"
+            prf.save()
     
             return redirect(self.request.path)
