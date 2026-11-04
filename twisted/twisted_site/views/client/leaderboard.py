@@ -1,3 +1,4 @@
+import math
 from typing import Any
 
 from django.http import HttpRequest, HttpResponse
@@ -5,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render, resolve_url
 from django.views import View
 
 from twisted_site.models import Profile, Project, User, as_user
+import random
 
 
 # Create your views here.
@@ -27,31 +29,22 @@ class LeaderboardView(View):
         # 2 = total time
 
         modee = request.GET.get("mode");
+        pagee = request.GET.get("page");
+        page = int(pagee) if pagee else 1;
           
         ctx["mode"] = int(modee) if modee else 0;
 
-        print(f"Mode: {ctx["mode"]}")
 
         for profile in Profile.objects.iterator():
-            profiles.append(profile)
+            if not profile.leaderboard_banned:
+                profiles.append(profile)
 
-        # test1 = Profile()
-        # test1.twists = 12431;
-        # test1.user = User();
-        # test1.slack_username = "test1"
-        # profiles.append(test1)
-
-        # test2 = Profile()
-        # test2.twists = 4;
-        # test2.user = User();
-        # test2.slack_username = "test2"
-        # profiles.append(test2)
-
-        # test3 = Profile()
-        # test3.twists = 199999999999;
-        # test3.user = User();
-        # test3.slack_username = "test3"
-        # profiles.append(test3)
+        for i in range(500):
+            test1 = Profile()
+            test1.twists = random.randint(1,100000);
+            test1.user = User();
+            test1.slack_username = f"test{random.randint(1,100000)}"
+            profiles.append(test1)
 
         def twists(profile: Profile):
             return profile.twists;
@@ -71,12 +64,19 @@ class LeaderboardView(View):
         
         sortedL.reverse()
 
-        sortedL.index
+        maxPage = math.ceil(len(sortedL)/5);
+        if (page <= 0 or page >= maxPage):
+            page = maxPage
+            ctx["lastPage"] = True
 
-        ctx["page"] = sortedL[0 : 5]
+        pageOffset = (page -1) * 5;
+        ctx["page"] = sortedL[(5 * (page -1)) : page * 5]
+        ctx["pageOffset"] = pageOffset
+        ctx["pageNum"] = page
         print(ctx["page"])
         if profile in sortedL:
             ctx["yourrank"] = sortedL.index(profile) + 1
         else: ctx["yourrank"] = -1
 
+        print(f"Mode: {ctx["mode"]}, Page: {page}, Offset: {pageOffset}")
         return render(request, "client/leaderboard.html", ctx)

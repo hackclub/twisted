@@ -64,6 +64,11 @@
                                                     color="{{ user.profile.ysws_eligible|yesno:'green,red' }}">
                                             {{ user.profile.ysws_eligible|yesno:"YSWS eligible,Not YSWS eligible" }}
                                         </c-ui.badge>
+                                        {% if user.profile.leaderboard_banned %}
+                                            <c-ui.badge size="sm"
+                                                color="red"
+                                                >Leaderboard Banned</c-ui.badge>
+                                        {% endif %}
                                     </div>
                                     <div class="text-sm">
                                         <div>

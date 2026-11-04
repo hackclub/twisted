@@ -11,13 +11,7 @@
     <button
       data-target="0"
       class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
-      {%
-      if
-      mode=""
-      ="0"
-      %}disabled{%
-      endif
-      %}
+      {% if mode == 0 %} disabled {% endif %}
       onclick="changeMode(this.dataset.target)"
     >
       Twists
@@ -25,13 +19,7 @@
     <button
       data-target="1"
       class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
-      {%
-      if
-      mode=""
-      ="1"
-      %}disabled{%
-      endif
-      %}
+      {% if mode == 1 %} disabled {% endif %}
       onclick="changeMode(this.dataset.target)"
     >
       Time
@@ -39,13 +27,7 @@
     <button
       data-target="2"
       class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
-      {%
-      if
-      mode=""
-      ="2"
-      %}disabled{%
-      endif
-      %}
+      {% if mode == 2 %} disabled {% endif %}
       onclick="changeMode(this.dataset.target)"
     >
       Total Time
@@ -56,12 +38,12 @@
     many shipped hours people have! {% elif mode == 2 %} how much time people
     have logged! {% endif %}
   </p>
-  <div>
+  <div class="overflow-y-scroll h-screen">
     {% for entry in page %}
     <div
-      class="leaderboard-{{forloop.counter}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
+      class="leaderboard-{{forloop.counter|add:pageOffset}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
     >
-      <p class="pr-5 text-5xl">{{forloop.counter}}.</p>
+      <p class="pr-5 text-5xl">{{forloop.counter|add:pageOffset}}.</p>
       <img class="rounded-4xl mr-4 max-h-44" src="{{entry.slack_pfp_url}}" />
       <div>
         <p class="text-xl font-bold">{{entry.slack_username}}</p>
@@ -74,13 +56,44 @@
     </div>
     {% endfor %}
   </div>
-  <div class="h-screen"></div>
   <div class="flex items-center gap-2 mb-2">
+    {% if not pageNum == 1 %}
+    <button
+      data-target="1"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      <<
+    </button>
+    <button
+      data-target="{{pageNum|add:"-1"}}"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      Previous page
+    </button>
+    {% endif %}
     <div class="h-px bg-border flex-1"></div>
+    {% if not lastPage %}
+    <button
+      data-target="{{pageNum|add:"1"}}"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      Next page
+    </button>
+    <button
+      data-target="-1"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      >>
+    </button>
+    {% endif %}
   </div>
   <div>
     {% if yourrank == -1 %}
-    <i>You have opted out of the leaderboard.</i>
+    <i>You have opted out/been banned off of the leaderboard.</i>
     {% else %}
     <i>Your rank:</i>
     <div
@@ -104,6 +117,14 @@
       const url = new URL(window.location.href);
 
       url.searchParams.set("mode", mode);
+
+      window.location.href = url.href;
+    }
+
+    function changePage(page) {
+      const url = new URL(window.location.href);
+
+      url.searchParams.set("page", page);
 
       window.location.href = url.href;
     }
