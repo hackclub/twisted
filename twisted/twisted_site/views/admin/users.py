@@ -156,13 +156,25 @@ class UserDetailView(AdminView):
             profile.save()
 
         if request.POST.get("action") == "remove_admin":
+                    profile = as_user(user).profile
+                    profile.is_staff = False
+                    self.audit_log.pii = True
+                    self.audit_log.additional_context["permission_changed"] = "Removed user from admin"
+                    messages.success(
+                        request,
+                        f"Removed @{as_user(user).profile.slack_username} from admin.",
+                    )
+                    profile.save()
+
+        if request.POST.get("action") == "change_leaderboard_ban":
+            value = request.POST.get("leaderboard-ban-check") == "on"
             profile = as_user(user).profile
-            profile.is_staff = False
+            profile.leaderboard_banned = value;
             self.audit_log.pii = True
-            self.audit_log.additional_context["permission_changed"] = "Removed user from admin"
+            self.audit_log.additional_context["permission_changed"] = f"Change leaderboard ban to: {value}"
             messages.success(
                 request,
-                f"Removed @{as_user(user).profile.slack_username} from admin.",
+                f"Change leaderboard ban to: {value}",
             )
             profile.save()
 

@@ -1,0 +1,155 @@
+{% extends "client/osbase.html" %} {% load static %} {% block body %}
+<main
+  class="bg-card text-card-foreground flex flex-col w-full h-full min-h-0 p-3"
+>
+  <div class="flex items-center gap-2 mb-2">
+    <div class="h-px bg-border flex-1"></div>
+    <h1 class="font-bold text-lg whitespace-nowrap">Leaderboard</h1>
+    <div class="h-px bg-border flex-1"></div>
+  </div>
+  <div class="m-3 flex justify-center">
+    <button
+      data-target="0"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      {% if mode == 0 %} disabled {% endif %}
+      onclick="changeMode(this.dataset.target)"
+    >
+      Twists
+    </button>
+    <button
+      data-target="1"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      {% if mode == 1 %} disabled {% endif %}
+      onclick="changeMode(this.dataset.target)"
+    >
+      Time
+    </button>
+    <button
+      data-target="2"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      {% if mode == 2 %} disabled {% endif %}
+      onclick="changeMode(this.dataset.target)"
+    >
+      Total Time
+    </button>
+  </div>
+  <p class="text-accent/50 text-center text-sm">
+    {% if mode == 0 %} how many twists people have! {% elif mode == 1 %} how
+    many shipped hours people have! {% elif mode == 2 %} how much time people
+    have logged! {% endif %}
+  </p>
+  <div class="overflow-y-scroll h-screen">
+    {% for entry in page %}
+    <div
+      class="leaderboard-{{forloop.counter|add:pageOffset}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
+    >
+      <p class="pr-5 text-5xl">{{forloop.counter|add:pageOffset}}.</p>
+      <img class="rounded-4xl mr-4 max-h-44" src="{{entry.slack_pfp_url}}" />
+      <div>
+        <p class="text-xl font-bold">{{entry.slack_username}}</p>
+        <p>
+          {% if mode == 0 %} {{entry.twists}} twists. {% elif mode == 1 %}
+          {{entry.time_shipped}} hours. {% elif mode == 2 %}
+          {{entry.time_logged}} hours. {% endif %}
+        </p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="flex items-center gap-2 mb-2">
+    {% if not pageNum == 1 %}
+    <button
+      data-target="1"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      <<
+    </button>
+    <button
+      data-target="{{pageNum|add:"-1"}}"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      Previous page
+    </button>
+    {% endif %}
+    <div class="h-px bg-border flex-1"></div>
+    {% if not lastPage %}
+    <button
+      data-target="{{pageNum|add:"1"}}"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      Next page
+    </button>
+    <button
+      data-target="-1"
+      class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+      onclick="changePage(this.dataset.target)"
+    >
+      >>
+    </button>
+    {% endif %}
+  </div>
+  <div>
+    
+    {% if profile.leaderboard_banned %}
+    <i>You have been banned from the leaderboard.</i>
+    {% elif not profile.leaderboard_opted %}
+    <i>You have opted out of the leaderboard.</i>
+    {% else %}
+
+    <div class="flex items-center gap-2 mb-2">
+      <i>Your rank:</i>
+      <div class="h-px flex-1"></div>
+    </div>
+    <div
+      class="leaderboard-{{yourrank}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
+    >
+      <p class="pr-5 text-5xl">{{yourrank}}.</p>
+      <img class="rounded-4xl mr-4 max-h-44" src="{{profile.slack_pfp_url}}" />
+      <div>
+        <p class="text-xl font-bold">{{profile.slack_username}}</p>
+        <p>
+          {% if mode == 0 %} {{profile.twists}} twists. {% elif mode == 1 %}
+          {{profile.time_shipped}} hours. {% elif mode == 2 %}
+          {{profile.time_logged}} hours. {% endif %}
+        </p>
+      </div>
+    {% endif %}
+    </div>
+    <div class="flex">
+      <div class="flex-1"></div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" id="opt" name="opt" value="{{profile.leaderboard_opted|yesno:"False,True"}}"/>
+        <button
+          id="submit"
+          data-target="1"
+          class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+          onclick="changePage(this.dataset.target)"
+        >
+          {{profile.leaderboard_opted|yesno:"opt out of,opt in to"}} leaderboard
+        </button>
+    </form>
+    </div>
+  </div>
+  <script>
+    function changeMode(mode) {
+      const url = new URL(window.location.href);
+
+      url.searchParams.set("mode", mode);
+
+      window.location.href = url.href;
+    }
+
+    function changePage(page) {
+      const url = new URL(window.location.href);
+
+      url.searchParams.set("page", page);
+
+      window.location.href = url.href;
+    }
+  </script>
+</main>
+{% endblock body %}

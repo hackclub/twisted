@@ -12,10 +12,12 @@ from .project import ProjectDetail, ProjectSettings, SubmitProject
 from .projects import CreateProject, ListProjects
 from .referrals import ReferralsView
 from .shop import ShopView
+from .leaderboard import LeaderboardView
 
 __all__ = [
     "CreateProject",
     "DashboardView",
+    "LeaderboardView",
     "DeleteJournal",
     "DiscoverView",
     "EditJournal",
