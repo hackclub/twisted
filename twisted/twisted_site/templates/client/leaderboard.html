@@ -92,10 +92,28 @@
     {% endif %}
   </div>
   <div>
-    {% if yourrank == -1 %}
-    <i>You have opted out/been banned off of the leaderboard.</i>
+    {% if profile.leaderboard_banned %}
+    <i>You have been banned from the leaderboard.</i>
+    {% elif not profile.leaderboard_opted %}
+    <i>You have opted out of the leaderboard.</i>
     {% else %}
-    <i>Your rank:</i>
+
+    <div class="flex items-center gap-2 mb-2">
+      <i>Your rank:</i>
+      <div class="h-px flex-1"></div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" id="opt" name="opt" value="{{profile.leaderboard_opted|yesno:"True,False"}}"/>
+        <button
+          id="submit"
+          data-target="1"
+          class="enabled:border bg-secondary justify-center pr-2 pl-2 enabled:active:bg-accent transition-colors enabled:hover:bg-accent/60 disabled:cursor-not-allowed disabled:bg-accent-foreground"
+          onclick="changePage(this.dataset.target)"
+        >
+          {{profile.leaderboard_opted|yesno:"opt out of,opt in to"}} leaderboard
+        </button>
+      </form>
+    </div>
     <div
       class="leaderboard-{{yourrank}} bg-background border border-primary p-3 sm:p-4 shadow-sm flex flex-row h-18 mb-2 rounded-lg"
     >

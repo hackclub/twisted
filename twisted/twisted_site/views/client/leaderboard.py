@@ -41,9 +41,10 @@ class LeaderboardView(View):
 
         for i in range(500):
             test1 = Profile()
-            test1.twists = random.randint(1,100000);
-            test1.user = User();
-            test1.slack_username = f"test{random.randint(1,100000)}"
+            rand = random.randint(1,100000)
+            test1.twists = rand;
+            test1.user = User(rand);
+            test1.slack_username = f"test{rand}"
             profiles.append(test1)
 
         def twists(profile: Profile):
@@ -80,3 +81,12 @@ class LeaderboardView(View):
 
         print(f"Mode: {ctx["mode"]}, Page: {page}, Offset: {pageOffset}")
         return render(request, "client/leaderboard.html", ctx)
+
+    def post(self, request: HttpRequest, user_id: int) -> HttpResponse | None:
+            if self.request.user.is_anonymous:
+                return HttpResponse("err")
+    
+            user = get_object_or_404(User, id=user_id)
+    
+    
+            return redirect(self.request.path)

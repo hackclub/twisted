@@ -66,7 +66,7 @@ urlpatterns = [
         name="fr.projects.journals.edit",
     ),
     path("dashboard/frame/pathways/", client.PathwaysView.as_view(), name="fr.pathways"),
-    path("dashboard/frame/leaderboardd/", client.LeaderboardView.as_view(), name="fr.leaderboard"),
+    path("dashboard/frame/leaderboard/", client.LeaderboardView.as_view(), name="fr.leaderboard"),
     path(
         "dashboard/frame/pathways/<int:pathway_id>/unlock/",
         client.UnlockPathway.as_view(),
