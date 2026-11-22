@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
@@ -12,6 +13,7 @@ from twisted_site.models import (
     ShopItem,
     ShopItemRegionalPricing,
     ShopRegion,
+    TemplateContext,
     User,
 )
 
@@ -32,8 +34,20 @@ class PathwayListView(AdminView):
             return HttpResponse("err")
 
         context = self.get_context_data(page="pathways")
-        pathways = Pathway.objects.order_by("start").all()
+        pathways = list(Pathway.objects.order_by("start"))
         context["pathways"] = pathways
+
+        # Load every pathway's participants in one query for the cards.
+        participant_counts: dict[int, int] = {}
+        qualified_users: dict[int, list[User]] = {}
+        min_mins = {pathway.id: pathway.min_mins for pathway in pathways}
+        for spent in PathwayTimeSpent.objects.select_related("user__profile"):
+            participant_counts[spent.pathway_id] = participant_counts.get(spent.pathway_id, 0) + 1
+            if spent.minutes >= min_mins.get(spent.pathway_id, 0):
+                qualified_users.setdefault(spent.pathway_id, []).append(spent.user)
+        for pathway in pathways:
+            pathway.participant_count = participant_counts.get(pathway.id, 0)  # pyright: ignore[reportAttributeAccessIssue]
+            pathway.qualified_users = qualified_users.get(pathway.id, [])  # pyright: ignore[reportAttributeAccessIssue]
 
         current_pathways: list[Pathway] = []
         past_pathways: list[Pathway] = []
@@ -55,12 +69,97 @@ class PathwayListView(AdminView):
         return render(request, "admin/pathways/list.html", context=context)
 
 
+@dataclass
+class PathwayFields:
+    name: str
+    min_mins: int
+    start: datetime
+    end: datetime
+
+
+def _pathway_form_values(request: HttpRequest) -> TemplateContext:
+    """Return the raw pathway form fields, to re-fill the form after an error."""
+    return {
+        "pathway_name": request.POST.get("name"),
+        "min_mins": request.POST.get("mins", "0"),
+        # An empty date is None so the datepicker shows "Pick a date" again.
+        "start_date": request.POST.get("startDate") or None,
+        "start_time": request.POST.get("startTime"),
+        "end_date": request.POST.get("endDate") or None,
+        "end_time": request.POST.get("endTime"),
+    }
+
+
+def _pathway_initial_values(pathway: Pathway) -> TemplateContext:
+    """Return a pathway's fields in the form's format, in the current timezone."""
+    start = timezone.localtime(pathway.start)
+    end = timezone.localtime(pathway.end)
+    return {
+        "pathway_name": pathway.name,
+        "min_mins": pathway.min_mins,
+        "start_date": start.strftime("%Y-%m-%d"),
+        "start_time": start.strftime("%H:%M"),
+        "end_date": end.strftime("%Y-%m-%d"),
+        "end_time": end.strftime("%H:%M"),
+    }
+
+
+def _parse_local_datetime(date: str, time: str) -> datetime:
+    naive = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")  # noqa: DTZ007
+    return timezone.make_aware(naive, timezone.get_current_timezone())
+
+
+def parse_pathway_form(request: HttpRequest) -> PathwayFields | str:
+    """
+    Validate the create/edit pathway form.
+
+    Dates and times are read in the current (cookie) timezone, using that date's own
+    UTC offset, so a pathway that spans a DST change still starts and ends on time.
+
+    Returns:
+        The parsed fields, or an error message.
+
+    """
+    values = _pathway_form_values(request)
+    pathway_name = cast("str | None", values["pathway_name"])
+    if pathway_name is None or pathway_name.strip() == "":
+        return "No pathway name typed!"
+
+    try:
+        min_mins = int(cast("str", values["min_mins"]))
+    except ValueError:
+        return "Minimum minutes must be a whole number!"
+    if min_mins <= 0:
+        return "Minimum minutes must be greater than zero!"
+
+    missing = {
+        "start_date": "No start date selected!",
+        "start_time": "No start time selected!",
+        "end_date": "No end date selected!",
+        "end_time": "No end time selected!",
+    }
+    for key, error in missing.items():
+        if values[key] in (None, ""):
+            return error
+
+    try:
+        start = _parse_local_datetime(values["start_date"], values["start_time"])
+        end = _parse_local_datetime(values["end_date"], values["end_time"])
+    except ValueError:
+        return "Start and end must be valid dates and times!"
+
+    if start >= end:
+        return "Start must be before end!"
+
+    return PathwayFields(name=pathway_name.strip(), min_mins=min_mins, start=start, end=end)
+
+
 class PathwayCreateView(AdminView):
     def get(
         self,
         request: HttpRequest,
         error: str | None = None,
-        extracontext: dict[str, Any] | None = None,  # pyrefly: ignore[explicit-any]
+        extracontext: TemplateContext | None = None,
     ) -> HttpResponse:
         if self.perms.manage_pathways:
             self.allowed = True
@@ -71,6 +170,8 @@ class PathwayCreateView(AdminView):
             extracontext = {}
 
         context = self.get_context_data(page="pathways", subpage="create")
+        # The datepickers bind these with `:value`, so they must exist (None = no date yet).
+        context.update({"start_date": None, "end_date": None})
         context.update(extracontext)
 
         if error not in (None, ""):
@@ -84,69 +185,80 @@ class PathwayCreateView(AdminView):
         else:
             return HttpResponse("err")
 
-        pathway_name: str | None = request.POST.get("name")
-        min_mins_raw = request.POST.get("mins", "0")
+        fields = parse_pathway_form(request)
+        if isinstance(fields, str):
+            return self.get(request, fields, _pathway_form_values(request))
 
-        start_date: str | None = request.POST.get("startDate")
-        start_time: str | None = request.POST.get("startTime")
+        _ = Pathway.objects.create(
+            name=fields.name,
+            min_mins=fields.min_mins,
+            start=fields.start,
+            end=fields.end,
+        )
 
-        end_date: str | None = request.POST.get("endDate")
-        end_time: str | None = request.POST.get("endTime")
-
-        errcontext: dict[str, Any] = {  # pyrefly: ignore[explicit-any]
-            "pathway_name": pathway_name,
-            "min_mins": min_mins_raw,
-            "start_date": start_date,
-            "start_time": start_time,
-            "end_date": end_date,
-            "end_time": end_time,
-        }
-
-        if pathway_name in (None, ""):
-            return self.get(request, "No pathway name typed!", errcontext)
-
-        try:
-            min_mins = int(min_mins_raw)
-        except ValueError:
-            return self.get(request, "Minimum minutes must be a whole number!", errcontext)
-
-        if min_mins <= 0:
-            return self.get(request, "Minimum minutes must be greater than zero!", errcontext)
-
-        if start_date in (None, ""):
-            return self.get(request, "No start date selected!", errcontext)
-
-        if start_time in (None, ""):
-            return self.get(request, "No start time selected!", errcontext)
-
-        if end_date in (None, ""):
-            return self.get(request, "No end date selected!", errcontext)
-
-        if end_time in (None, ""):
-            return self.get(request, "No end time selected!", errcontext)
-
-        current_tz_offset = datetime.now(timezone.get_current_timezone()).strftime("%z")
-
-        try:
-            start = datetime.strptime(
-                f"{start_date} {start_time} {current_tz_offset}",
-                "%Y-%m-%d %H:%M %z",
-            )
-            end = datetime.strptime(
-                f"{end_date} {end_time} {current_tz_offset}",
-                "%Y-%m-%d %H:%M %z",
-            )
-        except ValueError:
-            return self.get(request, "Start and end must be valid dates and times!", errcontext)
-
-        if start >= end:
-            return self.get(request, "Start must be before end!", errcontext)
-
-        _ = Pathway.objects.create(name=pathway_name, min_mins=min_mins, start=start, end=end)
-
-        messages.success(request, f'Successfully created Pathway for "{pathway_name}"!')
+        messages.success(request, f'Successfully created Pathway for "{fields.name}"!')
 
         return redirect("admin.pathways")
+
+
+class PathwayEditView(AdminView):
+    def get(
+        self,
+        request: HttpRequest,
+        pathway_id: int,
+        error: str | None = None,
+        extracontext: TemplateContext | None = None,
+    ) -> HttpResponse:
+        if self.perms.manage_pathways:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
+        pathway = get_object_or_404(Pathway, id=pathway_id)
+        context = self.get_context_data(page="pathways", subpage="edit")
+        context["pathway"] = pathway
+        context.update(extracontext if extracontext is not None else _pathway_initial_values(pathway))
+
+        if error not in (None, ""):
+            messages.error(request, error)
+
+        return render(request, "admin/pathways/create.html", context=context)
+
+    def post(self, request: HttpRequest, pathway_id: int) -> HttpResponse:
+        if self.perms.manage_pathways:
+            self.allowed = True
+        else:
+            return HttpResponse("err")
+
+        pathway = get_object_or_404(Pathway, id=pathway_id)
+        fields = parse_pathway_form(request)
+        if isinstance(fields, str):
+            return self.get(request, pathway_id, fields, _pathway_form_values(request))
+
+        if not isinstance(self.audit_log.additional_context, dict):
+            self.audit_log.additional_context = {}
+        self.audit_log.additional_context["pathway"] = pathway.name
+        self.audit_log.additional_context["before"] = {
+            "name": pathway.name,
+            "min_mins": pathway.min_mins,
+            "start": pathway.start.isoformat(),
+            "end": pathway.end.isoformat(),
+        }
+        self.audit_log.additional_context["after"] = {
+            "name": fields.name,
+            "min_mins": fields.min_mins,
+            "start": fields.start.isoformat(),
+            "end": fields.end.isoformat(),
+        }
+
+        pathway.name = fields.name
+        pathway.min_mins = fields.min_mins
+        pathway.start = fields.start
+        pathway.end = fields.end
+        pathway.save()
+
+        messages.success(request, f'Updated pathway "{fields.name}"!')
+        return redirect("admin.pathways.detail", pathway.id)
 
 
 class PathwayDetailView(AdminView):
@@ -194,6 +306,7 @@ class PathwayDetailView(AdminView):
         context["participants"] = participants
         context["qualified_count"] = sum(1 for p in participants if p["qualified"])
 
+        context["can_manage_pathways"] = self.perms.manage_pathways
         context["shop_items"] = ShopItem.objects.filter(pathway=pathway)
         context["shop_regions"] = ShopRegion.objects.all()
 

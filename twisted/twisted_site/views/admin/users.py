@@ -1,16 +1,28 @@
 import json
 import os
+from dataclasses import dataclass
 
 from django.contrib import messages
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.sessions.models import Session
 from django.db import models as django_models
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 
-from twisted_site.models import ProfileStaffPermissions, User, as_user
+from twisted_site.models import (
+    PROJECT_SHIP_STATUSES,
+    Profile,
+    ProfileStaffPermissions,
+    Project,
+    User,
+    as_user,
+    latest_ship_status,
+    status_is_shipped,
+)
 
 from .admin import AdminView
 
@@ -23,6 +35,42 @@ STAFF_PERMISSION_FIELDS = frozenset(
 )
 
 
+@dataclass
+class UserProjectStats:
+    projects: int = 0
+    shipped: int = 0
+    minutes_logged: int = 0
+    minutes_shipped: int = 0
+
+
+def with_project_stats[UserT: AbstractBaseUser](users: list[UserT]) -> list[UserT]:
+    """
+    Set `user.project_stats` on each user with one query for all of them.
+
+    This replaces `Profile.time_logged()` and friends in lists, which run several
+    queries per project.
+    """
+    stats = {user.pk: UserProjectStats() for user in users}
+    rows = (
+        Project.objects.filter(user__in=stats.keys())
+        .annotate(
+            minutes=Sum("journals__reduced_minutes"),
+            ship_status=latest_ship_status(),
+        )
+        .values_list("user_id", "minutes", "ship_status")
+    )
+    for user_id, minutes, ship_status in rows:
+        user_stats = stats[user_id]
+        user_stats.projects += 1
+        user_stats.minutes_logged += minutes or 0
+        if status_is_shipped(ship_status):
+            user_stats.shipped += 1
+            user_stats.minutes_shipped += minutes or 0
+    for user in users:
+        user.project_stats = stats[user.pk]  # pyright: ignore[reportAttributeAccessIssue]
+    return users
+
+
 # Create your views here.
 class UsersView(AdminView):
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -33,21 +81,19 @@ class UsersView(AdminView):
 
         context = self.get_context_data(page="users")
         context["user_count"] = User.objects.count()
+        users = User.objects.select_related("profile").order_by("profile__slack_username")
         if request.GET.get("search") not in (None, ""):
             query: str = request.GET["search"]
-            context["users"] = (
-                User.objects.filter(
-                    Q(profile__slack_username__icontains=query)
-                    | Q(profile__slack_id__icontains=query)
-                    | Q(first_name__icontains=query)
-                    | Q(last_name__icontains=query),
-                )
-                .order_by("profile__slack_username")
-                .all()[:50]
-            )
+            users = users.filter(
+                Q(profile__slack_username__icontains=query)
+                | Q(profile__slack_id__icontains=query)
+                | Q(first_name__icontains=query)
+                | Q(last_name__icontains=query),
+            )[:50]
             context["search"] = True
         else:
-            context["users"] = User.objects.order_by("profile__slack_username").all()[:75]
+            users = users[:75]
+        context["users"] = with_project_stats(list(users))
         return TemplateResponse(request, "admin/users.html", context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
@@ -85,6 +131,26 @@ class UserDetailView(AdminView):
         self.audit_log.additional_context["user"] = as_user(user).profile.slack_username
 
         context["user"] = user
+        projects = list(
+            Project.objects.filter(user=user)
+            .annotate(
+                minutes=Coalesce(Sum("journals__reduced_minutes"), 0),
+                ship_status=latest_ship_status(),
+            )
+            .order_by("-created_at"),
+        )
+        for project in projects:
+            project.ship_status_display = PROJECT_SHIP_STATUSES.get(  # pyright: ignore[reportAttributeAccessIssue]
+                project.ship_status,  # pyright: ignore[reportAttributeAccessIssue]
+                project.ship_status,  # pyright: ignore[reportAttributeAccessIssue]
+            )
+        context["projects"] = projects
+        context["referrals"] = (
+            Profile.objects.filter(referred_by=as_user(user).profile)
+            .select_related("user")
+            .annotate(minutes=Coalesce(Sum("user__projects__journals__reduced_minutes"), 0))
+            .order_by("slack_username")
+        )
         staff_permissions = as_user(user).profile.staff_permissions
         context["staff_perms"] = (
             model_to_dict(staff_permissions) if staff_permissions is not None else None

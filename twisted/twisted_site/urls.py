@@ -97,6 +97,26 @@ urlpatterns = [
         name="admin.pathways.detail",
     ),
     path(
+        "admin/pathways/<int:pathway_id>/edit/",
+        admin.PathwayEditView.as_view(),
+        name="admin.pathways.edit",
+    ),
+    path(
+        "admin/projects/<int:project_id>/journals/new/",
+        admin.JournalCreateView.as_view(),
+        name="admin.journals.create",
+    ),
+    path(
+        "admin/journals/<int:journal_id>/",
+        admin.JournalEditView.as_view(),
+        name="admin.journals.edit",
+    ),
+    path(
+        "admin/journals/<int:journal_id>/delete/",
+        admin.JournalDeleteView.as_view(),
+        name="admin.journals.delete",
+    ),
+    path(
         "admin/pathways/_shopitems/<int:listing_id>/",
         admin.PathwayShopItemDetailView.as_view(),
         name="admin.pathways.shopitems",

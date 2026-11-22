@@ -1,5 +1,4 @@
 from typing import override
-from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
@@ -84,10 +83,12 @@ class LocalStaticAssetTests(TestCase):
             minutes_worked=60,
             reduced_minutes=60,
         )
-        payload = "</script><script>alert(1)</script>"
+        payload = "</script><b>x</b>"
+        # The dashboard charts the cached country, which comes from HCA (user-controlled).
+        self.profile.country = payload
+        self.profile.save(update_fields=("country",))
 
-        with patch("twisted_site.models.Profile.get_country", return_value=payload):
-            response = self.client.get(reverse("admin.dash"))
+        response = self.client.get(reverse("admin.dash"))
 
         content = response.content.decode()
         self.assertContains(response, 'id="hours_logged_chart_data"')

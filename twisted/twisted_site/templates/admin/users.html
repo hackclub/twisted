@@ -67,12 +67,12 @@
                                     </div>
                                     <div class="text-sm">
                                         <div>
-                                            <p>{{ user.projects.count }} projects created</p>
-                                            <p>{{ user.profile.shipped_projects|length }} projects shipped</p>
+                                            <p>{{ user.project_stats.projects }} projects created</p>
+                                            <p>{{ user.project_stats.shipped }} projects shipped</p>
                                         </div>
                                         <div class="mt-2">
-                                            <p>{{ user.profile.time_logged|divide:60|floatformat:2 }}h logged</p>
-                                            <p>{{ user.profile.time_shipped|divide:60|floatformat:2 }}h shipped</p>
+                                            <p>{{ user.project_stats.minutes_logged|divide:60|floatformat:2 }}h logged</p>
+                                            <p>{{ user.project_stats.minutes_shipped|divide:60|floatformat:2 }}h shipped</p>
                                         </div>
                                     </div>
                                 {% endif %}

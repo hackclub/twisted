@@ -1,12 +1,15 @@
 from datetime import UTC, datetime
 from typing import override
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from twisted_site.models import (
     Pathway,
+    PathwayTimeSpent,
     Profile,
     ProfileStaffPermissions,
     ShopItem,
@@ -82,6 +85,114 @@ class AdminWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Pathway.objects.exists())
+
+    def make_pathway(self) -> Pathway:
+        return Pathway.objects.create(
+            name="Editable pathway",
+            min_mins=60,
+            start=datetime(2026, 10, 1, 9, tzinfo=UTC),
+            end=datetime(2026, 10, 8, 17, tzinfo=UTC),
+        )
+
+    def test_pathway_dates_can_be_edited(self) -> None:
+        pathway = self.make_pathway()
+        edit_url = reverse("admin.pathways.edit", kwargs={"pathway_id": pathway.pk})
+
+        response = self.client.get(edit_url)
+        self.assertContains(response, "2026-10-01")
+        self.assertContains(response, "09:00")
+
+        response = self.client.post(
+            edit_url,
+            {
+                "name": "Renamed pathway",
+                "mins": "120",
+                "startDate": "2026-11-02",
+                "startTime": "08:30",
+                "endDate": "2026-11-20",
+                "endTime": "23:59",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("admin.pathways.detail", kwargs={"pathway_id": pathway.pk}),
+        )
+        pathway.refresh_from_db()
+        self.assertEqual(pathway.name, "Renamed pathway")
+        self.assertEqual(pathway.min_mins, 120)
+        self.assertEqual(pathway.start, datetime(2026, 11, 2, 8, 30, tzinfo=UTC))
+        self.assertEqual(pathway.end, datetime(2026, 11, 20, 23, 59, tzinfo=UTC))
+
+    def test_pathway_edit_uses_each_dates_own_utc_offset(self) -> None:
+        pathway = self.make_pathway()
+        self.client.cookies["django_timezone"] = "America/New_York"
+
+        # New York is UTC-4 on Oct 20 and UTC-5 on Nov 20 (after DST ends).
+        _ = self.client.post(
+            reverse("admin.pathways.edit", kwargs={"pathway_id": pathway.pk}),
+            {
+                "name": pathway.name,
+                "mins": "60",
+                "startDate": "2026-10-20",
+                "startTime": "09:00",
+                "endDate": "2026-11-20",
+                "endTime": "09:00",
+            },
+        )
+
+        pathway.refresh_from_db()
+        new_york = ZoneInfo("America/New_York")
+        self.assertEqual(pathway.start, datetime(2026, 10, 20, 9, tzinfo=new_york))
+        self.assertEqual(pathway.end, datetime(2026, 11, 20, 9, tzinfo=new_york))
+        self.assertEqual(timezone.localtime(pathway.end, new_york).hour, 9)
+
+    def test_pathway_edit_rejects_invalid_dates(self) -> None:
+        pathway = self.make_pathway()
+        data = self.pathway_data()
+        data["startDate"], data["endDate"] = data["endDate"], data["startDate"]
+
+        response = self.client.post(
+            reverse("admin.pathways.edit", kwargs={"pathway_id": pathway.pk}),
+            data,
+        )
+
+        self.assertContains(response, "Start must be before end!")
+        pathway.refresh_from_db()
+        self.assertEqual(pathway.name, "Editable pathway")
+        self.assertEqual(pathway.start, datetime(2026, 10, 1, 9, tzinfo=UTC))
+
+    def test_pathway_edit_requires_manage_pathways(self) -> None:
+        self.permissions.manage_pathways = False
+        self.permissions.save(update_fields=("manage_pathways",))
+        pathway = self.make_pathway()
+        edit_url = reverse("admin.pathways.edit", kwargs={"pathway_id": pathway.pk})
+
+        self.assertRedirects(self.client.get(edit_url), reverse("admin.dash"))
+        response = self.client.post(edit_url, self.pathway_data())
+
+        self.assertRedirects(response, reverse("admin.dash"))
+        pathway.refresh_from_db()
+        self.assertEqual(pathway.name, "Editable pathway")
+        detail = self.client.get(reverse("admin.pathways.detail", kwargs={"pathway_id": pathway.pk}))
+        self.assertNotContains(detail, edit_url)
+
+    def test_pathway_list_counts_participants_in_constant_queries(self) -> None:
+        pathway = self.make_pathway()
+        for index in range(5):
+            user = User.objects.create_user(username=f"participant-{index}")
+            _ = Profile.objects.create(user=user, slack_username=f"participant-{index}")
+            _ = PathwayTimeSpent.objects.create(
+                pathway=pathway,
+                user=user,
+                minutes=30 if index == 0 else 90,
+            )
+
+        with self.assertNumQueries(7):
+            response = self.client.get(reverse("admin.pathways"))
+
+        self.assertContains(response, "5 participants")
+        self.assertContains(response, "4 qualified")
 
     def test_pathway_detail_can_create_shop_listing(self) -> None:
         pathway = Pathway.objects.create(
