@@ -254,3 +254,22 @@ button {
 info {
 	display: none;
 }
+
+
+.leaderboard-1 p {
+	color: transparent;
+	background: linear-gradient(45deg, yellow,gold);
+	background-clip: text;
+}
+
+.leaderboard-2 p {
+	color: transparent;
+	background: linear-gradient(45deg, gray,silver);
+	background-clip: text;
+}
+
+.leaderboard-3 p {
+	color: transparent;
+	background: linear-gradient(45deg, rgb(117, 70, 23),rgb(205, 127, 50));
+	background-clip: text;
+}

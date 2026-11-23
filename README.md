@@ -24,6 +24,8 @@ All instructions below assume you've already cd'd into the `twisted` dir
 1. run `uv run manage.py migrate`
 2. run `docker compose up db`
 3. run `uv run manage.py tailwind dev` in a new terminal
+   > [!NOTE]
+   > On Windows, you need to run `uv run manage.py tailwind start`, and `uv run manage.py runserver` instead of `uv run manage.py tailwind dev`.
 
 ### getting an admin account
 1. log into your account on the web

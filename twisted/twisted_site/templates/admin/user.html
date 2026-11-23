@@ -38,6 +38,11 @@
                                         color="blue"
                                         href="{% url 'admin.users.detail' user_id=user.profile.referred_by.user.id %}">Referred by @{{ user.profile.referred_by.slack_username }}</c-ui.badge>
                         {% endif %}
+                        {% if user.profile.leaderboard_banned %}
+                            <c-ui.badge size="sm"
+                                        color="red"
+                                        >Leaderboard Banned</c-ui.badge>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -152,6 +157,28 @@
                 <p>This user hasn't referred anyone yet!</p>
             </c-ui.card>
         {% endif %}
+    </div>
+    <div class="mt-4">
+        <h1 class="text-2xl font-black">Leaderboard</h1>
+            <c-ui.card class="bg-ink-900">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="change_leaderboard_ban" value="True">
+                        <input type="checkbox" class="accent-accent" id="leaderboard-ban-check" name="leaderboard-ban-check"/>
+                        <label for="leaderboard-ban-check">Leaderboard Banned</label>
+                        <button class="
+                            bg-white text-ink-800 border border-ink-200 dark:bg-ink-400/30 dark:text-ink-300 dark:border-ink-300/20 shadow
+                            cursor-pointer whitespace-nowrap rounded-button
+                            text-sm py-2 px-4
+                            
+                            font-medium transition text-center
+                            focus-ring
+                            active:opacity-100
+                            disabled:opacity-75
+                            disabled:cursor-not-allowed
+                            " type="submit">Save</button>
+                    </form>
+            </c-ui.card>
     </div>
     {% if request.user.profile.staff_permissions.superuser %}
     <div class="mt-4" id="adminperms">
@@ -291,4 +318,9 @@
             </form>
         </div>
     {% endif %}
+
+    <script>
+        const leaderboardBannedCheck = document.getElementById("leaderboard-ban-check")
+        leaderboardBannedCheck.checked = {{ request.user.profile.leaderboard_banned|yesno:"true,false" }}
+    </script>
 </c-base>

@@ -6,7 +6,7 @@
              alt=""
              class="fixed inset-0 z-0 bg-[url('/static/images/twisted_logo.png')] pointer-events-none select-none my-auto justify-self-center opacity-60 bg-contain bg-scale scale-95 drop-shadow-lg shadow-primary" />
         <div class="relative">
-            <div class="flex flex-col flex-wrap content-start gap-3 w-full h-full overflow-y-hidden p-5">
+            <div class="flex flex-col flex-wrap content-start gap-3 w-full h-screen overflow-y-hidden p-5">
                 {% if user.profile.is_staff %}
                     <a class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
                        href="{% url 'admin.dash' %}">
@@ -63,6 +63,13 @@
                      onclick="newWindow('Discover', this.dataset.url)">
                     <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🧭</div>
                     <span class="block text-center text-sm">Discover</span>
+                </div>
+
+				<div class="font-vintage w-fit cursor-pointer select-none rounded-md p-1 -m-1 transition-colors hover:bg-accent/25 active:bg-accent active:text-accent-foreground"
+                     data-url="{% url 'fr.leaderboard' %}"
+                     onclick="newWindow('Leaderboard', this.dataset.url)">
+                    <div class="size-15 bg-secondary border rounded-md flex items-center justify-center text-3xl">🏆</div>
+                    <span class="block text-center text-sm" style="font-size: 0.72rem;">Leaderboard</span>
                 </div>
             </div>
             <div id="windows-container"></div>

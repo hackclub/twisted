@@ -80,6 +80,9 @@ class Profile(models.Model):
         default=None,
     )
 
+    leaderboard_banned = models.BooleanField(default=False)
+    leaderboard_opted = models.BooleanField(default=True)
+
     @override
     def __str__(self) -> str:
         return as_user(self.user).username
