@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
-from django.db.models import QuerySet, Sum, TextField
+from django.db.models import OuterRef, QuerySet, Subquery, Sum, TextField
 from django.utils import timezone
 from requests import RequestException
 
@@ -30,6 +30,10 @@ class UploadedFile(models.Model):
         cdn_response = cast("dict[str, str]", self.cdn_response)
         filename = cdn_response.get("name", "upload")
         return f"{filename} uploaded by {as_user(self.uploaded_by).profile.slack_username}"
+
+
+#: How long a profile's HCA country lookup is trusted before it is fetched again.
+COUNTRY_CACHE_TTL = timedelta(hours=3)
 
 
 # Create your models here.
@@ -66,7 +70,7 @@ class Profile(models.Model):
     )
     my_referral_code = models.CharField(max_length=200, blank=True, default="")
 
-    country = models.CharField(max_length=20, default="", blank=True)
+    country = models.CharField(max_length=100, default="", blank=True)
     country_cached_until = models.DateTimeField(null=True, default=None)
 
     region = models.ForeignKey(
@@ -83,6 +87,10 @@ class Profile(models.Model):
     def get_country(self) -> str:
         if self.country_cached_until is not None and self.country_cached_until > timezone.now():
             return self.country  # ty: ignore[unsound-return-statement]
+        return self.refresh_country()
+
+    def refresh_country(self) -> str:
+        """Fetch the country from Hack Club Identity and cache it for COUNTRY_CACHE_TTL."""
         try:
             user_data = hca.get_user_data(self.hca_access_token)
             country = (
@@ -94,7 +102,7 @@ class Profile(models.Model):
             country = "Unknown"
 
         self.country = country
-        self.country_cached_until = timezone.now() + timedelta(hours=3)
+        self.country_cached_until = timezone.now() + COUNTRY_CACHE_TTL
         self.save(update_fields=("country", "country_cached_until"))
 
         return country
@@ -158,6 +166,7 @@ class ProfileStaffPermissions(models.Model):
     view_users = models.BooleanField(default=False)
 
     view_projects = models.BooleanField(default=False)
+    manage_journals = models.BooleanField(default=False)
 
     view_pathways = models.BooleanField(default=False)
     manage_pathways = models.BooleanField(default=False)
@@ -261,7 +270,7 @@ class Project(models.Model):
         latest_ship = self.latest_ship()
         if latest_ship is None:
             return False
-        return cast("bool", latest_ship.status != "requested_changes")  # pyrefly: ignore[redundant-cast]
+        return status_is_shipped(cast("str", latest_ship.status))
 
     def is_approved(self) -> bool:
         latest_ship = self.latest_ship()
@@ -328,6 +337,25 @@ class ProjectShip(models.Model):
     @override
     def __str__(self) -> str:
         return f"Ship created at {self.created_at} ({self.get_status_display()})"  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue]
+
+
+def latest_ship_status(project_ref: str = "pk") -> Subquery:
+    """
+    Subquery for the status of a project's latest ship (NULL when it was never shipped).
+
+    `project_ref` names the project in the outer query, e.g. "pk" on a Project
+    queryset or "project" on a Journal queryset.
+    """
+    return Subquery(
+        ProjectShip.objects.filter(project=OuterRef(project_ref))
+        .order_by("-created_at")
+        .values("status")[:1],
+    )
+
+
+def status_is_shipped(latest_status: str | None) -> bool:
+    """Mirror `Project.is_shipped` for a status loaded by `latest_ship_status`."""
+    return latest_status is not None and latest_status != "requested_changes"
 
 
 class Pathway(models.Model):

@@ -2,9 +2,11 @@ from .announcements import AnnouncementsView
 from .audit_logs import AuditLogsView
 from .dashboard import DashboardView
 from .fulfillment import FulfillmentView
+from .journals import JournalCreateView, JournalDeleteView, JournalEditView
 from .pathways import (
     PathwayCreateView,
     PathwayDetailView,
+    PathwayEditView,
     PathwayListView,
     PathwayShopItemDetailView,
 )
@@ -18,8 +20,12 @@ __all__ = [
     "AuditLogsView",
     "DashboardView",
     "FulfillmentView",
+    "JournalCreateView",
+    "JournalDeleteView",
+    "JournalEditView",
     "PathwayCreateView",
     "PathwayDetailView",
+    "PathwayEditView",
     "PathwayListView",
     "PathwayShopItemDetailView",
     "ProjectDetailView",

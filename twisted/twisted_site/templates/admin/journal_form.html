@@ -1,0 +1,87 @@
+{% load static uploads %}
+<c-base>
+    <c-slot name="head">
+        <script src="{% static 'vendor/marked/marked.umd.js' %}"></script>
+        <script src="{% static 'vendor/dompurify/purify.min.js' %}"></script>
+        <script src="{% static 'js/journal_markdown.js' %}"
+                data-allowed-image-base="{% r2_public_url %}"></script>
+    </c-slot>
+    <c-ui.breadcrumbs>
+        <c-ui.breadcrumbs.item href="{% url 'admin.dash' %}">Admin</c-ui.breadcrumbs.item>
+        <c-ui.breadcrumbs.item href="{% url 'admin.users.detail' user_id=project.user.id %}">
+            @{{ project.user.profile.slack_username }}
+        </c-ui.breadcrumbs.item>
+        <c-ui.breadcrumbs.item href="{% url 'admin.projects.detail' project_id=project.id %}">
+            {{ project.project_name }}
+        </c-ui.breadcrumbs.item>
+        <c-ui.breadcrumbs.item :current="True">
+            {% if journal %}Edit journal{% else %}New journal{% endif %}
+        </c-ui.breadcrumbs.item>
+    </c-ui.breadcrumbs>
+    <h1 class="text-2xl font-bold mt-2">
+        {% if journal %}Edit journal{% else %}New journal{% endif %}
+        <span class="text-ink-400 font-normal">for {{ project.project_name }}</span>
+    </h1>
+    {% if journal %}
+        <p class="text-sm text-ink-400">Logged {{ journal.created_at }}, last updated {{ journal.updated_at }}</p>
+    {% endif %}
+    {% if project_shipped %}
+        <c-ui.alert variant="warning" class="mt-2">
+            This project has been shipped. Changing its journals changes the time that was submitted for review.
+        </c-ui.alert>
+    {% endif %}
+    <form method="post" class="mt-4 flex flex-col gap-4">
+        {% csrf_token %}
+        <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
+            <c-ui.select name="type" label="Type" value="{{ journal_type }}" :required="True">
+                {% for value, label in journal_types.items %}
+                    <c-ui.select.option value="{{ value }}" selected="{% if value == journal_type %}True{% endif %}">
+                        {{ label }}
+                    </c-ui.select.option>
+                {% endfor %}
+            </c-ui.select>
+            <c-ui.input type="number"
+                        min="0"
+                        name="minutes_worked"
+                        label="Minutes worked"
+                        value="{{ minutes_worked }}"
+                        required />
+            <c-ui.input type="number"
+                        min="0"
+                        name="reduced_minutes"
+                        label="Approved minutes"
+                        description="Counts towards time logged. Leave blank to use minutes worked."
+                        value="{{ reduced_minutes }}" />
+        </div>
+        <div>
+            <c-ui.label>Content</c-ui.label>
+            <div class="h-96 border border-ink-700">
+                <c-mdedit class="h-full overflow-auto"
+                          save_id="admin-journal-{% if journal %}{{ journal.id }}{% else %}new-{{ project.id }}{% endif %}">
+                    <c-slot name="content">{{ content }}</c-slot>
+                </c-mdedit>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <c-ui.button type="submit" variant="primary">
+                {% if journal %}Save journal{% else %}Create journal{% endif %}
+            </c-ui.button>
+            <a href="{% url 'admin.projects.detail' project_id=project.id %}">
+                <c-ui.button type="button">
+                    Cancel
+                </c-ui.button>
+            </a>
+        </div>
+    </form>
+    {% if journal %}
+        <form method="post"
+              action="{% url 'admin.journals.delete' journal_id=journal.id %}"
+              class="mt-8"
+              onsubmit="return confirm('Delete this journal? This cannot be undone.');">
+            {% csrf_token %}
+            <c-ui.button type="submit" variant="danger">
+                Delete journal
+            </c-ui.button>
+        </form>
+    {% endif %}
+</c-base>

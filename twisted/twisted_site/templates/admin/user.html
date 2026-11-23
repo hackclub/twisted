@@ -45,9 +45,9 @@
     </c-ui.card>
     <div class="mt-4">
         <h1 class="text-2xl font-black">Projects</h1>
-        {% if user.projects.all %}
+        {% if projects %}
             <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {% for project in user.projects.all %}
+                {% for project in projects %}
                 <c-ui.card class="bg-ink-900">
                     <a href="{% url 'admin.projects.detail' project_id=project.id %}">
                         <div>
@@ -57,14 +57,14 @@
                             <c-ui.badge>
                                 {{ project.get_project_type_display }}
                             </c-ui.badge>
-                            {% if project.latest_ship %}
+                            {% if project.ship_status %}
                                 <c-ui.badge>
-                                    {{ project.latest_ship.get_status_display }}
+                                    {{ project.ship_status_display }}
                                 </c-ui.badge>
                             {% endif %}
                         </div>
                         <div>
-                            <p>{{ project.time_logged|minutes_to_hours_minutes }} logged</p>
+                            <p>{{ project.minutes|minutes_to_hours_minutes }} logged</p>
                         </div>
                     </a>
                     <div class="mt-2 flex gap-2">
@@ -101,7 +101,7 @@
     </div>
     <div class="mt-4">
         <h1 class="text-2xl font-black">Referrals</h1>
-        {% if user.profile.referrals.all %}
+        {% if referrals %}
             <c-ui.card class="bg-ink-900 p-0">
                 <c-ui.table>
                     <thead>
@@ -113,7 +113,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for referral in user.profile.referrals.all %}
+                        {% for referral in referrals %}
                             <tr>
                                 <td>
                                     <a href="{% url 'admin.users.detail' user_id=referral.user.id %}"
@@ -122,10 +122,10 @@
                                         @{{ referral.slack_username }}
                                     </a>
                                 </td>
-                                <td>{{ referral.time_logged|minutes_to_hours_minutes }} / 1h</td>
+                                <td>{{ referral.minutes|minutes_to_hours_minutes }} / 1h</td>
                                 <td class="min-w-32">
-                                    <c-ui.progress value="{% if referral.time_logged > 60 %}100{% else %}{% widthratio referral.time_logged 60 100 %}{% endif %}"
-                                                   color="{% if referral.time_logged >= 60 %}green{% else %}accent{% endif %}"
+                                    <c-ui.progress value="{% if referral.minutes > 60 %}100{% else %}{% widthratio referral.minutes 60 100 %}{% endif %}"
+                                                   color="{% if referral.minutes >= 60 %}green{% else %}accent{% endif %}"
                                                    show_value="True" />
                                 </td>
                                 <td>
