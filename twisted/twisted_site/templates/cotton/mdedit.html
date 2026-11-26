@@ -238,13 +238,7 @@
     }
 
     function renderpreview() {
-        const content = textbox.value;
-
-        const parsed = DOMPurify.sanitize(
-            marked.parse(content)
-        );
-
-        document.getElementById("preview").innerHTML = parsed;
+        renderJournalMarkdown(textbox.value, document.getElementById("preview"));
     }
 
     function switchedit() {

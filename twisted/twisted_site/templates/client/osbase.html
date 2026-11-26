@@ -1,4 +1,4 @@
-{% load static tailwind_tags %}
+{% load static tailwind_tags uploads %}
 <!DOCTYPE html>
 <html lang="en" class="os w-full h-full bg-background">
     <head>
@@ -41,6 +41,8 @@
         </script>
         <script src="{% static 'vendor/marked/marked.umd.js' %}"></script>
         <script src="{% static 'vendor/dompurify/purify.min.js' %}"></script>
+        <script src="{% static 'js/journal_markdown.js' %}"
+                data-allowed-image-base="{% r2_public_url %}"></script>
     </head>
     <body class="font-vintage h-full">{% block body %} meow :3 {% endblock body %}</body>
     <script type="module">

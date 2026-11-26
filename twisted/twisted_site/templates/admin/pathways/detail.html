@@ -91,6 +91,13 @@
                         Ended
                     </c-ui.badge>
                 {% endif %}
+                {% if can_manage_pathways %}
+                    <a href="{% url 'admin.pathways.edit' pathway.id %}" class="ml-auto">
+                        <c-ui.button>
+                            Edit pathway
+                        </c-ui.button>
+                    </a>
+                {% endif %}
             </div>
             <div class="mt-2 grid gap-4 grid-cols-2 lg:grid-cols-4">
                 <div>

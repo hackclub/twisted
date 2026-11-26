@@ -7,13 +7,8 @@
             elem = document.currentScript.parentElement.querySelector('.textbox')
             content = elem.value.trim();
             elem.classList.add('hidden')
-            parsed = DOMPurify.sanitize(marked.parse(content));
             previewdiv = elem.parentElement.querySelector('.previewdiv');
-            previewdiv.innerHTML = parsed;
-            previewdiv.querySelectorAll('a[href]').forEach(function (link) {
-                link.setAttribute('target', '_blank');
-                link.setAttribute('rel', 'noreferrer');
-            });
+            renderJournalMarkdown(content, previewdiv);
         }
         rendermarkdown()
     </script>

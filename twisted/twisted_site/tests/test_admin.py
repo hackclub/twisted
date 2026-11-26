@@ -1,13 +1,26 @@
+from datetime import timedelta
 from typing import cast, override
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
+from django.db import connection
 from django.test import Client, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils import timezone
 
-from twisted_site.models import AuditLog, Journal, Profile, ProfileStaffPermissions, Project
+from twisted_site.hca import Address, Identity
+from twisted_site.models import (
+    AuditLog,
+    Journal,
+    Profile,
+    ProfileStaffPermissions,
+    Project,
+    ProjectShip,
+)
+from twisted_site.tasks import refresh_profile_countries
 
 
 class AdminAuthorizationTests(TestCase):
@@ -386,3 +399,191 @@ class AdminAuthorizationTests(TestCase):
         context = cast("dict[str, object]", audit_log.additional_context)
         self.assertEqual(context["action"], "logoutall")
         self.assertEqual(context["sessions_deleted"], deleted_session_count)
+
+
+def _make_journals(prefix: str, count: int, *, country: str = "Canada") -> list[Journal]:
+    """Create `count` users, each with one shipped project holding one 30 minute journal."""
+    journals: list[Journal] = []
+    for index in range(count):
+        owner = User.objects.create_user(username=f"{prefix}-{index}")
+        _ = Profile.objects.create(
+            user=owner,
+            slack_username=f"{prefix}-{index}",
+            country=country,
+            country_cached_until=timezone.now() + timedelta(hours=1),
+        )
+        project = Project.objects.create(
+            user=owner,
+            project_name=f"{prefix} project {index}",
+            project_description="x",
+            project_type="software",
+        )
+        _ = ProjectShip.objects.create(project=project, status="pending")
+        journals.append(
+            Journal.objects.create(
+                project=project,
+                type="hackatime",
+                content="x",
+                minutes_worked=30,
+                reduced_minutes=30,
+            ),
+        )
+    return journals
+
+
+class AdminPerformanceTests(TestCase):
+    @override
+    def setUp(self) -> None:
+        self.staff = User.objects.create_user(username="perf-staff")
+        _ = Profile.objects.create(
+            user=self.staff,
+            is_staff=True,
+            staff_permissions=ProfileStaffPermissions.objects.create(view_users=True),
+        )
+        self.client = Client()
+        self.client.force_login(self.staff)
+
+    def count_queries(self, url: str) -> int:
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        return len(queries)
+
+    def test_dashboard_query_count_does_not_grow_with_journals(self) -> None:
+        _ = _make_journals("small", 2)
+        small = self.count_queries(reverse("admin.dash"))
+        _ = _make_journals("large", 12)
+
+        self.assertEqual(self.count_queries(reverse("admin.dash")), small)
+
+    def test_dashboard_never_calls_hca_and_uses_cached_countries(self) -> None:
+        journals = _make_journals("cached", 3)
+        _ = ProjectShip.objects.create(project=journals[0].project, status="requested_changes")
+
+        with patch("twisted_site.models.hca.get_user_data") as get_user_data:
+            response = self.client.get(reverse("admin.dash"))
+
+        get_user_data.assert_not_called()
+        self.assertEqual(response.context["hours_logged"], 1.5)
+        self.assertEqual(response.context["hours_shipped"], 1.0)
+        self.assertIn(["Canada", 1.5], [list(row) for row in response.context["logged_region_hours"]])
+
+    def test_dashboard_queues_stale_countries_once(self) -> None:
+        journals = _make_journals("stale", 2)
+        stale_profile = journals[0].project.user.profile
+        stale_profile.country_cached_until = timezone.now() - timedelta(minutes=1)
+        stale_profile.save(update_fields=("country_cached_until",))
+
+        with (
+            patch("twisted_site.views.admin.dashboard.refresh_profile_countries") as refresh_task,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            _ = self.client.get(reverse("admin.dash"))
+
+        refresh_task.enqueue.assert_called_once_with([stale_profile.id])
+        stale_profile.refresh_from_db()
+        self.assertGreater(stale_profile.country_cached_until, timezone.now())
+
+        with (
+            patch("twisted_site.views.admin.dashboard.refresh_profile_countries") as refresh_task,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            _ = self.client.get(reverse("admin.dash"))
+
+        refresh_task.enqueue.assert_not_called()
+
+    def test_refresh_task_fetches_country_from_hca(self) -> None:
+        profile = _make_journals("refresh", 1, country="")[0].project.user.profile
+        address = Address(
+            id="a",
+            first_name="",
+            last_name="",
+            line_1="",
+            line_2="",
+            city="",
+            state="",
+            postal_code="",
+            country="India",
+            phone_number="",
+            primary=True,
+        )
+        identity = Identity(
+            id="i",
+            ysws_eligible=True,
+            verification_status="verified",
+            first_name="",
+            last_name="",
+            primary_email="",
+            slack_id="",
+            phone_number="",
+            birthday="",
+            addresses=[address],
+            primary_address=address,
+        )
+
+        with patch("twisted_site.models.hca.get_user_data", return_value=identity):
+            refresh_profile_countries.call([profile.id])
+
+        profile.refresh_from_db()
+        self.assertEqual(profile.country, "India")
+
+    def test_users_list_query_count_does_not_grow_with_users(self) -> None:
+        _ = _make_journals("few", 2)
+        few = self.count_queries(reverse("admin.users"))
+        _ = _make_journals("many", 12)
+
+        self.assertEqual(self.count_queries(reverse("admin.users")), few)
+
+    def test_users_list_shows_project_stats(self) -> None:
+        journals = _make_journals("stats", 1)
+        project = journals[0].project
+        _ = Journal.objects.create(
+            project=project,
+            type="hackatime",
+            content="x",
+            minutes_worked=90,
+            reduced_minutes=90,
+        )
+        _ = Project.objects.create(
+            user=project.user,
+            project_name="Unshipped",
+            project_description="x",
+            project_type="software",
+        )
+
+        response = self.client.get(reverse("admin.users"), {"search": "stats-0"})
+
+        self.assertContains(response, "2 projects created")
+        self.assertContains(response, "1 projects shipped")
+        self.assertContains(response, "2.00h logged")
+        self.assertContains(response, "2.00h shipped")
+
+    def test_user_detail_query_count_does_not_grow_with_projects(self) -> None:
+        owner = User.objects.create_user(username="detail-owner")
+        owner_profile = Profile.objects.create(user=owner, slack_username="detail-owner")
+        url = reverse("admin.users.detail", kwargs={"user_id": owner.pk})
+
+        def add_projects(count: int) -> None:
+            for index in range(count):
+                project = Project.objects.create(
+                    user=owner,
+                    project_name=f"p{Project.objects.count()}-{index}",
+                    project_description="x",
+                    project_type="software",
+                )
+                _ = ProjectShip.objects.create(project=project, status="approved")
+                _ = Journal.objects.create(
+                    project=project,
+                    type="hackatime",
+                    content="x",
+                    minutes_worked=30,
+                    reduced_minutes=30,
+                )
+                referral = User.objects.create_user(username=f"ref-{project.pk}")
+                _ = Profile.objects.create(user=referral, referred_by=owner_profile)
+
+        add_projects(1)
+        few = self.count_queries(url)
+        add_projects(6)
+
+        self.assertEqual(self.count_queries(url), few)
